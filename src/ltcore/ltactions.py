@@ -8,7 +8,8 @@ from PyQt4 import QtCore,QtGui
 
 class LtActions(QtCore.QObject):
     '''
-    classdocs
+    This class holds all actions, needed by LtMainWindow
+    It also holds additional methods for actions maipulating  
     '''
 
     def __init__(self,parent=None):
@@ -17,21 +18,21 @@ class LtActions(QtCore.QObject):
         '''
         super(LtActions, self).__init__(parent)
         
-        # Creating actions
-        '''
-        self.fileNewAction = self.createAction("&New...", QtGui.QKeySequence.New, 
+        # ==== Project actions ====
+        self.projectNewAction = self.createAction("&New...", QtGui.QKeySequence.New, 
                                           "filenew", "Create an image file")
-        self.fileOpenAction = self.createAction("&Open...",
+        self.projectOpenAction = self.createAction("&Open...",
                             QtGui.QKeySequence.Open, "fileopen", "Open image file")
-        self.fileSaveAction = self.createAction("&Save",
+        self.projectSaveAction = self.createAction("&Save",
                             QtGui.QKeySequence.Save, "filesave", "Save file")
-        self.fileSaveAsAction = self.createAction("Save &as...",
+        self.projectSaveAsAction = self.createAction("Save &as...",
                             QtGui.QKeySequence.SaveAs, "filesaveas", "Save file as")
-        self.filePrintAction = self.createAction("&Print...",
-                            QtGui.QKeySequence.Print, "fileprint", "Print image")
-        self.fileQuitAction = self.createAction("&Exit",
-                            "Esc", "filequit", "Close the application")
-        '''
+        self.projectQuitAction = self.createAction("&Exit",
+                            QtGui.QKeySequence.Quit, "filequit", "Close the application")
+        self.projectActions = (self.projectNewAction,self.projectOpenAction,
+                               self.projectSaveAction,self.projectSaveAsAction,
+                               None,self.projectQuitAction)
+        
         # ==== Video Actions ====
         self.videoOpenAction = self.createAction("&Open...", "", 
                                           "videoopen", "Open video file")
@@ -48,7 +49,7 @@ class LtActions(QtCore.QObject):
         
         self.videoActions = (self.videoOpenAction,self.videoCaptureAction,
                              self.videoPlayAction,self.videoStopAction,
-                             self.videoRewAction,self.videoFwdAction,)
+                             self.videoRewAction,self.videoFwdAction)
         
         
     def createAction(self, text, shortcut=None, icon=None,

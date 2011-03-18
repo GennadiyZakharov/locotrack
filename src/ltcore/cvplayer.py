@@ -33,8 +33,10 @@ class CvPlayer(QtCore.QObject):
         self.fileName = filename
         self.videoLength = cv.GetCaptureProperty(self.captureDevice, 
                                                 cv.CV_CAP_PROP_FRAME_COUNT)
-        print('File ',self.fileName,' opened, length ',self.videoLength)
+        print 'Opened file:',self.fileName
+        print 'File length:',int(self.videoLength),'frames'
         self.emit(signalCvPlayerCapturing,self.videoLength)
+        self.timerEvent(None)
     
     def on_captureFromCam(self,camNumber):
         if self.captureDevice is not None :

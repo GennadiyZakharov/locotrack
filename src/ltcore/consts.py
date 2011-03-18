@@ -5,6 +5,5 @@ Created on 18.03.2011
 '''
 
 appName = "LocoTrack"
-
-__version__ = "0.1"
+appVersion = "0.1"
 

@@ -14,6 +14,7 @@ signalTriggered = SIGNAL("triggered()")
 
 # ==== Custom signals ====
 # ---- CvPlayer ----
+signalCaptureFromFile = SIGNAL("captureFromFile")
 signalCvPlayerCapturing = SIGNAL("CvPlayerCapturing")
 signalNextFrame = SIGNAL("nextFrame")
 signalAccumulate = SIGNAL("accumulate")
