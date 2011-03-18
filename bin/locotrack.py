@@ -18,12 +18,12 @@ from ltgui.ltmainwindow import LtMainWindow
 
 def main():
     app = QApplication(sys.argv)
-    app.setOrganizationName("Qtrac Ltd.")
-    app.setOrganizationDomain("qtrac.eu")
+    app.setOrganizationName("I.P. Pavlov Physiology Institute")
+    app.setOrganizationDomain("infran.ru")
     app.setApplicationName("LocoTrack")
     app.setWindowIcon(QIcon(":/icon.png"))
-    #mainWindow = LtMainWindow()
-    #mainWindow.show()
+    mainWindow = LtMainWindow()
+    mainWindow.show()
     return app.exec_()
 
 if __name__ == '__main__':
