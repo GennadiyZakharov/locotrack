@@ -6,8 +6,9 @@ Created on 13.12.2010
 from PyQt4 import QtCore,QtGui
 #from ltcore.actions import LtActions
 from ltcore.signals import *
+from ltgui.labeledwidgets import *
 
-class VideoDockBar(QtGui.QWidget):
+class VideoWidget(QtGui.QWidget):
     '''
     classdocs
     '''
@@ -17,17 +18,17 @@ class VideoDockBar(QtGui.QWidget):
         '''
         Constructor
         '''
-        super(VideoDockBar, self).__init__(parent)
+        super(VideoWidget, self).__init__(parent)
         
         #Slider and label
-        layout1= QtGui.QHBoxLayout()
+        layout1 = QtGui.QHBoxLayout()
         self.videoSlider=QtGui.QSlider(QtCore.Qt.Horizontal)
         layout1.addWidget(self.videoSlider)
         self.timeLabel=QtGui.QLabel('N/A')
         layout1.addWidget(self.timeLabel)
         
         #Play/pause buttons
-        layout2= QtGui.QHBoxLayout()
+        layout2 = QtGui.QHBoxLayout()
         self.rewButt=QtGui.QPushButton("<<")
         layout2.addWidget(self.rewButt)
         self.playButt=QtGui.QPushButton("Play")
@@ -36,10 +37,20 @@ class VideoDockBar(QtGui.QWidget):
         layout2.addWidget(self.stopButt)
         self.fwdButt=QtGui.QPushButton(">>")
         layout2.addWidget(self.fwdButt)
+        
+        # Brightness/Contrast
+        layout3 = QtGui.QHBoxLayout()
                 
+        self.brighnessSlider=LabelledSlider("&Brightness:",QtCore.Qt.Horizontal)
+        layout3.addWidget(self.brighnessSlider)      
+        self.contrastSlider=LabelledSlider("&Contrast:",QtCore.Qt.Horizontal)
+        layout3.addWidget(self.contrastSlider)
+        
+        # Main Layout
         layout=QtGui.QVBoxLayout()
         layout.addLayout(layout1)
         layout.addLayout(layout2)
+        layout.addLayout(layout3)
         self.setLayout(layout)
         
         #Creating video player actions
@@ -49,7 +60,7 @@ class VideoDockBar(QtGui.QWidget):
     #Calling this method when video opened    
     def on_videoCapturing(self,length=None):
         if length is not None :
-            self.videoSlider.setMaximum(length)
+            self.videoSlider.setMaximum(int(length))
             self.on_videoSlider_move(0)            
     
     #Calling this method when beginning capturing
@@ -60,7 +71,6 @@ class VideoDockBar(QtGui.QWidget):
     def videoClosed(self):
         pass
     
-
     def on_videoSlider_move(self,value):
         self.timeLabel.setText(str(value)+'/'+str(self.videoSlider.maximum()))
         

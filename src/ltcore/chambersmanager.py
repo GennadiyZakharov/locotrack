@@ -20,6 +20,7 @@ class ChambersManager(QtCore.QObject):
         Constructor
         '''
         super(ChambersManager, self).__init__(parent)
+        
         self.chambers = []
         self.selected = -1
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -65,6 +66,14 @@ class ChambersManager(QtCore.QObject):
             cv.ResetImageROI(image)
         '''
         for i in xrange(len(self.chambers)) :
+            
+            # Processing chamber
+            cv.SetImageROI(image, self.chambers[i].getRect())
+            cv.Threshold(image, image,100,300,cv.CV_THRESH_TOZERO)
+            
+            cv.ResetImageROI(image)
+   
+            # Drawing chambers
             if i == self.selected :
                 color=self.chamberSelectedColor
             else :
@@ -74,6 +83,8 @@ class ChambersManager(QtCore.QObject):
                          color,2)
             cv.PutText(  image, str(i), self.chambers[i].getPos(),
                          self.font,color)
+        
+
         
         self.emit(signalNextFrame,image)
         

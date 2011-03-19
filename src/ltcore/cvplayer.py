@@ -47,6 +47,7 @@ class CvPlayer(QtCore.QObject):
         self.fileName=None
         self.captureDevice=None
         self.videoLength=None
+        #self.emit(signalCvPlayerCapturing,None)
         
     def on_Play(self):
         if self.captureDevice is not None :

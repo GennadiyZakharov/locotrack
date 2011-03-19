@@ -15,8 +15,8 @@ from ltcore.chambersmanager import ChambersManager
 from ltcore.ltactions import LtActions
 
 from ltgui.cvlabel import CvLabel
-from ltgui.videodockbar import VideoDockBar
-from ltgui.chambersdockbar import ChambersDockBar
+from ltgui.videowidget import VideoWidget
+from ltgui.chamberswidget import ChambersWidget
 
 
 class LtMainWindow(QtGui.QMainWindow):
@@ -51,7 +51,7 @@ class LtMainWindow(QtGui.QMainWindow):
         videoDockPanel.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         videoDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, videoDockPanel)
-        self.videoWidget=VideoDockBar() 
+        self.videoWidget=VideoWidget() 
         videoDockPanel.setWidget(self.videoWidget)
         
         # ---- Creating dock panel for chambers ---- 
@@ -60,17 +60,15 @@ class LtMainWindow(QtGui.QMainWindow):
         chambersDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         chambersDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
-        self.chambersWidget=ChambersDockBar() 
+        self.chambersWidget=ChambersWidget() 
         chambersDockPanel.setWidget(self.chambersWidget)
                      
         # ==== Creating menu ====
-        # ---- Project ==== 
         projectMenu = self.menuBar().addMenu("&Project")
         self.ltActions.addActions(projectMenu, self.ltActions.projectActions)
-        # Creating video menu
+        
         videoMenu = self.menuBar().addMenu("&Video")
         self.ltActions.addActions(videoMenu, self.ltActions.videoActions)
-
         
         # ==== Making Connections actions ====
         # ---- Core video processing ----
@@ -87,12 +85,12 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.fwdButt, signalClicked,self.ltActions.videoFwdAction.trigger)
         self.connect(self.videoWidget.videoSlider, signalValueChanged,self.cvPlayer.on_Seek)
         self.connect(self.cvPlayer,signalCvPlayerCapturing,self.videoWidget.on_videoCapturing)
-
-        # ---- chambersWidget ----
-        self.connect(self.chambersWidget.brighnessSlider, signalValueChanged,
+        self.connect(self.videoWidget.brighnessSlider, signalValueChanged,
                      self.cvPlayer.on_BrightnessChanged)
-        self.connect(self.chambersWidget.contrastSlider, signalValueChanged,
+        self.connect(self.videoWidget.contrastSlider, signalValueChanged,
                      self.cvPlayer.on_ContrastChanged)
+        # ---- chambersWidget ----
+
         self.connect(self.chambersWidget.accumulateButt, signalClicked,
                      self.on_Accumulate)
         self.connect(self.chambersWidget.negativeChechBox, signalStateChanged,
@@ -124,7 +122,7 @@ class LtMainWindow(QtGui.QMainWindow):
     # ==== Slots to handle actions ====
     def on_videoOpen(self):
         '''
-        Open video
+        Open video file
         '''
         # Setting last user dir
         dir = os.path.dirname(self.cvPlayer.fileName) \
@@ -144,7 +142,6 @@ class LtMainWindow(QtGui.QMainWindow):
         pass 
     
     def on_Accumulate(self):
-        print "accumulate"
         self.emit(signalAccumulate, self.chambersDockBar.accumulateSpinBox.value())        
     
     def saveProject(self):

@@ -8,7 +8,7 @@ from PyQt4 import QtCore,QtGui
 #from ltcore.actions import LtActions
 #from ltcore.signals import *
 
-class ChambersDockBar(QtGui.QWidget):
+class ChambersWidget(QtGui.QWidget):
     '''
     classdocs
     '''
@@ -18,20 +18,8 @@ class ChambersDockBar(QtGui.QWidget):
         '''
         Constructor
         '''
-        super(ChambersDockBar, self).__init__(parent)
+        super(ChambersWidget, self).__init__(parent)
         layout=QtGui.QGridLayout()
-        
-        brightnessLabel = QtGui.QLabel("&Brightness")
-        self.brighnessSlider=QtGui.QSlider(QtCore.Qt.Horizontal)
-        brightnessLabel.setBuddy(self.brighnessSlider)
-        layout.addWidget(brightnessLabel,0,0)
-        layout.addWidget(self.brighnessSlider,0,1,1,2)
-        
-        contrastLabel = QtGui.QLabel("&Contrast")
-        self.contrastSlider=QtGui.QSlider(QtCore.Qt.Horizontal)
-        contrastLabel.setBuddy(self.contrastSlider)
-        layout.addWidget(contrastLabel,1,0)
-        layout.addWidget(self.contrastSlider,1,1,1,2)
         
         negativeLabel = QtGui.QLabel("Negative")
         self.negativeChechBox = QtGui.QCheckBox()
