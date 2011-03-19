@@ -75,6 +75,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.cvPlayer,signalNextFrame,self.chambersManager.on_nextFrame)
         self.connect(self.chambersManager,signalNextFrame,self.cvLabel.putImage)
         
+        self.connect(self.cvLabel, signalRegionSelected,self.chambersWidget.on_RegionSelected)
+        
         # ---- self ----
         self.connect(self,signalCaptureFromFile,self.cvPlayer.on_captureFromFile)
         
@@ -115,8 +117,9 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
         self.dirty = True
-        self.chambersManager.addChamber(100,100,250,220)
-        self.chambersManager.addChamber(270,100,340,270)
+        self.cvLabel.enableDnD = True
+        self.chambersManager.addChamber(QtCore.QRect(100,100,150,120))
+        self.chambersManager.addChamber(QtCore.QRect(270,100,140,170))
         self.chambersManager.selectChamber(0)
         
     # ==== Slots to handle actions ====

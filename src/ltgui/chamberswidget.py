@@ -40,4 +40,6 @@ class ChambersWidget(QtGui.QWidget):
         
         self.setLayout(layout)
         
+    def on_RegionSelected(self,rect):
+        print 'Region',rect
         

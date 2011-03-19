@@ -34,8 +34,8 @@ class ChambersManager(QtCore.QObject):
         self.invertImage = False
         
         
-    def addChamber(self,x1,y1,x2,y2):
-        chamber = Chamber(x1,y1,x2,y2)
+    def addChamber(self,rect):
+        chamber = Chamber(rect)
         if self.selected >= 0 :
             self.chambers[self.selected] = chamber
         else : 
@@ -83,8 +83,6 @@ class ChambersManager(QtCore.QObject):
                          color,2)
             cv.PutText(  image, str(i), self.chambers[i].getPos(),
                          self.font,color)
-        
-
         
         self.emit(signalNextFrame,image)
         

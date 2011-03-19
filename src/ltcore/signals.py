@@ -18,3 +18,6 @@ signalCaptureFromFile = SIGNAL("captureFromFile")
 signalCvPlayerCapturing = SIGNAL("CvPlayerCapturing")
 signalNextFrame = SIGNAL("nextFrame")
 signalAccumulate = SIGNAL("accumulate")
+
+# ---- CvLabel ----
+signalRegionSelected = SIGNAL("regionSelected")
