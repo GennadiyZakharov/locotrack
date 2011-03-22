@@ -11,13 +11,18 @@ signalClicked = SIGNAL("clicked()")
 signalValueChanged = SIGNAL("valueChanged(int)")
 signalStateChanged = SIGNAL("stateChanged(int)")
 signalTriggered = SIGNAL("triggered()")
+signalToggled = SIGNAL("toggled(bool)")
 
 # ==== Custom signals ====
 # ---- CvPlayer ----
 signalCaptureFromFile = SIGNAL("captureFromFile")
 signalCvPlayerCapturing = SIGNAL("CvPlayerCapturing")
 signalNextFrame = SIGNAL("nextFrame")
+
+
 signalAccumulate = SIGNAL("accumulate")
 
 # ---- CvLabel ----
 signalRegionSelected = SIGNAL("regionSelected")
+signalEnableDnD = SIGNAL("enableDnD")
+signalDragging = SIGNAL("dragging")

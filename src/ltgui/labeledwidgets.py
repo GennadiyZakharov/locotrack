@@ -59,15 +59,14 @@ class LabelledSlider(QWidget):
         layout.addWidget(self.slider)
         self.setLayout(layout)
         
-        # Creating link to functions
+        # Creating links to functions
         self.value = self.slider.value
         self.setMaximum = self.slider.setMaximum
-        self.setMaximum = self.slider.setMinimum
+        self.setMinimum = self.slider.setMinimum
         
         self.setText = self.label.setText
         self.text = self.label.text
-        
-        
+    
     def on_sliderMove(self,value):
         self.label.setText(self.labelText+' '+str(value))
         self.emit(signalValueChanged,value)

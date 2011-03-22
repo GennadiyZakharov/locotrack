@@ -9,7 +9,7 @@ import cv
 
 from ltcore.signals import *
 
-minCvLabelSize=(200,200)
+minCvLabelSize=(640,480)
 
 class CvLabel(QtGui.QLabel):
     '''
@@ -24,21 +24,51 @@ class CvLabel(QtGui.QLabel):
         super(CvLabel, self).__init__(parent)
         self.setAcceptDrops(True)
         self.enableDnD = False
-        tempimage = cv.CreateImage(minCvLabelSize,cv.IPL_DEPTH_8U,3)
-        self.putImage(tempimage)
+        self.selectedRect = None
+        self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        # Creating black rectangle
+        self.putImage(cv.CreateImage(minCvLabelSize,cv.IPL_DEPTH_8U,3))
     
     def putImage(self,cvimage) :
         # switch between bit depths
         if cvimage.depth == cv.IPL_DEPTH_8U :
             if  cvimage.nChannels == 3:
                 str = cvimage.tostring()
-                image = QtGui.QImage(str,cvimage.width,cvimage.height,QtGui.QImage.Format_RGB888)
-                self.setPixmap(QtGui.QPixmap.fromImage(image.rgbSwapped()))
+                self.image = QtGui.QImage(str,cvimage.width,cvimage.height,QtGui.QImage.Format_RGB888).rgbSwapped()
+                self.updateImage()
             else :
                 print("This number of channels is not supported")
                     
         else :
             print("This type of IplImage is not implemented")
+
+    def updateImage(self):
+        if self.selectedRect is not None :
+            image = QtGui.QImage(self.image)
+            
+            pen = QtGui.QPen(QtCore.Qt.blue)
+            pen.setWidth(3)
+            pen.setStyle(QtCore.Qt.DashLine)
+            
+            brush = QtGui.QBrush(QtCore.Qt.blue,QtCore.Qt.Dense6Pattern)
+            
+            painter = QtGui.QPainter()           
+            painter.begin(image)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setPen(pen)
+            painter.setBrush(brush)
+            
+            painter.drawRect(self.selectedRect)         
+            painter.drawLine(QtCore.QLine(self.selectedRect.topLeft(),
+                                           self.selectedRect.bottomRight()))
+            self.setPixmap(QtGui.QPixmap.fromImage(image))
+            painter.end()
+        else :
+            self.setPixmap(QtGui.QPixmap.fromImage(self.image))
+            
+    
+    def on_EnableDnD(self,enable):
+        self.enableDnD = enable
 
     def mousePressEvent(self, event) :
         if not self.enableDnD :
@@ -68,20 +98,29 @@ class CvLabel(QtGui.QLabel):
         drag.setPixmap(pixmap)
         '''
         drag.start(QtCore.Qt.CopyAction)
+        
+        self.selectedRect=None
+        self.updateImage()
     
     def dragEnterEvent(self, event) :
         if not self.enableDnD :
             return
         if event.mimeData().hasFormat("cvlabel/pos") :
             event.acceptProposedAction()
-    
+            
+    def dragMoveEvent(self, event):
+        if not self.enableDnD :
+            return
+        #self.emit(signalDragging,))
+        # # Drawing the main rectangle
+        self.selectedRect = QtCore.QRect(self.dragStartPosition,event.pos())
+        self.updateImage()
     
     def dropEvent(self, event) :
         if not self.enableDnD :
             return
         if event.mimeData().hasFormat("cvlabel/pos") :
             rect = QtCore.QRect(self.dragStartPosition,event.pos())
-            
             self.emit(signalRegionSelected,rect)
             event.acceptProposedAction()
             

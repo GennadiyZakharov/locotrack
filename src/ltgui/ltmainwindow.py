@@ -17,6 +17,7 @@ from ltcore.ltactions import LtActions
 from ltgui.cvlabel import CvLabel
 from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
+from ltgui.cvprocessorwidget import CvProcessorWidget
 
 
 class LtMainWindow(QtGui.QMainWindow):
@@ -62,6 +63,15 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
         self.chambersWidget=ChambersWidget() 
         chambersDockPanel.setWidget(self.chambersWidget)
+        
+        # ---- Creating dock panel for image processing ---- 
+        cvProcessorDockPanel = QtGui.QDockWidget("Image processor", self) # Created and set caption
+        cvProcessorDockPanel.setObjectName("chambersDockWidget")
+        cvProcessorDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
+        cvProcessorDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, cvProcessorDockPanel)
+        self.cvProcessorWidget= CvProcessorWidget() 
+        cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
                      
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
@@ -76,6 +86,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.chambersManager,signalNextFrame,self.cvLabel.putImage)
         
         self.connect(self.cvLabel, signalRegionSelected,self.chambersWidget.on_RegionSelected)
+        self.connect(self.chambersWidget, signalEnableDnD,self.cvLabel.on_EnableDnD)
         
         # ---- self ----
         self.connect(self,signalCaptureFromFile,self.cvPlayer.on_captureFromFile)
@@ -91,14 +102,21 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.cvPlayer.on_BrightnessChanged)
         self.connect(self.videoWidget.contrastSlider, signalValueChanged,
                      self.cvPlayer.on_ContrastChanged)
+        
         # ---- chambersWidget ----
-
-        self.connect(self.chambersWidget.accumulateButt, signalClicked,
-                     self.on_Accumulate)
         self.connect(self.chambersWidget.negativeChechBox, signalStateChanged,
                      self.chambersManager.on_Invert)
+        '''
+        self.connect(self.chambersWidget.accumulateButt, signalClicked,
+                     self.on_Accumulate)
+        
         
         #self.connect(self, signalAccumulate,self.chambersManager.on_Accumulate)
+        '''
+        # ---- cvProcessorWidget ----
+        self.connect(self.cvProcessorWidget.tresholdSlider,signalValueChanged,
+                     self.chambersManager.on_SetTreshold )
+        self.connect(self.cvProcessorWidget, signalAccumulate, self.chambersManager.on_Accumulate)
         
         
         # ---- Main menu ----
@@ -117,7 +135,6 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
         self.dirty = True
-        self.cvLabel.enableDnD = True
         self.chambersManager.addChamber(QtCore.QRect(100,100,150,120))
         self.chambersManager.addChamber(QtCore.QRect(270,100,140,170))
         self.chambersManager.selectChamber(0)

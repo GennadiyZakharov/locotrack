@@ -6,7 +6,7 @@ Created on 18.12.2010
 
 from PyQt4 import QtCore,QtGui
 #from ltcore.actions import LtActions
-#from ltcore.signals import *
+from ltcore.signals import *
 
 class ChambersWidget(QtGui.QWidget):
     '''
@@ -19,7 +19,14 @@ class ChambersWidget(QtGui.QWidget):
         Constructor
         '''
         super(ChambersWidget, self).__init__(parent)
+        
         layout=QtGui.QGridLayout()
+        
+        chambersLabel = QtGui.QLabel('Chambers')
+        self.chambersList = QtGui.QListWidget()
+        chambersLabel.setBuddy(self.chambersList)
+        layout.addWidget(chambersLabel,0,0,1,2)
+        layout.addWidget(self.chambersList,1,0,1,2)
         
         negativeLabel = QtGui.QLabel("Negative")
         self.negativeChechBox = QtGui.QCheckBox()
@@ -27,19 +34,34 @@ class ChambersWidget(QtGui.QWidget):
         layout.addWidget(negativeLabel,2,0)
         layout.addWidget(self.negativeChechBox,2,1)
         
-        accumulateLabel = QtGui.QLabel("&Frames number")
-        self.accumulateSpinBox = QtGui.QSpinBox()
-        self.accumulateSpinBox.setMaximum(200)
-        self.accumulateSpinBox.setValue(100)
-        accumulateLabel.setBuddy(self.accumulateSpinBox)
-        self.accumulateButt=QtGui.QPushButton("Accumulate")
-        layout.addWidget(accumulateLabel,3,0)
-        layout.addWidget(self.accumulateSpinBox,3,1)
-        layout.addWidget(self.accumulateButt,3,2)
+        self.scaleButt = QtGui.QPushButton('Set Scale')
+        self.scaleButt.setCheckable(True)
+        layout.addWidget(self.scaleButt)      
+        self.connect(self.scaleButt, signalToggled,self.on_ScaleOrChamberSet)
         
-        
+        self.chamberButt = QtGui.QPushButton('Set Chamber')
+        self.chamberButt.setCheckable(True)
+        layout.addWidget(self.chamberButt)
+        self.connect(self.chamberButt, signalToggled,self.on_ScaleOrChamberSet)
+          
         self.setLayout(layout)
         
     def on_RegionSelected(self,rect):
-        print 'Region',rect
+        if self.scaleButt.isChecked() :
+            self.scaleButt.setChecked(False)
+            print 'scale',rect
+        elif self.chamberButt.isChecked() :
+            self.chamberButt.setChecked(False)
+            print 'chamber',rect
+    '''        
+    def on_cvDragging(self,rect):
+        print 'dragging',rect
+        self.emit(,rect)
+    '''
+    def on_ScaleOrChamberSet(self,checked):
+        self.emit(signalEnableDnD,checked)
+        
+    def on_chamberListUpdated(self):
+        pass
+        
         

@@ -21,8 +21,11 @@ class CvPlayer(QtCore.QObject):
         '''
         super(CvPlayer, self).__init__(parent)
         
-        self.on_captureClose()
+        self.timer = None
         self.frameRate = 5
+        
+        self.on_captureClose()
+        
         
     def on_captureFromFile(self,filename):
         if self.captureDevice is not None :
@@ -44,18 +47,21 @@ class CvPlayer(QtCore.QObject):
         
     
     def on_captureClose(self):
+        self.on_Stop()
         self.fileName=None
         self.captureDevice=None
         self.videoLength=None
+        
         #self.emit(signalCvPlayerCapturing,None)
         
     def on_Play(self):
-        if self.captureDevice is not None :
+        if (self.captureDevice is not None) and (self.timer is None) :
             self.timer=self.startTimer(1000/self.frameRate)
         
     def on_Stop(self):
         if self.timer is not None :
             self.killTimer(self.timer)
+            self.timer = None
         
     def on_Rew(self):
         pass
