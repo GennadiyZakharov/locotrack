@@ -15,7 +15,7 @@ class ChambersManager(QtCore.QObject):
     '''
 
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         '''
         Constructor
         '''
@@ -25,10 +25,9 @@ class ChambersManager(QtCore.QObject):
         self.selected = -1
         self.chamberColor = cv.CV_RGB(0, 255, 0)
         self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
-        self.font=cv.InitFont(3,1,1)
+        self.font = cv.InitFont(3, 1, 1)
         self.tempDragRect = None
-        # This flag is used for background accumulation
-        self.accumulate = False
+        self.accumulate = False # This flag is used for background accumulation
         self.accumulateFrames = 0
         self.background = None
         self.tempbackground = None
@@ -36,22 +35,22 @@ class ChambersManager(QtCore.QObject):
         self.treshold = 60
         
         
-    def addChamber(self,rect):
+    def addChamber(self, rect):
         chamber = Chamber(rect)
         if self.selected >= 0 :
             self.chambers[self.selected] = chamber
         else : 
             self.chambers.append(chamber)
         
-    def on_SetTreshold(self,value):
+    def on_SetTreshold(self, value):
         self.treshold = value
         
-    def on_nextFrame(self,image):
+    def on_nextFrame(self, image):
         # We get new frame from cvPlayer
         
         # Inverting image if needed
         if self.invertImage :
-            cv.Not(image,image)
+            cv.Not(image, image)
         '''
         if self.accumulateFrames :
             if self.background is None :
@@ -69,32 +68,38 @@ class ChambersManager(QtCore.QObject):
         for i in xrange(len(self.chambers)) :
             # Processing chamber
             cv.SetImageROI(image, self.chambers[i].getRect())
-            cv.Threshold(image, image,self.treshold,
-                         300,cv.CV_THRESH_TOZERO)
+            cv.Threshold(image, image, self.treshold,
+                         300, cv.CV_THRESH_TOZERO)
             cv.ResetImageROI(image)
    
             # Drawing chambers
             if i == self.selected :
-                color=self.chamberSelectedColor
+                color = self.chamberSelectedColor
             else :
-                color=self.chamberColor
+                color = self.chamberColor
              
-            cv.Rectangle(image,self.chambers[i].getPos(),self.chambers[i].getPos2(),
-                         color,2)
-            cv.PutText(  image, str(i), self.chambers[i].getPos(),
-                         self.font,color)
+            cv.Rectangle(image, self.chambers[i].getPos(), self.chambers[i].getPos2(),
+                         color, 2)
+            cv.PutText(image, str(i), self.chambers[i].getPos(),
+                         self.font, color)
             
-        self.emit(signalNextFrame,image)
+        self.emit(signalNextFrame, image)
            
-    def on_Accumulate(self,value):
+    def on_Accumulate(self, value):
         self.accumulate = True
         self.accumulateFrames = value
 
          
-    def on_Invert(self,value):
+    def on_Invert(self, value):
         self.invertImage = value
     
-    def selectChamber(self,number):
-        if -1 <= number < len(self.chambers) :
+    def on_SetChamber(self, rect):
+        if self.selected == -1 :
+            self.chambers.append(Chamber(rect))
+        else :
+            self.chambers[self.selected] = Chamber(rect)
+    
+    def on_SelectChamber(self, number):
+        if - 1 <= number < len(self.chambers) :
             self.selected = number
         

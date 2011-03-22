@@ -25,4 +25,4 @@ signalAccumulate = SIGNAL("accumulate")
 # ---- CvLabel ----
 signalRegionSelected = SIGNAL("regionSelected")
 signalEnableDnD = SIGNAL("enableDnD")
-signalDragging = SIGNAL("dragging")
+signalSetChamber = SIGNAL("setChamber")

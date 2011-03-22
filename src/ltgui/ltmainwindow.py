@@ -4,8 +4,8 @@ Created on 18.03.2011
 @author: Gena
 '''
 
-import sys,os
-from PyQt4 import QtCore,QtGui
+import sys, os
+from PyQt4 import QtCore, QtGui
 
 from ltcore.signals import *
 from ltcore.consts import *
@@ -25,16 +25,16 @@ class LtMainWindow(QtGui.QMainWindow):
     Locotrack main window
     '''
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         '''
         Constructor
         '''
         super(LtMainWindow, self).__init__(parent)
-        self.setWindowTitle(appName+' '+appVersion)
+        self.setWindowTitle(appName + ' ' + appVersion)
         self.setObjectName("ltMainWindow")
                 
         # ==== Creating core functional units ====
-        self.ltActions=LtActions(self) # Actions
+        self.ltActions = LtActions(self) # Actions
         self.cvPlayer = CvPlayer(self)
         self.chambersManager = ChambersManager(self)           
                 
@@ -52,7 +52,7 @@ class LtMainWindow(QtGui.QMainWindow):
         videoDockPanel.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         videoDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, videoDockPanel)
-        self.videoWidget=VideoWidget() 
+        self.videoWidget = VideoWidget() 
         videoDockPanel.setWidget(self.videoWidget)
         
         # ---- Creating dock panel for chambers ---- 
@@ -61,7 +61,7 @@ class LtMainWindow(QtGui.QMainWindow):
         chambersDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         chambersDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
-        self.chambersWidget=ChambersWidget() 
+        self.chambersWidget = ChambersWidget() 
         chambersDockPanel.setWidget(self.chambersWidget)
         
         # ---- Creating dock panel for image processing ---- 
@@ -70,7 +70,7 @@ class LtMainWindow(QtGui.QMainWindow):
         cvProcessorDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         cvProcessorDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, cvProcessorDockPanel)
-        self.cvProcessorWidget= CvProcessorWidget() 
+        self.cvProcessorWidget = CvProcessorWidget() 
         cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
                      
         # ==== Creating menu ====
@@ -82,22 +82,22 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ==== Making Connections actions ====
         # ---- Core video processing ----
-        self.connect(self.cvPlayer,signalNextFrame,self.chambersManager.on_nextFrame)
-        self.connect(self.chambersManager,signalNextFrame,self.cvLabel.putImage)
+        self.connect(self.cvPlayer, signalNextFrame, self.chambersManager.on_nextFrame)
+        self.connect(self.chambersManager, signalNextFrame, self.cvLabel.putImage)
         
-        self.connect(self.cvLabel, signalRegionSelected,self.chambersWidget.on_RegionSelected)
-        self.connect(self.chambersWidget, signalEnableDnD,self.cvLabel.on_EnableDnD)
+        self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.on_RegionSelected)
+        self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.on_EnableDnD)
         
         # ---- self ----
-        self.connect(self,signalCaptureFromFile,self.cvPlayer.on_captureFromFile)
+        self.connect(self, signalCaptureFromFile, self.cvPlayer.on_captureFromFile)
         
         # ---- videoWidget ----
-        self.connect(self.videoWidget.playButt, signalClicked,self.ltActions.videoPlayAction.trigger)
-        self.connect(self.videoWidget.stopButt, signalClicked,self.ltActions.videoStopAction.trigger)
-        self.connect(self.videoWidget.rewButt, signalClicked,self.ltActions.videoRewAction.trigger)
-        self.connect(self.videoWidget.fwdButt, signalClicked,self.ltActions.videoFwdAction.trigger)
-        self.connect(self.videoWidget.videoSlider, signalValueChanged,self.cvPlayer.on_Seek)
-        self.connect(self.cvPlayer,signalCvPlayerCapturing,self.videoWidget.on_videoCapturing)
+        self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
+        self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
+        self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
+        self.connect(self.videoWidget.fwdButt, signalClicked, self.ltActions.videoFwdAction.trigger)
+        self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvPlayer.on_Seek)
+        self.connect(self.cvPlayer, signalCvPlayerCapturing, self.videoWidget.on_videoCapturing)
         self.connect(self.videoWidget.brighnessSlider, signalValueChanged,
                      self.cvPlayer.on_BrightnessChanged)
         self.connect(self.videoWidget.contrastSlider, signalValueChanged,
@@ -106,6 +106,9 @@ class LtMainWindow(QtGui.QMainWindow):
         # ---- chambersWidget ----
         self.connect(self.chambersWidget.negativeChechBox, signalStateChanged,
                      self.chambersManager.on_Invert)
+        self.connect(self.chambersWidget, signalSetChamber,
+                     self.chambersManager.on_SetChamber)
+        
         '''
         self.connect(self.chambersWidget.accumulateButt, signalClicked,
                      self.on_Accumulate)
@@ -114,30 +117,30 @@ class LtMainWindow(QtGui.QMainWindow):
         #self.connect(self, signalAccumulate,self.chambersManager.on_Accumulate)
         '''
         # ---- cvProcessorWidget ----
-        self.connect(self.cvProcessorWidget.tresholdSlider,signalValueChanged,
-                     self.chambersManager.on_SetTreshold )
+        self.connect(self.cvProcessorWidget.tresholdSlider, signalValueChanged,
+                     self.chambersManager.on_SetTreshold)
         self.connect(self.cvProcessorWidget, signalAccumulate, self.chambersManager.on_Accumulate)
         
         
         # ---- Main menu ----
         # Project menu
-        self.connect(self.ltActions.projectQuitAction,signalTriggered,self.close)
+        self.connect(self.ltActions.projectQuitAction, signalTriggered, self.close)
         
         # Video Menu
-        self.connect(self.ltActions.videoOpenAction,    signalTriggered,self.on_videoOpen)
-        self.connect(self.ltActions.videoCaptureAction, signalTriggered,self.cvPlayer.on_captureFromCam)
-        self.connect(self.ltActions.videoPlayAction,    signalTriggered,self.cvPlayer.on_Play)
-        self.connect(self.ltActions.videoStopAction,    signalTriggered,self.cvPlayer.on_Stop)
-        self.connect(self.ltActions.videoRewAction,     signalTriggered,self.cvPlayer.on_Rew)
-        self.connect(self.ltActions.videoFwdAction,     signalTriggered,self.cvPlayer.on_Fwd)
+        self.connect(self.ltActions.videoOpenAction, signalTriggered, self.on_videoOpen)
+        self.connect(self.ltActions.videoCaptureAction, signalTriggered, self.cvPlayer.on_captureFromCam)
+        self.connect(self.ltActions.videoPlayAction, signalTriggered, self.cvPlayer.on_Play)
+        self.connect(self.ltActions.videoStopAction, signalTriggered, self.cvPlayer.on_Stop)
+        self.connect(self.ltActions.videoRewAction, signalTriggered, self.cvPlayer.on_Rew)
+        self.connect(self.ltActions.videoFwdAction, signalTriggered, self.cvPlayer.on_Fwd)
         
         
         
         # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
         self.dirty = True
-        self.chambersManager.addChamber(QtCore.QRect(100,100,150,120))
-        self.chambersManager.addChamber(QtCore.QRect(270,100,140,170))
-        self.chambersManager.selectChamber(0)
+        self.chambersManager.addChamber(QtCore.QRect(100, 100, 150, 120))
+        self.chambersManager.addChamber(QtCore.QRect(270, 100, 140, 170))
+        self.chambersManager.on_SelectChamber(0)
         
     # ==== Slots to handle actions ====
     def on_videoOpen(self):
@@ -149,16 +152,16 @@ class LtMainWindow(QtGui.QMainWindow):
             if self.cvPlayer.fileName is not None else "."
         # Creating formats list
         formats = ["*.%s" % unicode(format).lower() \
-                   for format in ('avi','mpg','ogg')]
+                   for format in ('avi', 'mpg', 'ogg')]
         # Executing standard open dialog
         fname = unicode(QtGui.QFileDialog.getOpenFileName(self,
                         "Choose Image",
                         dir, "Image files (%s)" % " ".join(formats)))
         
         if fname is not None :
-            self.emit(signalCaptureFromFile,fname)
+            self.emit(signalCaptureFromFile, fname)
         
-    def on_CvPlayerCapturing(self,length):
+    def on_CvPlayerCapturing(self, length):
         pass 
     
     def on_Accumulate(self):
@@ -170,9 +173,9 @@ class LtMainWindow(QtGui.QMainWindow):
     def okToContinue(self):
         if self.dirty:
             reply = QtGui.QMessageBox.question(self,
-                                         appName+" - Unsaved Changes",
+                                         appName + " - Unsaved Changes",
                                          "Save unsaved changes?",
-                                         QtGui.QMessageBox.Yes|QtGui.QMessageBox.No|
+                                         QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | 
                                          QtGui.QMessageBox.Cancel)
             if reply == QtGui.QMessageBox.Cancel:
                 return False
