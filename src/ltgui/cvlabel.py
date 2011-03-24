@@ -4,12 +4,12 @@ Created on 18.03.2011
 @author: Gena
 '''
 
-from PyQt4 import QtCore,QtGui
+from PyQt4 import QtCore, QtGui
 import cv
 
 from ltcore.signals import *
 
-minCvLabelSize=(640,480)
+minCvLabelSize = (640, 480)
 
 class CvLabel(QtGui.QLabel):
     '''
@@ -17,7 +17,7 @@ class CvLabel(QtGui.QLabel):
     '''
     
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         '''
         Constructor
         '''
@@ -27,14 +27,14 @@ class CvLabel(QtGui.QLabel):
         self.selectedRect = None
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         # Creating black rectangle
-        self.putImage(cv.CreateImage(minCvLabelSize,cv.IPL_DEPTH_8U,3))
+        self.putImage(cv.CreateImage(minCvLabelSize, cv.IPL_DEPTH_8U, 3))
     
-    def putImage(self,cvimage) :
+    def putImage(self, cvimage) :
         # switch between bit depths
         if cvimage.depth == cv.IPL_DEPTH_8U :
             if  cvimage.nChannels == 3:
                 str = cvimage.tostring()
-                self.image = QtGui.QImage(str,cvimage.width,cvimage.height,QtGui.QImage.Format_RGB888).rgbSwapped()
+                self.image = QtGui.QImage(str, cvimage.width, cvimage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
                 self.updateImage()
             else :
                 print("This number of channels is not supported")
@@ -50,7 +50,7 @@ class CvLabel(QtGui.QLabel):
             pen.setWidth(3)
             pen.setStyle(QtCore.Qt.DashLine)
             
-            brush = QtGui.QBrush(QtCore.Qt.blue,QtCore.Qt.Dense6Pattern)
+            brush = QtGui.QBrush(QtCore.Qt.blue, QtCore.Qt.Dense6Pattern)
             
             painter = QtGui.QPainter()           
             painter.begin(image)
@@ -67,7 +67,7 @@ class CvLabel(QtGui.QLabel):
             self.setPixmap(QtGui.QPixmap.fromImage(self.image))
             
     
-    def on_EnableDnD(self,enable):
+    def on_EnableDnD(self, enable):
         self.enableDnD = enable
 
     def mousePressEvent(self, event) :
@@ -99,7 +99,7 @@ class CvLabel(QtGui.QLabel):
         '''
         drag.start(QtCore.Qt.CopyAction)
         
-        self.selectedRect=None
+        self.selectedRect = None
         self.updateImage()
     
     def dragEnterEvent(self, event) :
@@ -113,14 +113,14 @@ class CvLabel(QtGui.QLabel):
             return
         #self.emit(signalDragging,))
         # # Drawing the main rectangle
-        self.selectedRect = QtCore.QRect(self.dragStartPosition,event.pos())
+        self.selectedRect = QtCore.QRect(self.dragStartPosition, event.pos())
         self.updateImage()
     
     def dropEvent(self, event) :
         if not self.enableDnD :
             return
         if event.mimeData().hasFormat("cvlabel/pos") :
-            rect = QtCore.QRect(self.dragStartPosition,event.pos())
-            self.emit(signalRegionSelected,rect)
+            rect = QtCore.QRect(self.dragStartPosition, event.pos())
+            self.emit(signalRegionSelected, rect)
             event.acceptProposedAction()
             

@@ -3,11 +3,15 @@ Created on 18.03.2011
 
 @author: Gena
 '''
+from __future__ import division
+
+from math import sqrt
 
 import cv
 from PyQt4 import QtCore
 from ltcore.signals import *
 from ltcore.chamber import Chamber
+
 
 class ChambersManager(QtCore.QObject):
     '''
@@ -23,18 +27,20 @@ class ChambersManager(QtCore.QObject):
         
         self.chambers = []
         self.selected = -1
+        self.scale = None
+        self.image = None
+        self.background = None
+        self.invertImage = False
+        self.accumulate = False # This flag is used for background accumulation
+        self.accumulateFrames = 0
+        self.tempAccumulateFrames = None
+        self.treshold = 60
+        # Visual Parameters
+        self.scalepos = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
         self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
         self.font = cv.InitFont(3, 1, 1)
-        self.tempDragRect = None
-        self.accumulate = False # This flag is used for background accumulation
-        self.accumulateFrames = 0
-        self.background = None
-        self.tempbackground = None
-        self.invertImage = False
-        self.treshold = 60
-        
-        
+
     def addChamber(self, rect):
         chamber = Chamber(rect)
         if self.selected >= 0 :
@@ -42,37 +48,67 @@ class ChambersManager(QtCore.QObject):
         else : 
             self.chambers.append(chamber)
         
-    def on_SetTreshold(self, value):
-        self.treshold = value
-        
     def on_nextFrame(self, image):
         # We get new frame from cvPlayer
+        self.image = image
+        self.processFrame()
         
+    def processFrame(self):
+        if self.image is None :
+            return
+        
+        # Creating image copy to draw and process it
+        image = cv.CloneImage(self.image)
+        self.preProcess(image)
+        self.processChambers(image)
+        self.drawChambers(image)
+        self.emit(signalNextFrame, image)
+        
+    def preProcess(self, image):
         # Inverting image if needed
         if self.invertImage :
             cv.Not(image, image)
-        '''
-        if self.accumulateFrames :
-            if self.background is None :
-                self.background = cv.CreateImage(cv.GetSize(image),cv.IPL_DEPTH_8U,3)
-                
-            self.accumulateFrames -= 1
-            if not self.accumulateFrames :
-                self.background = self.tempbackground
-                self.tempbackground = None
-                self.emit()
-        '''
-        if self.chambers == [] :
-            return
+            
+        # Accumulate background
+        if self.tempAccumulateFrames is not None :
+            print self.tempAccumulateFrames, '/', self.accumulateFrames
+            cv.ScaleAdd(image, 1 / self.accumulateFrames,
+                        self.background, self.background)
+            self.tempAccumulateFrames -= 1
+            if self.tempAccumulateFrames == 0 :
+                self.tempAccumulateFrames = None
         
-        for i in xrange(len(self.chambers)) :
-            # Processing chamber
-            cv.SetImageROI(image, self.chambers[i].getRect())
+        # Substract background if it avaliable
+        if self.background is not None :
+            cv.Sub(image, self.background, image)
+        
+    def processChambers(self, image):
+        for chamber in self.chambers :
+            cv.SetImageROI(image, chamber.getRect())
             cv.Threshold(image, image, self.treshold,
                          300, cv.CV_THRESH_TOZERO)
+            chamber.objectPos = self.findObject(image)
             cv.ResetImageROI(image)
-   
-            # Drawing chambers
+            
+    def findObject(self, image):
+        # cv.FindContours
+        # create new image for the grayscale version */
+        grayImage = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1);
+        cv.CvtColor(image, grayImage, cv.CV_RGB2GRAY);
+        
+        moments = cv.Moments(grayImage)
+        m00 = cv.GetSpatialMoment(moments, 0, 0)
+        m10 = cv.GetSpatialMoment(moments, 1, 0)
+        m01 = cv.GetSpatialMoment(moments, 0, 1)
+        return QtCore.QPointF(m10 / m00, m01 / m00)
+              
+    def drawChambers(self, image) :
+        # Draw scale
+        if self.scale is not None :
+            cv.Line(image, self.scalepos, (self.scalepos[0] + self.scale, self.scalepos[1]),
+                    self.chamberColor, 2)
+        # Drawing chambers
+        for i in xrange(len(self.chambers)) :   
             if i == self.selected :
                 color = self.chamberSelectedColor
             else :
@@ -82,24 +118,38 @@ class ChambersManager(QtCore.QObject):
                          color, 2)
             cv.PutText(image, str(i), self.chambers[i].getPos(),
                          self.font, color)
-            
-        self.emit(signalNextFrame, image)
-           
+            if self.chambers[i].objectPos is not None :
+                # TODO : Fix painting with translation
+                cv.Circle(image, (int(self.chambers[i].objectPos.x()),
+                          int(self.chambers[i].objectPos.y())), 3, self.chamberSelectedColor)
+                       
     def on_Accumulate(self, value):
-        self.accumulate = True
+        print "accumulation", value
         self.accumulateFrames = value
+        self.tempAccumulateFrames = value
+        self.background = cv.CreateImage(cv.GetSize(self.image), cv.IPL_DEPTH_8U, 3)
 
-         
     def on_Invert(self, value):
         self.invertImage = value
+        self.processFrame()
     
     def on_SetChamber(self, rect):
         if self.selected == -1 :
             self.chambers.append(Chamber(rect))
         else :
             self.chambers[self.selected] = Chamber(rect)
+        self.processFrame()
+        #self.emit(signal
+            
+    def on_SetScale(self, rect):
+        self.scale = sqrt(rect.width()**2 + rect.height()**2)
+        self.processFrame()
     
     def on_SelectChamber(self, number):
         if - 1 <= number < len(self.chambers) :
             self.selected = number
-        
+            self.processFrame()
+    
+    def on_SetTreshold(self, value):
+        self.treshold = value
+        self.processFrame()

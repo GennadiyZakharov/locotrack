@@ -34,30 +34,26 @@ class ChambersWidget(QtGui.QWidget):
         layout.addWidget(negativeLabel, 2, 0)
         layout.addWidget(self.negativeChechBox, 2, 1)
         
-        self.scaleButt = QtGui.QPushButton('Set Scale')
-        self.scaleButt.setCheckable(True)
-        layout.addWidget(self.scaleButt)      
-        self.connect(self.scaleButt, signalToggled, self.on_ScaleOrChamberSet)
+        self.scaleButton = QtGui.QPushButton('Set Scale')
+        self.scaleButton.setCheckable(True)
+        layout.addWidget(self.scaleButton)      
+        self.connect(self.scaleButton, signalToggled, self.on_ScaleOrChamberSet)
         
-        self.chamberButt = QtGui.QPushButton('Set Chamber')
-        self.chamberButt.setCheckable(True)
-        layout.addWidget(self.chamberButt)
-        self.connect(self.chamberButt, signalToggled, self.on_ScaleOrChamberSet)
+        self.chamberButton = QtGui.QPushButton('Set Chamber')
+        self.chamberButton.setCheckable(True)
+        layout.addWidget(self.chamberButton)
+        self.connect(self.chamberButton, signalToggled, self.on_ScaleOrChamberSet)
           
         self.setLayout(layout)
         
     def on_RegionSelected(self, rect):
-        if self.scaleButt.isChecked() :
-            self.scaleButt.setChecked(False)
-            print 'scale', rect
-        elif self.chamberButt.isChecked() :
-            self.chamberButt.setChecked(False)
+        if self.scaleButton.isChecked() :
+            self.scaleButton.setChecked(False)
+            self.emit(signalSetScale, rect)
+        elif self.chamberButton.isChecked() :
+            self.chamberButton.setChecked(False)
             self.emit(signalSetChamber, rect)
-    '''        
-    def on_cvDragging(self,rect):
-        print 'dragging',rect
-        self.emit(,rect)
-    '''
+
     def on_ScaleOrChamberSet(self, checked):
         self.emit(signalEnableDnD, checked)
         

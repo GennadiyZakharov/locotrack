@@ -108,7 +108,8 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.chambersManager.on_Invert)
         self.connect(self.chambersWidget, signalSetChamber,
                      self.chambersManager.on_SetChamber)
-        
+        self.connect(self.chambersWidget, signalSetScale,
+                     self.chambersManager.on_SetScale)
         '''
         self.connect(self.chambersWidget.accumulateButt, signalClicked,
                      self.on_Accumulate)
@@ -138,9 +139,6 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
         self.dirty = True
-        self.chambersManager.addChamber(QtCore.QRect(100, 100, 150, 120))
-        self.chambersManager.addChamber(QtCore.QRect(270, 100, 140, 170))
-        self.chambersManager.on_SelectChamber(0)
         
     # ==== Slots to handle actions ====
     def on_videoOpen(self):
