@@ -87,20 +87,29 @@ class ChambersManager(QtCore.QObject):
             cv.SetImageROI(image, chamber.getRect())
             cv.Threshold(image, image, self.treshold,
                          300, cv.CV_THRESH_TOZERO)
-            chamber.objectPos = self.findObject(image)
+            self.findObject(image,chamber)
             cv.ResetImageROI(image)
             
-    def findObject(self, image):
+    def findObject(self, image,chamber):
         # cv.FindContours
         # create new image for the grayscale version */
         grayImage = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1);
         cv.CvtColor(image, grayImage, cv.CV_RGB2GRAY);
+        storage = cv.CreateMemStorage(0)
         
         moments = cv.Moments(grayImage)
         m00 = cv.GetSpatialMoment(moments, 0, 0)
-        m10 = cv.GetSpatialMoment(moments, 1, 0)
-        m01 = cv.GetSpatialMoment(moments, 0, 1)
-        return QtCore.QPointF(m10 / m00, m01 / m00)
+        if m00 != 0 :
+            m10 = cv.GetSpatialMoment(moments, 1, 0)
+            m01 = cv.GetSpatialMoment(moments, 0, 1)
+            chamber.objectPos = QtCore.QPointF(m10 / m00, m01 / m00)
+        else :
+            chamber.objectPos = None
+        countors = None
+        #cv.FindContours(image, storage)
+#        chamber.contours = 
+        
+            
               
     def drawChambers(self, image) :
         # Draw scale
@@ -118,11 +127,17 @@ class ChambersManager(QtCore.QObject):
                          color, 2)
             cv.PutText(image, str(i), self.chambers[i].getPos(),
                          self.font, color)
+            
             if self.chambers[i].objectPos is not None :
-                # TODO : Fix painting with translation
-                cv.Circle(image, (int(self.chambers[i].objectPos.x()),
-                          int(self.chambers[i].objectPos.y())), 3, self.chamberSelectedColor)
-                       
+                point = self.chambers[i].objectPos + QtCore.QPointF(self.chambers[i].topLeft())
+                cv.Circle(image, (int(point.x()),
+                          int(point.y())), 3, self.chamberSelectedColor)
+            '''
+            if self.chambers[i].contours is not None :
+                cv.DrawContours(image, self.chambers[i].contours,
+                                _red, _green, levels, 3, cv.CV_AA, (0, 0)))
+            
+            '''           
     def on_Accumulate(self, value):
         print "accumulation", value
         self.accumulateFrames = value
