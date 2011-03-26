@@ -23,7 +23,10 @@ signalNextFrame = SIGNAL("nextFrame")
 signalAccumulate = SIGNAL("accumulate")
 
 # ---- CvLabel ----
+signalReady = SIGNAL("ready")
 signalRegionSelected = SIGNAL("regionSelected")
 signalEnableDnD = SIGNAL("enableDnD")
+
+
 signalSetChamber = SIGNAL("setChamber")
 signalSetScale = SIGNAL("setScale")

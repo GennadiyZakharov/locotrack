@@ -34,7 +34,7 @@ class ChambersManager(QtCore.QObject):
         self.accumulate = False # This flag is used for background accumulation
         self.accumulateFrames = 0
         self.tempAccumulateFrames = None
-        self.treshold = 60
+        self.treshold = 0.6
         # Visual Parameters
         self.scalepos = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -56,7 +56,6 @@ class ChambersManager(QtCore.QObject):
     def processFrame(self):
         if self.image is None :
             return
-        
         # Creating image copy to draw and process it
         image = cv.CloneImage(self.image)
         self.preProcess(image)
@@ -71,7 +70,6 @@ class ChambersManager(QtCore.QObject):
             
         # Accumulate background
         if self.tempAccumulateFrames is not None :
-            print self.tempAccumulateFrames, '/', self.accumulateFrames
             cv.ScaleAdd(image, 1 / self.accumulateFrames,
                         self.background, self.background)
             self.tempAccumulateFrames -= 1
@@ -85,17 +83,20 @@ class ChambersManager(QtCore.QObject):
     def processChambers(self, image):
         for chamber in self.chambers :
             cv.SetImageROI(image, chamber.getRect())
-            cv.Threshold(image, image, self.treshold,
-                         300, cv.CV_THRESH_TOZERO)
-            self.findObject(image,chamber)
+            self.findObject(image, chamber)
             cv.ResetImageROI(image)
             
-    def findObject(self, image,chamber):
-        # cv.FindContours
-        # create new image for the grayscale version */
+    def findObject(self, image, chamber):
+        
         grayImage = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1);
         cv.CvtColor(image, grayImage, cv.CV_RGB2GRAY);
-        storage = cv.CreateMemStorage(0)
+        (minVal, maxVal, temp, temp) = cv.MinMaxLoc(grayImage)
+        
+        treshold = maxVal * self.treshold 
+        cv.Threshold(grayImage, grayImage, treshold, 300, cv.CV_THRESH_TOZERO)
+        #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
+        
+        # create new image for the grayscale version */
         
         moments = cv.Moments(grayImage)
         m00 = cv.GetSpatialMoment(moments, 0, 0)
@@ -105,12 +106,14 @@ class ChambersManager(QtCore.QObject):
             chamber.objectPos = QtCore.QPointF(m10 / m00, m01 / m00)
         else :
             chamber.objectPos = None
-        countors = None
-        #cv.FindContours(image, storage)
-#        chamber.contours = 
         
-            
-              
+        # create the storage area
+        storage = cv.CreateMemStorage (0)
+        # find the contours
+        chamber.contours = cv.FindContours(grayImage, storage,
+                                           cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
+        #contours = cv.ApproxPoly (contours,storage, cv.CV_POLY_APPROX_DP, 5) 
+        
     def drawChambers(self, image) :
         # Draw scale
         if self.scale is not None :
@@ -128,18 +131,20 @@ class ChambersManager(QtCore.QObject):
             cv.PutText(image, str(i), self.chambers[i].getPos(),
                          self.font, color)
             
-            if self.chambers[i].objectPos is not None :
-                point = self.chambers[i].objectPos + QtCore.QPointF(self.chambers[i].topLeft())
-                cv.Circle(image, (int(point.x()),
-                          int(point.y())), 3, self.chamberSelectedColor)
-            '''
-            if self.chambers[i].contours is not None :
-                cv.DrawContours(image, self.chambers[i].contours,
-                                _red, _green, levels, 3, cv.CV_AA, (0, 0)))
+            cv.SetImageROI(image, self.chambers[i].getRect())
             
-            '''           
+            if self.chambers[i].contours is not None :
+                cv.DrawContours(image, self.chambers[i].contours, 200, 100, -1, cv.CV_FILLED)
+            
+            if self.chambers[i].objectPos is not None :
+                point = self.chambers[i].objectPos
+                cv.Circle(image, (int(point.x()),
+                          int(point.y())), 2, self.chamberSelectedColor, cv.CV_FILLED)
+            
+            cv.ResetImageROI(image)
+            
+                       
     def on_Accumulate(self, value):
-        print "accumulation", value
         self.accumulateFrames = value
         self.tempAccumulateFrames = value
         self.background = cv.CreateImage(cv.GetSize(self.image), cv.IPL_DEPTH_8U, 3)
@@ -166,5 +171,9 @@ class ChambersManager(QtCore.QObject):
             self.processFrame()
     
     def on_SetTreshold(self, value):
-        self.treshold = value
+        self.treshold = value / 100
+        self.processFrame()
+        
+    def on_ResetBackground(self):
+        self.background = None
         self.processFrame()

@@ -84,6 +84,7 @@ class LtMainWindow(QtGui.QMainWindow):
         # ---- Core video processing ----
         self.connect(self.cvPlayer, signalNextFrame, self.chambersManager.on_nextFrame)
         self.connect(self.chambersManager, signalNextFrame, self.cvLabel.putImage)
+        self.connect(self.cvLabel, signalReady, self.cvPlayer.on_Ready)
         
         self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.on_RegionSelected)
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.on_EnableDnD)
@@ -95,7 +96,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
-        self.connect(self.videoWidget.fwdButt, signalClicked, self.ltActions.videoFwdAction.trigger)
+        self.connect(self.videoWidget.fwdButt, signalClicked, self.cvPlayer.timerEvent)
         self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvPlayer.on_Seek)
         self.connect(self.cvPlayer, signalCvPlayerCapturing, self.videoWidget.on_videoCapturing)
         self.connect(self.videoWidget.brighnessSlider, signalValueChanged,
