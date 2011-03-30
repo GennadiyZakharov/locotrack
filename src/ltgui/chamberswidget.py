@@ -27,6 +27,10 @@ class ChambersWidget(QtGui.QWidget):
         chambersLabel.setBuddy(self.chambersList)
         layout.addWidget(chambersLabel, 0, 0, 1, 2)
         layout.addWidget(self.chambersList, 1, 0, 1, 2)
+        self.chambersList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.chambersList.itemClicked.connect(self.on_SelectionChanged)
+        self.selectedChamber = -1
+        #self.connect(self.chambersList, QtCore.SIGNAL("itemClicked(QListWidgetItem)"), self.on_deselect)
         
         negativeLabel = QtGui.QLabel("Negative")
         self.negativeChechBox = QtGui.QCheckBox()
@@ -46,18 +50,27 @@ class ChambersWidget(QtGui.QWidget):
           
         self.setLayout(layout)
         
+    def on_SelectionChanged(self, item) :
+        if self.selectedChamber == self.chambersList.currentRow() :
+            self.selectedChamber = -1
+            self.chambersList.clearSelection()
+        else :
+            self.selectedChamber = self.chambersList.row(item)         
+        self.emit(signalChangeSelection,self.selectedChamber)
+  
+        
     def on_RegionSelected(self, rect):
         if self.scaleButton.isChecked() :
             self.scaleButton.setChecked(False)
             self.emit(signalSetScale, rect)
         elif self.chamberButton.isChecked() :
-            self.chamberButton.setChecked(False)
+            #self.chamberButton.setChecked(False)
             self.emit(signalSetChamber, rect)
 
     def on_ScaleOrChamberSet(self, checked):
         self.emit(signalEnableDnD, checked)
         
     def on_chamberListUpdated(self):
-        pass
+        self.chambersList.addItem()
         
         

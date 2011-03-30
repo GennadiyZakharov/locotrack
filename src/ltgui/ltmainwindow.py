@@ -111,6 +111,8 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.chambersManager.on_SetChamber)
         self.connect(self.chambersWidget, signalSetScale,
                      self.chambersManager.on_SetScale)
+        self.connect(self.chambersWidget, signalChangeSelection,
+                     self.chambersManager.on_SelectChamber)
         '''
         self.connect(self.chambersWidget.accumulateButt, signalClicked,
                      self.on_Accumulate)
@@ -140,6 +142,9 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
         self.dirty = True
+        self.chambersWidget.chambersList.addItem('Chamber 1')
+        self.chambersWidget.chambersList.addItem('Chamber 2')
+        self.chambersWidget.chambersList.addItem('Chamber 3')
         
     # ==== Slots to handle actions ====
     def on_videoOpen(self):
