@@ -22,6 +22,14 @@ class CvProcessorWidget(QtGui.QWidget):
         
         layout = QtGui.QVBoxLayout()
         
+        negativeLabel = QtGui.QLabel("Negative")
+        self.negativeChechBox = QtGui.QCheckBox()
+        negativeLabel.setBuddy(self.negativeChechBox)
+        layout2 = QtGui.QHBoxLayout()
+        layout2.addWidget(negativeLabel)
+        layout2.addWidget(self.negativeChechBox)
+        layout.addLayout(layout2)
+        
         self.tresholdSlider = LabelledSlider('Treshold')
         self.tresholdSlider.setMaximum(100)
         layout.addWidget(self.tresholdSlider)

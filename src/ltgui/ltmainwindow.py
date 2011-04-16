@@ -105,22 +105,19 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.cvPlayer.on_ContrastChanged)
         
         # ---- chambersWidget ----
-        self.connect(self.chambersWidget.negativeChechBox, signalStateChanged,
-                     self.chambersManager.on_Invert)
+       
         self.connect(self.chambersWidget, signalSetChamber,
                      self.chambersManager.on_SetChamber)
         self.connect(self.chambersWidget, signalSetScale,
                      self.chambersManager.on_SetScale)
         self.connect(self.chambersWidget, signalChangeSelection,
                      self.chambersManager.on_SelectChamber)
-        '''
-        self.connect(self.chambersWidget.accumulateButt, signalClicked,
-                     self.on_Accumulate)
+        self.connect(self.chambersManager, signalChambersUpdated,
+                     self.chambersWidget.on_chamberListUpdated)
         
-        
-        #self.connect(self, signalAccumulate,self.chambersManager.on_Accumulate)
-        '''
         # ---- cvProcessorWidget ----
+        self.connect(self.cvProcessorWidget.negativeChechBox, signalStateChanged,
+                     self.chambersManager.on_Invert)
         self.connect(self.cvProcessorWidget.tresholdSlider, signalValueChanged,
                      self.chambersManager.on_SetTreshold)
         self.connect(self.cvProcessorWidget, signalAccumulate, self.chambersManager.on_Accumulate)
@@ -141,11 +138,7 @@ class LtMainWindow(QtGui.QMainWindow):
         
         
         # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
-        self.dirty = True
-        self.chambersWidget.chambersList.addItem('Chamber 1')
-        self.chambersWidget.chambersList.addItem('Chamber 2')
-        self.chambersWidget.chambersList.addItem('Chamber 3')
-        
+     
     # ==== Slots to handle actions ====
     def on_videoOpen(self):
         '''

@@ -35,6 +35,8 @@ class ChambersManager(QtCore.QObject):
         self.accumulateFrames = 0
         self.tempAccumulateFrames = None
         self.treshold = 0.6
+        self.showProcessedImage = True
+        self.showContour = True
         # Visual Parameters
         self.scalepos = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -58,8 +60,10 @@ class ChambersManager(QtCore.QObject):
             return
         # Creating image copy to draw and process it
         image = cv.CloneImage(self.image)
-        self.preProcess(image)
-        self.processChambers(image)
+        grayImage = self.preProcess(image)
+        self.processChambers(grayImage)
+        #if self.showProcessedImage :
+        #    image = grayImage
         self.drawChambers(image)
         self.emit(signalNextFrame, image)
         
@@ -79,6 +83,10 @@ class ChambersManager(QtCore.QObject):
         # Substract background if it avaliable
         if self.background is not None :
             cv.Sub(image, self.background, image)
+            
+        grayImage = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1);
+        cv.CvtColor(image, grayImage, cv.CV_RGB2GRAY);
+        return grayImage
         
     def processChambers(self, image):
         for chamber in self.chambers :
@@ -87,30 +95,29 @@ class ChambersManager(QtCore.QObject):
             cv.ResetImageROI(image)
             
     def findObject(self, image, chamber):
+                  
+        (minVal, maxVal, minPoint, (x,y)) = cv.MinMaxLoc(image)
         
-        grayImage = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 1);
-        cv.CvtColor(image, grayImage, cv.CV_RGB2GRAY);
-        (minVal, maxVal, temp, temp) = cv.MinMaxLoc(grayImage)
         
         treshold = maxVal * self.treshold 
-        cv.Threshold(grayImage, grayImage, treshold, 300, cv.CV_THRESH_TOZERO)
+        cv.Threshold(image, image, treshold, 300, cv.CV_THRESH_TOZERO)
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
+
+        chamber.objectPos1 = QtCore.QPointF(x,y)
         
-        # create new image for the grayscale version */
-        
-        moments = cv.Moments(grayImage)
+        moments = cv.Moments(image)
         m00 = cv.GetSpatialMoment(moments, 0, 0)
         if m00 != 0 :
             m10 = cv.GetSpatialMoment(moments, 1, 0)
             m01 = cv.GetSpatialMoment(moments, 0, 1)
-            chamber.objectPos = QtCore.QPointF(m10 / m00, m01 / m00)
+            chamber.objectPos2 = QtCore.QPointF(m10 / m00, m01 / m00)
         else :
-            chamber.objectPos = None
+            chamber.objectPos2 = None
         
         # create the storage area
         storage = cv.CreateMemStorage (0)
         # find the contours
-        chamber.contours = cv.FindContours(grayImage, storage,
+        chamber.contours = cv.FindContours(image, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
         #contours = cv.ApproxPoly (contours,storage, cv.CV_POLY_APPROX_DP, 5) 
         
@@ -133,14 +140,17 @@ class ChambersManager(QtCore.QObject):
             
             cv.SetImageROI(image, self.chambers[i].getRect())
             
-            if self.chambers[i].contours is not None :
+            if self.showContour and (self.chambers[i].contours is not None) :
                 cv.DrawContours(image, self.chambers[i].contours, 200, 100, -1, cv.CV_FILLED)
             
-            if self.chambers[i].objectPos is not None :
-                point = self.chambers[i].objectPos
+            if self.chambers[i].objectPos1 is not None :
+                point = self.chambers[i].objectPos1
                 cv.Circle(image, (int(point.x()),
                           int(point.y())), 2, self.chamberSelectedColor, cv.CV_FILLED)
-            
+            if self.chambers[i].objectPos2 is not None :
+                point = self.chambers[i].objectPos2
+                cv.Circle(image, (int(point.x()),
+                          int(point.y())), 2, self.chamberColor, cv.CV_FILLED)
             cv.ResetImageROI(image)
             
                        
@@ -159,7 +169,7 @@ class ChambersManager(QtCore.QObject):
         else :
             self.chambers[self.selected] = Chamber(rect)
         self.processFrame()
-        #self.emit(signal
+        self.emit(signalChambersUpdated,list(self.chambers))
             
     def on_SetScale(self, rect):
         self.scale = sqrt(rect.width()**2 + rect.height()**2)

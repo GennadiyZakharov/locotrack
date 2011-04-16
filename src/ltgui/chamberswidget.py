@@ -31,13 +31,7 @@ class ChambersWidget(QtGui.QWidget):
         self.chambersList.itemClicked.connect(self.on_SelectionChanged)
         self.selectedChamber = -1
         #self.connect(self.chambersList, QtCore.SIGNAL("itemClicked(QListWidgetItem)"), self.on_deselect)
-        
-        negativeLabel = QtGui.QLabel("Negative")
-        self.negativeChechBox = QtGui.QCheckBox()
-        negativeLabel.setBuddy(self.negativeChechBox)
-        layout.addWidget(negativeLabel, 2, 0)
-        layout.addWidget(self.negativeChechBox, 2, 1)
-        
+               
         self.scaleButton = QtGui.QPushButton('Set Scale')
         self.scaleButton.setCheckable(True)
         layout.addWidget(self.scaleButton)      
@@ -70,7 +64,10 @@ class ChambersWidget(QtGui.QWidget):
     def on_ScaleOrChamberSet(self, checked):
         self.emit(signalEnableDnD, checked)
         
-    def on_chamberListUpdated(self):
-        self.chambersList.addItem()
+    def on_chamberListUpdated(self,list):
+        self.chambersList.clear()
+        for i in range(len(list)) :
+            text = 'Chamber '+str(i)+' '+list[i].__str__()
+            self.chambersList.addItem(text)
         
         
