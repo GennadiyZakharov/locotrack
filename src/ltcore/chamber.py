@@ -12,8 +12,12 @@ class Chamber(QtCore.QRect):
     '''
     
     def __init__(self,rect):
-        super(Chamber, self).__init__(rect.normalized())  
-        
+        super(Chamber, self).__init__(rect.normalized())
+        self.objectPos = None
+        self.maxBrightPos = None
+        self.contours = None
+        self.trajectory = []
+      
     def getPos(self) :
         return self.left(),self.top()
     
@@ -22,4 +26,11 @@ class Chamber(QtCore.QRect):
     
     def getSize(self):
         return self.size()
+    
+    def setObjectPos(self,x=None,y=None):
+        if x is None :
+            self.objectPos = None
+        else :
+            self.objectPos = QtCore.QPointF(x,y)
+            self.trajectory.append(self.objectPos)
     

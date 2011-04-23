@@ -35,8 +35,10 @@ class ChambersManager(QtCore.QObject):
         self.accumulateFrames = 0
         self.tempAccumulateFrames = None
         self.treshold = 0.6
-        self.showProcessedImage = True
+        self.showProcessedImage = False
         self.showContour = True
+        self.maxTraj = 25
+        
         # Visual Parameters
         self.scalepos = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -60,10 +62,12 @@ class ChambersManager(QtCore.QObject):
             return
         # Creating image copy to draw and process it
         image = cv.CloneImage(self.image)
-        grayImage = self.preProcess(image)
+        grayImage = self.preProcess(image)       
         self.processChambers(grayImage)
-        #if self.showProcessedImage :
-        #    image = grayImage
+        if self.showProcessedImage :
+            image = cv.CreateImage(cv.GetSize(image), cv.IPL_DEPTH_8U, 3)
+            cv.CvtColor(grayImage, image, cv.CV_GRAY2RGB)
+             
         self.drawChambers(image)
         self.emit(signalNextFrame, image)
         
@@ -90,36 +94,38 @@ class ChambersManager(QtCore.QObject):
         
     def processChambers(self, image):
         for chamber in self.chambers :
-            cv.SetImageROI(image, chamber.getRect())
             self.findObject(image, chamber)
-            cv.ResetImageROI(image)
             
     def findObject(self, image, chamber):
-                  
-        (minVal, maxVal, minPoint, (x,y)) = cv.MinMaxLoc(image)
+        cv.SetImageROI(image, chamber.getRect())       
         
-        
+        (minVal, maxVal, minPoint, chamber.maxBrightPos) = cv.MinMaxLoc(image)       
         treshold = maxVal * self.treshold 
-        cv.Threshold(image, image, treshold, 300, cv.CV_THRESH_TOZERO)
+        cv.Threshold(image, image, treshold, 200, cv.CV_THRESH_TOZERO)
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
 
-        chamber.objectPos1 = QtCore.QPointF(x,y)
-        
         moments = cv.Moments(image)
         m00 = cv.GetSpatialMoment(moments, 0, 0)
         if m00 != 0 :
             m10 = cv.GetSpatialMoment(moments, 1, 0)
             m01 = cv.GetSpatialMoment(moments, 0, 1)
-            chamber.objectPos2 = QtCore.QPointF(m10 / m00, m01 / m00)
+            chamber.objectPos = ( m10/m00, m01/m00 )
+            chamber.trajectory.append( chamber.objectPos )
+            if len(chamber.trajectory) >= self.maxTraj :
+                chamber.trajectory.pop(0)
         else :
-            chamber.objectPos2 = None
+            chamber.objectPos = None
+            
         
         # create the storage area
         storage = cv.CreateMemStorage (0)
         # find the contours
-        chamber.contours = cv.FindContours(image, storage,
+        tempimage = cv.CloneImage(image)
+        chamber.contours = cv.FindContours(tempimage, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
-        #contours = cv.ApproxPoly (contours,storage, cv.CV_POLY_APPROX_DP, 5) 
+        #contours = cv.ApproxPoly (contours,storage, cv.CV_POLY_APPROX_DP, 5)
+         
+        cv.ResetImageROI(image)
         
     def drawChambers(self, image) :
         # Draw scale
@@ -140,17 +146,22 @@ class ChambersManager(QtCore.QObject):
             
             cv.SetImageROI(image, self.chambers[i].getRect())
             
-            if self.showContour and (self.chambers[i].contours is not None) :
-                cv.DrawContours(image, self.chambers[i].contours, 200, 100, -1, cv.CV_FILLED)
             
-            if self.chambers[i].objectPos1 is not None :
-                point = self.chambers[i].objectPos1
-                cv.Circle(image, (int(point.x()),
-                          int(point.y())), 2, self.chamberSelectedColor, cv.CV_FILLED)
-            if self.chambers[i].objectPos2 is not None :
-                point = self.chambers[i].objectPos2
-                cv.Circle(image, (int(point.x()),
-                          int(point.y())), 2, self.chamberColor, cv.CV_FILLED)
+            if self.showContour and (self.chambers[i].contours is not None) :
+                cv.DrawContours(image, self.chambers[i].contours, 200, 100, -1, 1)
+            
+            if self.chambers[i].objectPos is not None :
+                point = (int(self.chambers[i].objectPos[0]),
+                         int(self.chambers[i].objectPos[1]) )
+                #cv.SetAt(image, cv.Scalar(0,0,250,0), point);
+                cv.Circle(image, self.chambers[i].objectPos, 1, self.chamberSelectedColor, cv.CV_FILLED)
+            if self.chambers[i].maxBrightPos is not None :
+                cv.Circle(image, self.chambers[i].maxBrightPos, 1, self.chamberColor, cv.CV_FILLED)
+            
+            
+            if len(self.chambers[i].trajectory) >= 2 :
+                cv.PolyLine(image, [self.chambers[i].trajectory,], 0, self.chamberColor)  
+            
             cv.ResetImageROI(image)
             
                        
@@ -162,6 +173,14 @@ class ChambersManager(QtCore.QObject):
     def on_Invert(self, value):
         self.invertImage = value
         self.processFrame()
+        
+    def on_ShowProcessed(self, value):
+        self.showProcessedImage = value
+        self.processFrame()
+        
+    def on_ShowContour(self, value):
+        self.showContour = value
+        self.processFrame()
     
     def on_SetChamber(self, rect):
         if self.selected == -1 :
@@ -169,7 +188,7 @@ class ChambersManager(QtCore.QObject):
         else :
             self.chambers[self.selected] = Chamber(rect)
         self.processFrame()
-        self.emit(signalChambersUpdated,list(self.chambers))
+        self.emit(signalChambersUpdated, list(self.chambers))
             
     def on_SetScale(self, rect):
         self.scale = sqrt(rect.width()**2 + rect.height()**2)
@@ -181,7 +200,7 @@ class ChambersManager(QtCore.QObject):
             self.processFrame()
     
     def on_SetTreshold(self, value):
-        self.treshold = value / 100
+        self.treshold = value / 100.0
         self.processFrame()
         
     def on_ResetBackground(self):

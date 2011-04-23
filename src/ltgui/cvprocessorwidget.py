@@ -22,13 +22,13 @@ class CvProcessorWidget(QtGui.QWidget):
         
         layout = QtGui.QVBoxLayout()
         
-        negativeLabel = QtGui.QLabel("Negative")
-        self.negativeChechBox = QtGui.QCheckBox()
-        negativeLabel.setBuddy(self.negativeChechBox)
-        layout2 = QtGui.QHBoxLayout()
-        layout2.addWidget(negativeLabel)
-        layout2.addWidget(self.negativeChechBox)
-        layout.addLayout(layout2)
+        self.showProcessedChechBox = LabelledCheckBox("Show processed image")
+        layout.addWidget(self.showProcessedChechBox)
+        self.negativeChechBox = LabelledCheckBox("Negative")
+        layout.addWidget(self.negativeChechBox)
+        self.showContourChechBox = LabelledCheckBox("Show Contour")
+        layout.addWidget(self.showContourChechBox)
+        
         
         self.tresholdSlider = LabelledSlider('Treshold')
         self.tresholdSlider.setMaximum(100)

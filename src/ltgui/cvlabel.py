@@ -41,7 +41,6 @@ class CvLabel(QtGui.QLabel):
                     
         else :
             print("This type of IplImage is not implemented")
-        self.emit(signalReady)
 
     def updateImage(self):
         if self.selectedRect is not None :

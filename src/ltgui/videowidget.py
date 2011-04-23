@@ -58,13 +58,17 @@ class VideoWidget(QtGui.QWidget):
         self.connect(self.videoSlider, signalValueChanged, self.on_videoSlider_move)
          
     #Calling this method when video opened    
-    def on_videoCapturing(self, length=None):
-        if length is not None :
-            #self.videoSlider.setMaximum(int(length))
-            self.on_videoSlider_move(0)            
+    def on_videoCapturing(self, duration=None):
+        if duration is not None :
+            self.videoSlider.setMaximum(int(duration))
+            self.videoSlider.setValue(0)            
     
     #Calling this method when beginning capturing
     def videoCaptured(self):
+        pass
+    
+    def on_NextFrame(self, image, time):
+        #self.videoSlider.setValue(time)
         pass
     
     #videosource closed

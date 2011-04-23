@@ -33,6 +33,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.setWindowTitle(appName + ' ' + appVersion)
         self.setObjectName("ltMainWindow")
                 
+        self.dirty = True
+        
         # ==== Creating core functional units ====
         self.ltActions = LtActions(self) # Actions
         self.cvPlayer = CvPlayer(self)
@@ -83,8 +85,8 @@ class LtMainWindow(QtGui.QMainWindow):
         # ==== Making Connections actions ====
         # ---- Core video processing ----
         self.connect(self.cvPlayer, signalNextFrame, self.chambersManager.on_nextFrame)
+        self.connect(self.cvPlayer, signalNextFrame, self.videoWidget.on_NextFrame)
         self.connect(self.chambersManager, signalNextFrame, self.cvLabel.putImage)
-        self.connect(self.cvLabel, signalReady, self.cvPlayer.on_Ready)
         
         self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.on_RegionSelected)
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.on_EnableDnD)
@@ -114,10 +116,16 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.chambersManager.on_SelectChamber)
         self.connect(self.chambersManager, signalChambersUpdated,
                      self.chambersWidget.on_chamberListUpdated)
+        self.connect(self.chambersWidget.batchButton, signalClicked,
+                     self.cvPlayer.on_StartBatchProcess)
         
         # ---- cvProcessorWidget ----
-        self.connect(self.cvProcessorWidget.negativeChechBox, signalStateChanged,
+        self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,
                      self.chambersManager.on_Invert)
+        self.connect(self.cvProcessorWidget.showProcessedChechBox.checkBox, signalStateChanged,
+                     self.chambersManager.on_ShowProcessed)
+        self.connect(self.cvProcessorWidget.showContourChechBox.checkBox, signalStateChanged,
+                     self.chambersManager.on_ShowContour)
         self.connect(self.cvProcessorWidget.tresholdSlider, signalValueChanged,
                      self.chambersManager.on_SetTreshold)
         self.connect(self.cvProcessorWidget, signalAccumulate, self.chambersManager.on_Accumulate)

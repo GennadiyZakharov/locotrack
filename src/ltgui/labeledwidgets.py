@@ -12,7 +12,7 @@ from ltcore.signals import *
 from PyQt4.QtCore import QString,Qt
 from PyQt4.QtGui import (QBoxLayout,
         QLabel, QLineEdit, QTextEdit, QSlider,
-        QWidget)
+        QWidget,QCheckBox)
 
 LEFT, ABOVE = range(2)
 
@@ -70,3 +70,23 @@ class LabelledSlider(QWidget):
     def on_sliderMove(self,value):
         self.label.setText(self.labelText+' '+str(value))
         self.emit(signalValueChanged,value)
+        
+class LabelledCheckBox(QWidget):
+
+    def __init__(self, labelText=QString(),position=LEFT,checked=False,parent=None):
+        super(LabelledCheckBox, self).__init__(parent)
+        
+        self.checkBox = QCheckBox()
+        self.label = QLabel(labelText)
+        self.label.setBuddy(self.checkBox)
+        layout = QBoxLayout(QBoxLayout.LeftToRight
+                if position == LEFT else QBoxLayout.TopToBottom)
+        layout.addWidget(self.label)
+        layout.addWidget(self.checkBox)
+        self.setLayout(layout)
+        # Creating links to functions
+        self.checkState = self.checkBox.checkState    
+        self.setCheckState = self.checkBox.setCheckState    
+        self.setText = self.label.setText
+        self.text = self.label.text
+    

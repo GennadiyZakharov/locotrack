@@ -3,10 +3,12 @@ Created on 18.03.2011
 
 @author: Gena
 '''
+from __future__ import division
 
 import cv
 from PyQt4 import QtCore
 from ltcore.signals import *
+
 
 class CvPlayer(QtCore.QObject):
     '''
@@ -22,6 +24,7 @@ class CvPlayer(QtCore.QObject):
         super(CvPlayer, self).__init__(parent)
         
         self.timer = None
+        self.batchProcess = None
         self.frameRate = 10
         
         self.on_captureClose()
@@ -38,11 +41,11 @@ class CvPlayer(QtCore.QObject):
                                                 cv.CV_CAP_PROP_FRAME_COUNT)
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                 cv.CV_CAP_PROP_FPS)
-        
-        #cv.CV_CAP_PROP_FPS
+        self.videoDuration = self.videoLength / self.frameRate
         print 'Opened file:', self.fileName
-        print 'File length:', int(self.videoLength), 'frames', self.frameRate, 'fps'
-        self.emit(signalCvPlayerCapturing, self.videoLength)
+        print 'File length:', int(self.videoLength), 'frames', self.frameRate, 'fps', 'Duration:', self.videoDuration, ' s' 
+        
+        self.emit(signalCvPlayerCapturing, self.videoDuration)
         self.timerEvent(None)
     
     def on_captureFromCam(self, camNumber):
@@ -55,7 +58,6 @@ class CvPlayer(QtCore.QObject):
         self.fileName = None
         self.captureDevice = None
         self.videoLength = None
-        self.ready = True
         
         #self.emit(signalCvPlayerCapturing,None)
         
@@ -67,7 +69,8 @@ class CvPlayer(QtCore.QObject):
         if self.timer is not None :
             self.killTimer(self.timer)
             self.timer = None
-            self.ready = True
+        if self.batchProcess is not None :
+            self.batchProcess = None
         
     def on_Rew(self):
         pass
@@ -77,7 +80,8 @@ class CvPlayer(QtCore.QObject):
     
     def on_Seek(self, value):
         if self.captureDevice is not None :
-            cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, self.videoLength * value // 100)
+            frame = int(value * self.frameRate)
+            cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, frame)
             self.timerEvent()
     
     def on_BrightnessChanged(self, value):
@@ -89,15 +93,18 @@ class CvPlayer(QtCore.QObject):
             cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_CONTRAST, value)
     #
     def timerEvent(self, event=None) :
-        if self.ready is None :
-            return
-        self.ready = None
         frame = cv.QueryFrame(self.captureDevice)
         if frame is None :
             self.on_Stop()
         else :
-            self.emit(signalNextFrame, frame)
-            
-    def on_Ready(self):
-        self.ready = True
+            time = cv.GetCaptureProperty(self.captureDevice,
+                                                cv.CV_CAP_PROP_POS_MSEC) / 1000
+            self.emit(signalNextFrame, frame, time)
+             
+    def on_StartBatchProcess(self):
+        print 'Batch started'
+        self.batchProcess = True
+        while self.batchProcess is not None :
+            self.timerEvent()
+        
             

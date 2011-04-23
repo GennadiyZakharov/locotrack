@@ -41,7 +41,10 @@ class ChambersWidget(QtGui.QWidget):
         self.chamberButton.setCheckable(True)
         layout.addWidget(self.chamberButton)
         self.connect(self.chamberButton, signalToggled, self.on_ScaleOrChamberSet)
-          
+        
+        self.batchButton = QtGui.QPushButton('Batch')
+        layout.addWidget(self.batchButton)
+        
         self.setLayout(layout)
         
     def on_SelectionChanged(self, item) :
