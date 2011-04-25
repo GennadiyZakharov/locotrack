@@ -31,19 +31,23 @@ class ChambersWidget(QtGui.QWidget):
         self.chambersList.itemClicked.connect(self.on_SelectionChanged)
         self.selectedChamber = -1
         #self.connect(self.chambersList, QtCore.SIGNAL("itemClicked(QListWidgetItem)"), self.on_deselect)
-               
+                      
+        self.setChamberButton = QtGui.QPushButton('Set chamber')
+        self.setChamberButton.setCheckable(True)
+        layout.addWidget(self.setChamberButton,2,0)
+        self.connect(self.setChamberButton, signalToggled, self.on_ScaleOrChamberSet)
+        
+        self.clearChamberButton = QtGui.QPushButton('Clear chamber')
+        layout.addWidget(self.clearChamberButton,2,1)
+        
+        self.batchButton = QtGui.QPushButton('Batch')
+        layout.addWidget(self.batchButton)
+        
         self.scaleButton = QtGui.QPushButton('Set Scale')
         self.scaleButton.setCheckable(True)
         layout.addWidget(self.scaleButton)      
         self.connect(self.scaleButton, signalToggled, self.on_ScaleOrChamberSet)
         
-        self.chamberButton = QtGui.QPushButton('Set Chamber')
-        self.chamberButton.setCheckable(True)
-        layout.addWidget(self.chamberButton)
-        self.connect(self.chamberButton, signalToggled, self.on_ScaleOrChamberSet)
-        
-        self.batchButton = QtGui.QPushButton('Batch')
-        layout.addWidget(self.batchButton)
         
         self.setLayout(layout)
         
@@ -55,22 +59,29 @@ class ChambersWidget(QtGui.QWidget):
             self.selectedChamber = self.chambersList.row(item)         
         self.emit(signalChangeSelection,self.selectedChamber)
   
-        
     def on_RegionSelected(self, rect):
         if self.scaleButton.isChecked() :
             self.scaleButton.setChecked(False)
             self.emit(signalSetScale, rect)
-        elif self.chamberButton.isChecked() :
-            #self.chamberButton.setChecked(False)
+        elif self.setChamberButton.isChecked() :
             self.emit(signalSetChamber, rect)
 
     def on_ScaleOrChamberSet(self, checked):
         self.emit(signalEnableDnD, checked)
         
-    def on_chamberListUpdated(self,list):
+    def on_ChamberCleared(self):
+        reply = QtGui.QMessageBox.question(self, "Chamber manager",
+                                         "Clear selected chamber with all recorded data?",
+                                         QtGui.QMessageBox.Yes | QtGui.QMessageBox.No )
+        if reply == QtGui.QMessageBox.Yes:
+            self.emit(signalClearChamber)
+        
+    def on_chamberListUpdated(self,list, selected):
         self.chambersList.clear()
         for i in range(len(list)) :
             text = 'Chamber '+str(i)+' '+list[i].__str__()
             self.chambersList.addItem(text)
+        self.selectedChamber = selected
+        self.chambersList.setCurrentRow(self.selectedChamber)
         
         

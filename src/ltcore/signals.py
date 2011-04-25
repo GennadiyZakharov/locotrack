@@ -29,6 +29,7 @@ signalEnableDnD = SIGNAL("enableDnD")
 
 
 signalSetChamber = SIGNAL("setChamber")
+signalClearChamber = SIGNAL("clearChamber")
 signalSetScale = SIGNAL("setScale")
 signalChangeSelection  = SIGNAL("changeSelection")
 signalChambersUpdated = SIGNAL("chambersUpdated")

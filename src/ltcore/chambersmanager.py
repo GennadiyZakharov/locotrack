@@ -52,9 +52,10 @@ class ChambersManager(QtCore.QObject):
         else : 
             self.chambers.append(chamber)
         
-    def on_nextFrame(self, image):
+    def on_nextFrame(self, image, frame):
         # We get new frame from cvPlayer
         self.image = image
+        self.frame = frame
         self.processFrame()
         
     def processFrame(self):
@@ -99,7 +100,9 @@ class ChambersManager(QtCore.QObject):
     def findObject(self, image, chamber):
         cv.SetImageROI(image, chamber.getRect())       
         
-        (minVal, maxVal, minPoint, chamber.maxBrightPos) = cv.MinMaxLoc(image)       
+        (minVal, maxVal, minPoint, maxBrightPos) = cv.MinMaxLoc(image)
+        chamber.setMaxBrightPos(maxBrightPos)
+               
         treshold = maxVal * self.treshold 
         cv.Threshold(image, image, treshold, 200, cv.CV_THRESH_TOZERO)
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
@@ -109,12 +112,9 @@ class ChambersManager(QtCore.QObject):
         if m00 != 0 :
             m10 = cv.GetSpatialMoment(moments, 1, 0)
             m01 = cv.GetSpatialMoment(moments, 0, 1)
-            chamber.objectPos = ( m10/m00, m01/m00 )
-            chamber.trajectory.append( chamber.objectPos )
-            if len(chamber.trajectory) >= self.maxTraj :
-                chamber.trajectory.pop(0)
+            chamber.setObjectPos(self.frame, ( m10/m00, m01/m00 ) )
         else :
-            chamber.objectPos = None
+            chamber.setObjectPos(self.frame, None )
             
         
         # create the storage area
@@ -160,7 +160,8 @@ class ChambersManager(QtCore.QObject):
             
             
             if len(self.chambers[i].trajectory) >= 2 :
-                cv.PolyLine(image, [self.chambers[i].trajectory,], 0, self.chamberColor)  
+                trajend = self.chambers[i].trajectory[-self.maxTraj:]
+                cv.PolyLine(image, [trajend,], 0, self.chamberColor)  
             
             cv.ResetImageROI(image)
             
@@ -188,7 +189,7 @@ class ChambersManager(QtCore.QObject):
         else :
             self.chambers[self.selected] = Chamber(rect)
         self.processFrame()
-        self.emit(signalChambersUpdated, list(self.chambers))
+        self.emit(signalChambersUpdated, list(self.chambers), self.selected)
             
     def on_SetScale(self, rect):
         self.scale = sqrt(rect.width()**2 + rect.height()**2)
@@ -198,6 +199,15 @@ class ChambersManager(QtCore.QObject):
         if - 1 <= number < len(self.chambers) :
             self.selected = number
             self.processFrame()
+            if number > -1 :
+                self.chambers[number].saveTrajectory(' ')
+                
+    def on_ClearChamber(self):
+        if self.selected > -1 :
+            self.chambers.pop(self.selected)
+            self.selected = -1
+            self.processFrame()
+            self.emit(signalChambersUpdated, list(self.chambers), self.selected)
     
     def on_SetTreshold(self, value):
         self.treshold = value / 100.0
