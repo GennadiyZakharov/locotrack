@@ -61,6 +61,7 @@ class LabelledSlider(QWidget):
         
         # Creating links to functions
         self.value = self.slider.value
+        self.setValue = self.slider.setValue
         self.setMaximum = self.slider.setMaximum
         self.setMinimum = self.slider.setMinimum
         

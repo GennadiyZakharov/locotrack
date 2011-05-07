@@ -29,11 +29,9 @@ class ChambersManager(QtCore.QObject):
         self.selected = -1
         self.scale = None
         self.image = None
-        self.background = None
+        
+        self.on_Accumulate(None)
         self.invertImage = False
-        self.accumulate = False # This flag is used for background accumulation
-        self.accumulateFrames = 0
-        self.tempAccumulateFrames = None
         self.treshold = 0.6
         self.showProcessedImage = False
         self.showContour = True
@@ -154,22 +152,29 @@ class ChambersManager(QtCore.QObject):
                 point = (int(self.chambers[i].objectPos[0]),
                          int(self.chambers[i].objectPos[1]) )
                 #cv.SetAt(image, cv.Scalar(0,0,250,0), point);
-                cv.Circle(image, self.chambers[i].objectPos, 1, self.chamberSelectedColor, cv.CV_FILLED)
+                cv.Circle(image, point, 2, self.chamberSelectedColor, cv.CV_FILLED)
             if self.chambers[i].maxBrightPos is not None :
-                cv.Circle(image, self.chambers[i].maxBrightPos, 1, self.chamberColor, cv.CV_FILLED)
+                cv.Circle(image, self.chambers[i].maxBrightPos, 2, self.chamberColor, cv.CV_FILLED)
             
             
-            if len(self.chambers[i].trajectory) >= 2 :
-                trajend = self.chambers[i].trajectory[-self.maxTraj:]
-                cv.PolyLine(image, [trajend,], 0, self.chamberColor)  
+            if self.chambers[i].trajectory is not None :
+                trajend = self.chambers[i].trajEnd(self.maxTraj)
+                if len(trajend) >= 2 :
+                    cv.PolyLine(image, [trajend,], 0, self.chamberColor)  
             
             cv.ResetImageROI(image)
             
                        
     def on_Accumulate(self, value):
-        self.accumulateFrames = value
-        self.tempAccumulateFrames = value
-        self.background = cv.CreateImage(cv.GetSize(self.image), cv.IPL_DEPTH_8U, 3)
+        if value is not None :
+            self.accumulateFrames = value
+            self.tempAccumulateFrames = value
+            self.background = cv.CreateImage(cv.GetSize(self.image), cv.IPL_DEPTH_8U, 3)
+        else :
+            self.accumulateFrames = 0
+            self.tempAccumulateFrames = None
+            self.background = None
+            self.processFrame()
 
     def on_Invert(self, value):
         self.invertImage = value
@@ -199,8 +204,8 @@ class ChambersManager(QtCore.QObject):
         if - 1 <= number < len(self.chambers) :
             self.selected = number
             self.processFrame()
-            if number > -1 :
-                self.chambers[number].saveTrajectory(' ')
+        if number > -1 :
+            self.chambers[number].saveTrajectory(' ')
                 
     def on_ClearChamber(self):
         if self.selected > -1 :

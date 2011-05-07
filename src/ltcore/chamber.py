@@ -29,9 +29,11 @@ class Chamber(QtCore.QRect):
     
     def setObjectPos(self, frame, pos=None):
         self.objectPos = pos
-        while len(self.trajectory) < frame+1 :
-            self.trajectory.append(None)
-            self.trajectory[frame] = pos
+        self.trajectory.append((frame,) + pos)
+        
+    def trajEnd(self, count):
+        trajend = [(int(x),int(y)) for (frame, x, y) in self.trajectory[-count:]]
+        return trajend
         
     def setMaxBrightPos(self, pos=None):
         self.MaxBrightPos = pos
@@ -40,11 +42,8 @@ class Chamber(QtCore.QRect):
         self.trajectory = []
     
     def saveTrajectory(self, fileName):
-        if self.trajectory == [] :
-            return
-        for i in xrange(len(self.trajectory)) :
-            x,y = self.trajectory[i]
-            print i, x, y
+        for frame,x,y in self.trajectory :
+            print frame, x, y
     
     def loadTrajectory(self, fileName):
         pass

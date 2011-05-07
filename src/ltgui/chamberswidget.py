@@ -39,6 +39,7 @@ class ChambersWidget(QtGui.QWidget):
         
         self.clearChamberButton = QtGui.QPushButton('Clear chamber')
         layout.addWidget(self.clearChamberButton,2,1)
+        self.connect(self.clearChamberButton, signalClicked, self.on_ChamberCleared)
         
         self.batchButton = QtGui.QPushButton('Batch')
         layout.addWidget(self.batchButton)

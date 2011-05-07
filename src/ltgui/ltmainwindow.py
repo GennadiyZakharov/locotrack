@@ -110,7 +110,7 @@ class LtMainWindow(QtGui.QMainWindow):
        
         self.connect(self.chambersWidget, signalSetChamber,
                      self.chambersManager.on_SetChamber)
-        self.connect(self.chambersWidget.clearChamberButton, signalClicked,
+        self.connect(self.chambersWidget, signalClearChamber,
                      self.chambersManager.on_ClearChamber)
         self.connect(self.chambersWidget, signalSetScale,
                      self.chambersManager.on_SetScale)
