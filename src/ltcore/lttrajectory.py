@@ -4,45 +4,32 @@ Created on 27.04.2011
 @author: Gena
 '''
 
+import numpy
+
 class LtTrajectory(object):
     '''
-    classdocs
+    This class holds object trajectory
+    It can be representated as array of LtObject, but in python
+    this desigion is really slow and memory-hungry
+    
+    So, i used numpy array and hold only central point of object
     '''
 
 
-    def __init__(self,startframe=0):
+    def __init__(self,startFrame, endFrame):
         '''
         Constructor
         '''
-        self.trajectory=[]
-        self.startframe=startframe
+        self.startFrame=startFrame
+        self.endFrame = endFrame
+        self.x = numpy.array()
+        
+    def setObject(self, frameNumber, ltObject):
+        pass
         
     def getLast(self, count=20):
-        return self.trajectory[-count:]
+        return 
     
     def setItem(self, pos, item):
-        while len(self.trajectory) =< pos :
-            self.trajectory.append(None)
-        self.trajectory[pos]=item
-   
-   
-   def __delitem__(self, ii):
-        """Delete an item"""
-        del self.list[ii]    # Thank you @Thomas for the pointer about .remove()
         return
-    
-         
-'''
-class HostList(collections.MutableSequence):
-    """A container for manipulating lists of hosts"""
-    def __init__(self):
-        """Initialize the class"""
-        self.list = list()
-    >>> import HostList as H
->>> foo = H.HostList()
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-TypeError: Can't instantiate abstract class HostList with abstract methods __delitem__
->>> 
-
-'''
+   

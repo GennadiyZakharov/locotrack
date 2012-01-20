@@ -2,6 +2,8 @@
 Created on 18.03.2011
 
 @author: Gena
+
+This module holds collection of all signals, used in project
 '''
 
 from PyQt4.QtCore import SIGNAL

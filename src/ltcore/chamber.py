@@ -4,18 +4,22 @@ Created on 18.03.2011
 @author: Gena
 '''
 from PyQt4 import QtCore
+from ltcore.ltobject import LtObject
 
 class Chamber(QtCore.QRect):
     '''
     This is class for one chamber
-    It holds all chamber attributes
+    It holds all chamber attributes: position, size,
+    also it holds property ltobject -- all data for 
+    detected object on current step
     '''
     
     def __init__(self, rect):
+        '''
+        Constructor
+        '''
         super(Chamber, self).__init__(rect.normalized())
-        self.objectPos = None
-        self.maxBrightPos = None
-        self.contours = None
+        self.ltObject = LtObject()
         self.resetTrajectory()
       
     def getPos(self) :

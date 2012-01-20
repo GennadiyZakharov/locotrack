@@ -28,7 +28,7 @@ class CvProcessorWidget(QtGui.QWidget):
         self.accumulateSpinBox.setValue(100)
         accumulateLabel.setBuddy(self.accumulateSpinBox)
         self.accumulateButton = QtGui.QPushButton("Accumulate background")
-        self.connect(self.accumulateButton, signalClicked, self.on_Accumulate)
+        self.connect(self.accumulateButton, signalClicked, self.accumulate)
         self.resetBackgroundButton = QtGui.QPushButton("Reset background")
         self.connect(self.resetBackgroundButton, signalClicked, self.on_resetBackground)
         
@@ -54,7 +54,7 @@ class CvProcessorWidget(QtGui.QWidget):
         
         self.setLayout(layout)
         
-    def on_Accumulate(self):
+    def accumulate(self):
         self.emit(signalAccumulate, self.accumulateSpinBox.value())
         
     def on_resetBackground(self):

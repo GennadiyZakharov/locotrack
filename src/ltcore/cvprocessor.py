@@ -10,27 +10,35 @@ from math import sqrt
 import cv
 from PyQt4 import QtCore
 from ltcore.signals import *
+from ltcore.ltactions import LtActions
 from ltcore.chamber import Chamber
+from ltcore.cvplayer import CvPlayer
 
 
-class ChambersManager(QtCore.QObject):
+class CvProcessor(QtCore.QObject):
     '''
-    classdocs
+    This is main class for video processing
+    it holds player, array of chambers
+    
+    also this class process video and writes data to chamber
     '''
-
 
     def __init__(self, parent=None):
         '''
         Constructor
         '''
-        super(ChambersManager, self).__init__(parent)
+        super(CvProcessor, self).__init__(parent)
         
-        self.chambers = []
+        self.cvPlayer = CvPlayer(self)
+        self.connect(self.cvPlayer, signalNextFrame, self.getNextFrame)
+        
+        self.chambers = [] 
+        
         self.selected = -1
         self.scale = None
         self.image = None
         
-        self.on_Accumulate(None)
+        self.accumulate(None)
         self.invertImage = False
         self.treshold = 0.6
         self.showProcessedImage = False
@@ -50,10 +58,10 @@ class ChambersManager(QtCore.QObject):
         else : 
             self.chambers.append(chamber)
         
-    def on_nextFrame(self, image, frame):
-        # We get new frame from cvPlayer
+    def getNextFrame(self, image, frameNumber):
+        # We get new frame and frameNumber from cvPlayer
         self.image = image
-        self.frame = frame
+        self.frameNumber = frameNumber
         self.processFrame()
         
     def processFrame(self):
@@ -104,17 +112,18 @@ class ChambersManager(QtCore.QObject):
         treshold = maxVal * self.treshold 
         cv.Threshold(image, image, treshold, 200, cv.CV_THRESH_TOZERO)
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
-
+        print image
+        """
         moments = cv.Moments(image)
         m00 = cv.GetSpatialMoment(moments, 0, 0)
         if m00 != 0 :
             m10 = cv.GetSpatialMoment(moments, 1, 0)
             m01 = cv.GetSpatialMoment(moments, 0, 1)
-            chamber.setObjectPos(self.frame, ( m10/m00, m01/m00 ) )
+            chamber.setObjectPos(self.frameNumber, ( m10/m00, m01/m00 ) )
         else :
-            chamber.setObjectPos(self.frame, None )
+            chamber.setObjectPos(self.frameNumber, None )
             
-        
+        """
         # create the storage area
         storage = cv.CreateMemStorage (0)
         # find the contours
@@ -165,7 +174,7 @@ class ChambersManager(QtCore.QObject):
             cv.ResetImageROI(image)
             
                        
-    def on_Accumulate(self, value):
+    def accumulate(self, value):
         if value is not None :
             self.accumulateFrames = value
             self.tempAccumulateFrames = value
@@ -176,48 +185,54 @@ class ChambersManager(QtCore.QObject):
             self.background = None
             self.processFrame()
 
-    def on_Invert(self, value):
+    def setNegative(self, value):
         self.invertImage = value
         self.processFrame()
         
-    def on_ShowProcessed(self, value):
+    def setShowProcessed(self, value):
         self.showProcessedImage = value
         self.processFrame()
         
-    def on_ShowContour(self, value):
+    def setShowContour(self, value):
         self.showContour = value
         self.processFrame()
     
-    def on_SetChamber(self, rect):
+    def setChamber(self, rect):
+        '''
+        Create chamber from rect and insert it 
+        into selected position
+        '''
+        chamber = Chamber(rect)
         if self.selected == -1 :
-            self.chambers.append(Chamber(rect))
+            self.chambers.append(chamber)
         else :
-            self.chambers[self.selected] = Chamber(rect)
-        self.processFrame()
+            self.chambers[self.selected] = chamber
+        self.processFrame() # Update current frame
         self.emit(signalChambersUpdated, list(self.chambers), self.selected)
             
-    def on_SetScale(self, rect):
+    def setScale(self, rect):
+        '''
+        set scale accordind to rect
+        '''
         self.scale = sqrt(rect.width()**2 + rect.height()**2)
-        self.processFrame()
+        self.processFrame() # Update current frame
     
-    def on_SelectChamber(self, number):
+    def selectChamber(self, number):
         if - 1 <= number < len(self.chambers) :
             self.selected = number
-            self.processFrame()
-        if number > -1 :
-            self.chambers[number].saveTrajectory(' ')
+            self.processFrame() # Update current frame
                 
-    def on_ClearChamber(self):
+    def clearChamber(self):
         if self.selected > -1 :
             self.chambers.pop(self.selected)
             self.selected = -1
-            self.processFrame()
+            self.processFrame() # Update current frame
             self.emit(signalChambersUpdated, list(self.chambers), self.selected)
     
-    def on_SetTreshold(self, value):
+    def setTreshold(self, value):
         self.treshold = value / 100.0
-        self.processFrame()
+        self.processFrame() # Update current frame
         
-    def on_ResetBackground(self):
+    def resetBackground(self):
         self.background = None
-        self.processFrame()
+        self.processFrame() # Update current frame

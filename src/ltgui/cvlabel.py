@@ -9,32 +9,41 @@ import cv
 
 from ltcore.signals import *
 
-minCvLabelSize = (640, 480)
+
 
 class CvLabel(QtGui.QLabel):
     '''
-    classdocs
+    This QT class is used to display image in
+    IplImage format, used by OpenCV
+    
+    Also it can handle mouse drag across the image
+    this ability is uded to define chambers and scale
     '''
     
+    minCvLabelSize = (640, 480)
 
     def __init__(self, parent=None):
         '''
         Constructor
         '''
         super(CvLabel, self).__init__(parent)
+        
         self.setAcceptDrops(True)
         self.enableDnD = False
         self.selectedRect = None
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         # Creating black rectangle
-        self.putImage(cv.CreateImage(minCvLabelSize, cv.IPL_DEPTH_8U, 3))
+        self.putImage(cv.CreateImage(self.minCvLabelSize, cv.IPL_DEPTH_8U, 3))
     
-    def putImage(self, cvimage) :
+    def putImage(self, iplImage) :
+        '''
+        convert iplImage to QLabel and store it in self.image
+        '''
         # switch between bit depths
-        if cvimage.depth == cv.IPL_DEPTH_8U :
-            if  cvimage.nChannels == 3:
-                str = cvimage.tostring()
-                self.image = QtGui.QImage(str, cvimage.width, cvimage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
+        if iplImage.depth == cv.IPL_DEPTH_8U :
+            if  iplImage.nChannels == 3:
+                str = iplImage.tostring()
+                self.image = QtGui.QImage(str, iplImage.width, iplImage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
                 self.updateImage()
             else :
                 print("This number of channels is not supported")
@@ -43,6 +52,9 @@ class CvLabel(QtGui.QLabel):
             print("This type of IplImage is not implemented")
 
     def updateImage(self):
+        '''
+        Display image on label and draw mouse trace
+        '''
         if self.selectedRect is not None :
             image = QtGui.QImage(self.image)
             

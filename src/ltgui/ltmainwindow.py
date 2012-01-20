@@ -10,8 +10,7 @@ from PyQt4 import QtCore, QtGui
 from ltcore.signals import *
 from ltcore.consts import *
 
-from ltcore.cvplayer import CvPlayer
-from ltcore.chambersmanager import ChambersManager
+from ltcore.cvprocessor import CvProcessor
 from ltcore.ltactions import LtActions
 
 from ltgui.cvlabel import CvLabel
@@ -37,8 +36,7 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ==== Creating core functional units ====
         self.ltActions = LtActions(self) # Actions
-        self.cvPlayer = CvPlayer(self)
-        self.chambersManager = ChambersManager(self)           
+        self.cvProcessor = CvProcessor(self)           
                 
         # ==== Creating GUI ====
         # ---- Creating main video widget ----
@@ -84,53 +82,51 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ==== Making Connections actions ====
         # ---- Core video processing ----
-        self.connect(self.cvPlayer, signalNextFrame, self.chambersManager.on_nextFrame)
-        self.connect(self.cvPlayer, signalNextFrame, self.videoWidget.on_NextFrame)
-        self.connect(self.chambersManager, signalNextFrame, self.cvLabel.putImage)
+        
+        self.connect(self.cvProcessor.cvPlayer, signalNextFrame, self.videoWidget.on_NextFrame)
+        self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)
         
         self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.on_RegionSelected)
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.on_EnableDnD)
         
         # ---- self ----
-        self.connect(self, signalCaptureFromFile, self.cvPlayer.on_captureFromFile)
+        self.connect(self, signalCaptureFromFile, self.cvProcessor.cvPlayer.captureFromFile)
         
         # ---- videoWidget ----
         self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
-        self.connect(self.videoWidget.fwdButt, signalClicked, self.cvPlayer.timerEvent)
-        self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvPlayer.on_Seek)
-        self.connect(self.cvPlayer, signalCvPlayerCapturing, self.videoWidget.on_videoCapturing)
+        self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
+        self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvProcessor.cvPlayer.onSeek)
+        self.connect(self.cvProcessor.cvPlayer, signalCvPlayerCapturing, self.videoWidget.on_videoCapturing)
         self.connect(self.videoWidget.brighnessSlider, signalValueChanged,
-                     self.cvPlayer.on_BrightnessChanged)
+                     self.cvProcessor.cvPlayer.setBrightness)
         self.connect(self.videoWidget.contrastSlider, signalValueChanged,
-                     self.cvPlayer.on_ContrastChanged)
+                     self.cvProcessor.cvPlayer.setContrast)
         
         # ---- chambersWidget ----
        
         self.connect(self.chambersWidget, signalSetChamber,
-                     self.chambersManager.on_SetChamber)
+                     self.cvProcessor.setChamber)
         self.connect(self.chambersWidget, signalClearChamber,
-                     self.chambersManager.on_ClearChamber)
+                     self.cvProcessor.clearChamber)
         self.connect(self.chambersWidget, signalSetScale,
-                     self.chambersManager.on_SetScale)
+                     self.cvProcessor.setScale)
         self.connect(self.chambersWidget, signalChangeSelection,
-                     self.chambersManager.on_SelectChamber)
-        self.connect(self.chambersManager, signalChambersUpdated,
+                     self.cvProcessor.selectChamber)
+        self.connect(self.cvProcessor, signalChambersUpdated,
                      self.chambersWidget.on_chamberListUpdated)
-        self.connect(self.chambersWidget.batchButton, signalClicked,
-                     self.cvPlayer.on_StartBatchProcess)
         
         # ---- cvProcessorWidget ----
         self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,
-                     self.chambersManager.on_Invert)
+                     self.cvProcessor.setNegative)
         self.connect(self.cvProcessorWidget.showProcessedChechBox.checkBox, signalStateChanged,
-                     self.chambersManager.on_ShowProcessed)
+                     self.cvProcessor.setShowProcessed)
         self.connect(self.cvProcessorWidget.showContourChechBox.checkBox, signalStateChanged,
-                     self.chambersManager.on_ShowContour)
+                     self.cvProcessor.setShowContour)
         self.connect(self.cvProcessorWidget.tresholdSlider, signalValueChanged,
-                     self.chambersManager.on_SetTreshold)
-        self.connect(self.cvProcessorWidget, signalAccumulate, self.chambersManager.on_Accumulate)
+                     self.cvProcessor.setTreshold)
+        self.connect(self.cvProcessorWidget, signalAccumulate, self.cvProcessor.accumulate)
         
         
         # ---- Main menu ----
@@ -139,11 +135,11 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # Video Menu
         self.connect(self.ltActions.videoOpenAction, signalTriggered, self.on_videoOpen)
-        self.connect(self.ltActions.videoCaptureAction, signalTriggered, self.cvPlayer.on_captureFromCam)
-        self.connect(self.ltActions.videoPlayAction, signalTriggered, self.cvPlayer.on_Play)
-        self.connect(self.ltActions.videoStopAction, signalTriggered, self.cvPlayer.on_Stop)
-        self.connect(self.ltActions.videoRewAction, signalTriggered, self.cvPlayer.on_Rew)
-        self.connect(self.ltActions.videoFwdAction, signalTriggered, self.cvPlayer.on_Fwd)
+        self.connect(self.ltActions.videoCaptureAction, signalTriggered, self.cvProcessor.cvPlayer.captureFromCam)
+        self.connect(self.ltActions.videoPlayAction, signalTriggered, self.cvProcessor.cvPlayer.play)
+        self.connect(self.ltActions.videoStopAction, signalTriggered, self.cvProcessor.cvPlayer.stop)
+        self.connect(self.ltActions.videoRewAction, signalTriggered, self.cvProcessor.cvPlayer.seekRew)
+        self.connect(self.ltActions.videoFwdAction, signalTriggered, self.cvProcessor.cvPlayer.seekFwd)
         
         
         
@@ -155,8 +151,8 @@ class LtMainWindow(QtGui.QMainWindow):
         Open video file
         '''
         # Setting last user dir
-        dir = os.path.dirname(self.cvPlayer.fileName) \
-            if self.cvPlayer.fileName is not None else "."
+        dir = os.path.dirname(self.cvProcessor.cvPlayer.fileName) \
+            if self.cvProcessor.cvPlayer.fileName is not None else "."
         # Creating formats list
         formats = ["*.%s" % unicode(format).lower() \
                    for format in ('avi', 'mpg', 'ogg')]
@@ -171,7 +167,7 @@ class LtMainWindow(QtGui.QMainWindow):
     def on_CvPlayerCapturing(self, length):
         pass 
     
-    def on_Accumulate(self):
+    def accumulate(self):
         self.emit(signalAccumulate, self.chambersDockBar.accumulateSpinBox.value())        
     
     def saveProject(self):
