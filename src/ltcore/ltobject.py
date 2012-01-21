@@ -11,13 +11,15 @@ class LtObject(object):
     '''
 
 
-    def __init__(self):
+    def __init__(self, centralPoint=None):
         '''
         Constructor
         '''
-        
         self.maxBright = None # 
-        self.massCenter = None    # 
+        self.massCenter = centralPoint    # 
         self.contour = None  # 
+        
+    def centralPoint(self):
+        return self.massCenter
         
         

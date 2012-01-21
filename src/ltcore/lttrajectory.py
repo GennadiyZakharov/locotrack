@@ -5,6 +5,7 @@ Created on 27.04.2011
 '''
 
 import numpy
+from ltcore.ltobject import LtObject
 
 class LtTrajectory(object):
     '''
@@ -12,7 +13,7 @@ class LtTrajectory(object):
     It can be representated as array of LtObject, but in python
     this desigion is really slow and memory-hungry
     
-    So, i used numpy array and hold only central point of object
+    So, I used numpy array and hold only central point of object
     '''
 
 
@@ -22,14 +23,19 @@ class LtTrajectory(object):
         '''
         self.startFrame=startFrame
         self.endFrame = endFrame
+        self.lastNumber = None
         self.x = numpy.array()
+    
+    def frameNumberToInternal(self, frameNumber):
+        if frameNumber > self.endFrame :
+            return
+        return frameNumber - self.startFrame
         
     def setObject(self, frameNumber, ltObject):
-        pass
+        internalNumber = self.frameNumberToInternal(frameNumber)
+        self.lastNumber = internalNumber
+        self.x[internalNumber],self.y[internalNumber] = ltObject.centralPoint()
         
-    def getLast(self, count=20):
-        return 
-    
-    def setItem(self, pos, item):
-        return
-   
+    def lastObject(self):
+        return LtObject(self.x[self.lastNumber],self.y[self.lastNumber])
+        

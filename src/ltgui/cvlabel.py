@@ -13,10 +13,10 @@ from ltcore.signals import *
 
 class CvLabel(QtGui.QLabel):
     '''
-    This QT class is used to display image in
+    This QT class is used to display frame in
     IplImage format, used by OpenCV
     
-    Also it can handle mouse drag across the image
+    Also it can handle mouse drag across the frame
     this ability is uded to define chambers and scale
     '''
     
@@ -34,16 +34,25 @@ class CvLabel(QtGui.QLabel):
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         # Creating black rectangle
         self.putImage(cv.CreateImage(self.minCvLabelSize, cv.IPL_DEPTH_8U, 3))
+        self.colortable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
     
     def putImage(self, iplImage) :
         '''
-        convert iplImage to QLabel and store it in self.image
+        convert iplImage to QLabel and store it in self.frame
         '''
+        if iplImage is None :
+            return
         # switch between bit depths
         if iplImage.depth == cv.IPL_DEPTH_8U :
             if  iplImage.nChannels == 3:
-                str = iplImage.tostring()
-                self.image = QtGui.QImage(str, iplImage.width, iplImage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
+                cstr = iplImage.tostring()
+                self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
+                self.updateImage()
+            elif iplImage.nChannels == 1:
+                cstr = iplImage.tostring()
+                self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_Indexed8)
+                self.frame.setColorTable(self.colortable)
+                #self.frame = QtGui.QImage(cstr, )
                 self.updateImage()
             else :
                 print("This number of channels is not supported")
@@ -53,10 +62,10 @@ class CvLabel(QtGui.QLabel):
 
     def updateImage(self):
         '''
-        Display image on label and draw mouse trace
+        Display frame on label and draw mouse trace
         '''
         if self.selectedRect is not None :
-            image = QtGui.QImage(self.image)
+            image = QtGui.QImage(self.frame)
             
             pen = QtGui.QPen(QtCore.Qt.blue)
             pen.setWidth(3)
@@ -76,7 +85,7 @@ class CvLabel(QtGui.QLabel):
             self.setPixmap(QtGui.QPixmap.fromImage(image))
             painter.end()
         else :
-            self.setPixmap(QtGui.QPixmap.fromImage(self.image))
+            self.setPixmap(QtGui.QPixmap.fromImage(self.frame))
             
     
     def on_EnableDnD(self, enable):
