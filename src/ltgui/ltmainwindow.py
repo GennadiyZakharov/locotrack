@@ -115,7 +115,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.chambersWidget, signalChangeSelection,
                      self.cvProcessor.selectChamber)
         self.connect(self.cvProcessor, signalChambersUpdated,
-                     self.chambersWidget.on_chamberListUpdated)
+                     self.chambersWidget.chamberListUpdated)
         
         # ---- cvProcessorWidget ----
         self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,

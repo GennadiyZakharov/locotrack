@@ -9,15 +9,13 @@ class LtObject(object):
     This class holds all properties of detected video object
     central point, contour, edges, etc 
     '''
-
-
     def __init__(self, centralPoint=None):
         '''
         Constructor
         '''
         self.maxBright = None # 
         self.massCenter = centralPoint    # 
-        self.contour = None  # 
+        self.contours = None  # 
         
     def centralPoint(self):
         return self.massCenter

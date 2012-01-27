@@ -1,6 +1,5 @@
 '''
 Created on 18.03.2011
-
 @author: Gena
 '''
 
@@ -8,7 +7,6 @@ from PyQt4 import QtCore, QtGui
 import cv
 
 from ltcore.signals import *
-
 
 
 class CvLabel(QtGui.QLabel):
@@ -19,8 +17,8 @@ class CvLabel(QtGui.QLabel):
     Also it can handle mouse drag across the frame
     this ability is uded to define chambers and scale
     '''
-    
-    minCvLabelSize = (640, 480)
+    # Itial size of the label
+    initialCvLabelSize = (640, 480)
 
     def __init__(self, parent=None):
         '''
@@ -29,11 +27,13 @@ class CvLabel(QtGui.QLabel):
         super(CvLabel, self).__init__(parent)
         
         self.setAcceptDrops(True)
+        # This fla is used to enable selection
         self.enableDnD = False
         self.selectedRect = None
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         # Creating black rectangle
-        self.putImage(cv.CreateImage(self.minCvLabelSize, cv.IPL_DEPTH_8U, 3))
+        self.putImage(cv.CreateImage(self.initialCvLabelSize, cv.IPL_DEPTH_8U, 3))
+        # Creating colortable to display gray image as indexed 8bit
         self.colortable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
     
     def putImage(self, iplImage) :
@@ -45,46 +45,52 @@ class CvLabel(QtGui.QLabel):
         # switch between bit depths
         if iplImage.depth == cv.IPL_DEPTH_8U :
             if  iplImage.nChannels == 3:
+                # Displaying color image
                 cstr = iplImage.tostring()
                 self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
                 self.updateImage()
             elif iplImage.nChannels == 1:
+                # Displaying B&W image as 8bit indexed
                 cstr = iplImage.tostring()
                 self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_Indexed8)
                 self.frame.setColorTable(self.colortable)
-                #self.frame = QtGui.QImage(cstr, )
                 self.updateImage()
             else :
-                print("This number of channels is not supported")
-                    
+                # TODO: Make exception
+                print("This number of channels is not supported")   
         else :
             print("This type of IplImage is not implemented")
 
     def updateImage(self):
         '''
-        Display frame on label and draw mouse trace
+        Display frame on label and draw selected region
         '''
         if self.selectedRect is not None :
+            # We neet to draw somethong on image
+            # Creating image from stored frame
             image = QtGui.QImage(self.frame)
-            
+            # Creating pen to draw
             pen = QtGui.QPen(QtCore.Qt.blue)
             pen.setWidth(3)
             pen.setStyle(QtCore.Qt.DashLine)
-            
+            # Creating brush 
             brush = QtGui.QBrush(QtCore.Qt.blue, QtCore.Qt.Dense6Pattern)
-            
+            # Prepare for painting
             painter = QtGui.QPainter()           
             painter.begin(image)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setPen(pen)
             painter.setBrush(brush)
-            
-            painter.drawRect(self.selectedRect)         
+            # Painting rectangle
+            painter.drawRect(self.selectedRect)    
+            # Painting diagonal line     
             painter.drawLine(QtCore.QLine(self.selectedRect.topLeft(),
                                            self.selectedRect.bottomRight()))
-            self.setPixmap(QtGui.QPixmap.fromImage(image))
             painter.end()
+            self.setPixmap(QtGui.QPixmap.fromImage(image))
+            
         else :
+            # Nothing to draw -- creating image from stored frame
             self.setPixmap(QtGui.QPixmap.fromImage(self.frame))
             
     

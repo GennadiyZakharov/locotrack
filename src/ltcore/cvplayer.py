@@ -31,7 +31,7 @@ class CvPlayer(QtCore.QObject):
         self.fileName = None
         self.captureDevice = None
         self.videoLength = None
-        self.position = None       
+        self.leftTopPos = None       
         #self.emit(signalCvPlayerCapturing, None)
         
     def captureFromFile(self, fileName):
@@ -88,7 +88,7 @@ class CvPlayer(QtCore.QObject):
         #TODO: fix
         if self.captureDevice is None :
             return
-        if frameNumber == self.position :
+        if frameNumber == self.leftTopPos :
             return
         cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, frameNumber)
         self.timerEvent()
@@ -102,10 +102,10 @@ class CvPlayer(QtCore.QObject):
             cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_CONTRAST, value)
     #
     def timerEvent(self, event=None) :
-        self.position = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+        self.leftTopPos = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
         frame = cv.QueryFrame(self.captureDevice)
         if frame is None :
             self.stop()
         else :
-            # self.emit(signalValueChanged, self.position)
-            self.emit(signalNextFrame, frame, self.position)
+            # self.emit(signalValueChanged, self.leftTopPos)
+            self.emit(signalNextFrame, frame, self.leftTopPos)

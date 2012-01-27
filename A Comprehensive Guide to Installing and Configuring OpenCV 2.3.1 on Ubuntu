@@ -1,0 +1,1928 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Tutorial: A Comprehensive Guide to Installing and Configuring OpenCV 2.3.1 on Ubuntu &laquo; ozbots.org</title>
+	<link rel="shortcut icon" href="http://ozbots.org/wp-content/themes/atahualpa367/images/favicon/new-favicon.ico" />
+<link rel="profile" href="http://gmpg.org/xfn/11" />
+<link rel="pingback" href="http://ozbots.org/xmlrpc.php" />
+<link rel="alternate" type="application/rss+xml" title="ozbots.org &raquo; Feed" href="http://ozbots.org/feed/" />
+<link rel="alternate" type="application/rss+xml" title="ozbots.org &raquo; Comments Feed" href="http://ozbots.org/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="ozbots.org &raquo; Tutorial: A Comprehensive Guide to Installing and Configuring OpenCV 2.3.1 on Ubuntu Comments Feed" href="http://ozbots.org/opencv-installation/feed/" />
+<script type='text/javascript' src='http://ozbots.org/wp-includes/js/jquery/jquery.js?ver=1.7.1'></script>
+<script type='text/javascript' src='http://ozbots.org/wp-content/themes/atahualpa367/js/DD_roundies.js?ver=0.0.2a'></script>
+<script type='text/javascript' src='http://ozbots.org/wp-includes/js/comment-reply.js?ver=20090102'></script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://ozbots.org/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://ozbots.org/wp-includes/wlwmanifest.xml" /> 
+<link rel='prev' title='Download: Compiled Kernel Files For Chumby Falconwing Version 1.0.7 Build 1.0.3454' href='http://ozbots.org/chumby_kernel_files_3454/' />
+<link rel='next' title='Tips and Tricks: A Comprehensive OpenCV Installation Troubleshooting Guide' href='http://ozbots.org/opencv-install-troubleshooting/' />
+<link rel='canonical' href='http://ozbots.org/opencv-installation/' />
+<link rel='shortlink' href='http://ozbots.org/?p=361' />
+<style type="text/css">body{text-align:center;margin:0;padding:0;font-family:"Helvetica Neue",Arial,"Lucida Grande","Lucida Sans Unicode","Microsoft YaHei",sans-serif;_font-family:tahoma,arial,sans-serif;font-size:0.8em;color:#000000;background:#d5dadd url(/wp-content/themes/atahualpa364/images/bg-html.jpg) repeat-x top left;margin-top:10px;line-height:150%;font-weight:normal}a:link,a:visited,a:active{color:#2970FF;font-weight:normal;text-decoration:none;}a:hover{color:#AA0000;font-weight:normal;text-decoration:underline}ul,ol,dl,p,h1,h2,h3,h4,h5,h6{margin-top:10px;margin-bottom:10px;padding-top:0;padding-bottom:0;}ul ul,ul ol,ol ul,ol ol{margin-top:0;margin-bottom:0}code,pre{font-family:"Courier New",Courier,monospace;font-size:1em}pre{overflow:auto;word-wrap:normal;padding-bottom:1.5em;overflow-y:hidden;width:99%}abbr[title],acronym[title]{border-bottom:1px dotted}hr{display:block;height:2px;border:none;margin:0.5em auto;color:#cccccc;background-color:#cccccc}table{font-size:1em;}div.post,ul.commentlist li,ol.commentlist li{word-wrap:break-word;}pre,.wp_syntax{word-wrap:normal;}div#wrapper{text-align:center;margin-left:auto;margin-right:auto;display:block;width:94%;min-width:400px;max-width:950px}* html div#wrapper{<!--width:expression(((document.compatMode && document.compatMode=='CSS1Compat') ? document.documentElement.clientWidth:document.body.clientWidth) > 951 ? "950px":(((document.compatMode && document.compatMode=='CSS1Compat') ? document.documentElement.clientWidth:document.body.clientWidth) < 401 ? "400px":"94%"));-->}div#container{padding:0;background:#ffffff;width:auto;margin-left:auto;margin-right:auto;text-align:left;display:block}table#layout{font-size:100%;width:100%;table-layout:fixed}.colone{width:200px}.colone-inner{width:200px}.coltwo{width:100% }.colthree-inner{width:200px}.colthree{width:220px}td#header{width:auto;padding:0}table#logoarea,table#logoarea tr,table#logoarea td{margin:0;padding:0;background:none;border:0}table#logoarea{width:100%;border-spacing:0px;padding:10px 20px 10px 20px}img.logo{display:block;margin:0 10px 0 0}td.logoarea-logo{width:1%}h1.blogtitle,h2.blogtitle{ display:block;margin:0;padding-top:10px;_line-height:1.0em;font-family:font-family:"Helvetica Neue",Arial,"Lucida Grande","Lucida Sans Unicode","Microsoft YaHei",sans-serif;font-size:300%;font-smooth:always}h1.blogtitle a:link,h1.blogtitle a:visited,h1.blogtitle a:active,h2.blogtitle a:link,h2.blogtitle a:visited,h2.blogtitle a:active{ text-decoration:none;color:#89CB11;font-weight:bold;font-smooth:always}h1.blogtitle a:hover,h2.blogtitle a:hover{ text-decoration:none;color:#89CB11;font-weight:bold}p.tagline{margin:0;padding-top:12px;font-size:1.2em;font-weight:normal;color:#666666}td.feed-icons{white-space:nowrap;}div.rss-box{height:1%;display:block;padding:10px 0 10px 10px;margin:0;width:280px}a.comments-icon{height:22px;line-height:22px;margin:0 5px 0 5px;padding-left:22px;display:block;text-decoration:none;float:right;white-space:nowrap}a.comments-icon:link,a.comments-icon:active,a.comments-icon:visited{background:transparent url(http://ozbots.org/wp-content/themes/atahualpa367/images/comment-gray.png) no-repeat scroll center left}a.comments-icon:hover{background:transparent url(http://ozbots.org/wp-content/themes/atahualpa367/images/comment.png) no-repeat scroll center left}a.posts-icon{height:22px;line-height:22px;margin:0 5px 0 0;padding-left:20px;display:block;text-decoration:none;float:right;white-space:nowrap}a.posts-icon:link,a.posts-icon:active,a.posts-icon:visited{background:transparent url(http://ozbots.org/wp-content/themes/atahualpa367/images/rss-gray.png) no-repeat scroll center left}a.posts-icon:hover{background:transparent url(http://ozbots.org/wp-content/themes/atahualpa367/images/rss.png) no-repeat scroll center left}a.email-icon{height:22px;line-height:22px;margin:0 5px 0 5px;padding-left:24px;display:block;text-decoration:none;float:right;white-space:nowrap}a.email-icon:link,a.email-icon:active,a.email-icon:visited{background:transparent url(http://ozbots.org/wp-content/themes/atahualpa367/images/email-gray.png) no-repeat scroll center left}a.email-icon:hover{background:transparent url(http://ozbots.org/wp-content/themes/atahualpa367/images/email.png) no-repeat scroll center left}td.search-box{height:1%}div.searchbox{height:35px;border:noneborder-bottom:0;width:200px;margin:0;padding:0}div.searchbox-form{margin:5px 10px 5px 10px}div.horbar1,div.horbar2{font-size:1px;clear:both;display:block;position:relative;padding:0;margin:0;width:100%;}div.horbar1{height:10px;background:#2897e1}div.horbar2{height:15px;background:#fff7ff;border-bottom:double 3px #cccccc}div.opacityleft{position:absolute;z-index:2;top:0;left:0;background-color:#FFFFFF;height:150px;width:200px;filter:alpha(opacity=40);-moz-opacity:.40;opacity:.40}div.opacityright{position:absolute;z-index:2;top:0;right:0;background-color:#FFFFFF;height:150px;width:200px;filter:alpha(opacity=40);-moz-opacity:.40;opacity:.40}a.divclick:link,a.divclick:visited,a.divclick:active,a.divclick:hover{width:100%;height:100%;display:block;text-decoration:none}td#left{vertical-align:top;border-right:dotted 1px #CCCCCC;padding:10px 10px 10px 10px;background:#fff7ff}td#left-inner{vertical-align:top;border-right:dashed 1px #CCCCCC;padding:10px 10px 10px 10px;background:#ffffff}td#right{vertical-align:top;border-left:dotted 1px #CCCCCC;padding:10px 10px 10px 10px;background:#fff7ff}td#right-inner{vertical-align:top;border-left:dashed 1px #CCCCCC;padding:10px 10px 10px 10px;background:#ffffff}td#middle{vertical-align:top;width:100%;padding:20px 25px}td#footer{width:auto;background-color:#ffffff;border-top:dashed 1px #cccccc;padding:10px;text-align:center;color:#777777;font-size:95%}td#footer a:link,td#footer a:visited,td#footer a:active{text-decoration:none;color:#777777;font-weight:normal}td#footer a:hover{text-decoration:none;color:#777777;font-weight:normal}div.widget{display:block;width:auto;margin:0 0 15px 0}div.widget-title{display:block;width:auto;padding-bottom:5px}div.widget-title h3,td#left h3.tw-widgettitle,td#right h3.tw-widgettitle,td#left ul.tw-nav-list,td#right ul.tw-nav-list{padding:0;margin:0;font-size:1.6em;font-weight:normal}div.widget ul,div.textwidget{display:block;width:auto}div.widget select{width:98%;margin-top:5px;}div.widget ul{list-style-type:none;margin:0;padding:0;width:auto}div.widget ul li{display:block;margin:2px 0 2px 0px;padding:0 0 0 5px;border-left:solid 7px #CCCCCC}div.widget ul li:hover,div.widget ul li.sfhover{display:block;width:auto;border-left:solid 7px #000000;}div.widget ul li ul li{margin:2px 0 2px 5px;padding:0 0 0 5px;border-left:solid 7px #CCCCCC;}div.widget ul li ul li:hover,div.widget ul li ul li.sfhover{border-left:solid 7px #000000;}div.widget ul li ul li ul li{margin:2px 0 2px 5px;padding:0 0 0 5px;border-left:solid 7px #CCCCCC;}div.widget ul li ul li ul li:hover,div.widget ul li ul li ul li.sfhover{border-left:solid 7px #000000;}div.widget a:link,div.widget a:visited,div.widget a:active,div.widget td a:link,div.widget td a:visited,div.widget td a:active,div.widget ul li a:link,div.widget ul li a:visited,div.widget ul li a:active{text-decoration:none;font-weight:normal;color:#666666;font-weight:normal;}div.widget ul li ul li a:link,div.widget ul li ul li a:visited,div.widget ul li ul li a:active{color:#666666;font-weight:normal;}div.widget ul li ul li ul li a:link,div.widget ul li ul li ul li a:visited,div.widget ul li ul li ul li a:active{color:#666666;font-weight:normal;}div.widget a:hover,div.widget ul li a:hover{color:#000000;}div.widget ul li ul li a:hover{color:#000000;}div.widget ul li ul li ul li a:hover{color:#000000;}div.widget ul li a:link,div.widget ul li a:visited,div.widget ul li a:active,div.widget ul li a:hover{display:inline}* html div.widget ul li a:link,* html div.widget ul li a:visited,* html div.widget ul li a:active,* html div.widget ul li a:hover{height:1%; } div.widget_nav_menu ul li,div.widget_pages ul li,div.widget_categories ul li{border-left:0 !important;padding:0 !important}div.widget_nav_menu ul li a:link,div.widget_nav_menu ul li a:visited,div.widget_nav_menu ul li a:active,div.widget_pages ul li a:link,div.widget_pages ul li a:visited,div.widget_pages ul li a:active,div.widget_categories ul li a:link,div.widget_categories ul li a:visited,div.widget_categories ul li a:active{padding:0 0 0 5px;border-left:solid 7px #CCCCCC}div.widget_nav_menu ul li a:hover,div.widget_pages ul li a:hover,div.widget_categories ul li a:hover{border-left:solid 7px #000000;}div.widget_nav_menu ul li ul li a:link,div.widget_nav_menu ul li ul li a:visited,div.widget_nav_menu ul li ul li a:active,div.widget_pages ul li ul li a:link,div.widget_pages ul li ul li a:visited,div.widget_pages ul li ul li a:active,div.widget_categories ul li ul li a:link,div.widget_categories ul li ul li a:visited,div.widget_categories ul li ul li a:active{padding:0 0 0 5px;border-left:solid 7px #CCCCCC}div.widget_nav_menu ul li ul li a:hover,div.widget_pages ul li ul li a:hover,div.widget_categories ul li ul li a:hover{border-left:solid 7px #000000;}div.widget_nav_menu ul li ul li ul li a:link,div.widget_nav_menu ul li ul li ul li a:visited,div.widget_nav_menu ul li ul li ul li a:active,div.widget_pages ul li ul li ul li a:link,div.widget_pages ul li ul li ul li a:visited,div.widget_pages ul li ul li ul li a:active,div.widget_categories ul li ul li ul li a:link,div.widget_categories ul li ul li ul li a:visited,div.widget_categories ul li ul li ul li a:active{padding:0 0 0 5px;border-left:solid 7px #CCCCCC}div.widget_nav_menu ul li ul li ul li a:hover,div.widget_pages ul li ul li ul li a:hover,div.widget_categories ul li ul li ul li a:hover{border-left:solid 7px #000000;}div.widget_nav_menu ul li a:link,div.widget_nav_menu ul li a:active,div.widget_nav_menu ul li a:visited,div.widget_nav_menu ul li a:hover,div.widget_pages ul li a:link,div.widget_pages ul li a:active,div.widget_pages ul li a:visited,div.widget_pages ul li a:hover{display:block !important}div.widget_categories ul li a:link,div.widget_categories ul li a:active,div.widget_categories ul li a:visited,div.widget_categories ul li a:hover{display:inline !important}table.subscribe{width:100%}table.subscribe td.email-text{padding:0 0 5px 0;vertical-align:top}table.subscribe td.email-field{padding:0;width:100%}table.subscribe td.email-button{padding:0 0 0 5px}table.subscribe td.post-text{padding:7px 0 0 0;vertical-align:top}table.subscribe td.comment-text{padding:7px 0 0 0;vertical-align:top}div.post,div.page{display:block;margin:0 0 30px 0}div.sticky{background:#eee url('<?php bloginfo('template_directory');?>/images/sticky.gif') 99% 5% no-repeat;border:dashed 1px #cccccc;padding:10px}div.post-kicker{margin:0 0 5px 0}div.post-kicker a:link,div.post-kicker a:visited,div.post-kicker a:active{color:#000000;text-decoration:none;text-transform:uppercase}div.post-kicker a:hover{color:#cc0000}div.post-headline{}div.post-headline h1,div.post-headline h2{ margin:0; padding:0;padding:0;margin:0;font-size:22px;line-height:1.5em;font-weight:normal;color:#000}div.post-headline h2 a:link,div.post-headline h2 a:visited,div.post-headline h2 a:active,div.post-headline h1 a:link,div.post-headline h1 a:visited,div.post-headline h1 a:active{color:#666666;text-decoration:none}div.post-headline h2 a:hover,div.post-headline h1 a:hover{color:#000000;text-decoration:none}div.post-byline{margin:5px 0 10px 0;color:#666666;font-style:italic;font-size:11px}div.post-byline a:link,div.post-byline a:visited,div.post-byline a:active{}div.post-byline a:hover{}div.post-bodycopy{}div.post-bodycopy p{margin:1em 0;padding:0;display:block}div.post-pagination{}div.post-footer{clear:both;display:block;margin:0;padding:5px;font-size:11px;line-height:18px;color:#666666;font-style:italic;border-bottom:dotted 1px #666666}div.post-footer a:link,div.post-footer a:visited,div.post-footer a:active{color:#333;font-weight:normal;text-decoration:none}div.post-footer a:hover{color:#ffff00;font-weight:normal;text-decoration:underline}div.post-kicker img,div.post-byline img,div.post-footer img{border:0;padding:0;margin:0 0 -1px 0;background:none}span.post-ratings{display:inline-block;width:auto;white-space:nowrap}div.navigation-top{margin:0 0 10px 0;padding:0 0 10px 0;border-bottom:dashed 1px #cccccc}div.navigation-middle{margin:10px 0 20px 0;padding:10px 0 10px 0;border-top:dashed 1px #cccccc;border-bottom:dashed 1px #cccccc}div.navigation-bottom{margin:20px 0 0 0;padding:10px 0 0 0;border-top:dashed 1px #cccccc}div.navigation-comments-above{margin:0 0 10px 0;padding:5px 0 5px 0}div.navigation-comments-below{margin:0 0 10px 0;padding:5px 0 5px 0}div.older{float:left;width:48%;text-align:left;margin:0;padding:0}div.newer{float:right;width:48%;text-align:right;margin:0;padding:0;}div.older-home{float:left;width:44%;text-align:left;margin:0;padding:0}div.newer-home{float:right;width:44%;text-align:right;margin:0;padding:0;}div.home{float:left;width:8%;text-align:center;margin:0;padding:0}form,.feedburner-email-form{margin:0;padding:0;}fieldset{border:1px solid #cccccc;width:auto;padding:0.35em 0.625em 0.75em;display:block;}legend{color:#000000;background:#f4f4f4;border:1px solid #cccccc;padding:2px 6px;margin-bottom:15px;}form p{margin:5px 0 0 0;padding:0;}div.xhtml-tags p{margin:0}label{margin-right:0.5em;font-family:arial;cursor:pointer;}input.text,input.textbox,input.password,input.file,input.TextField,textarea{padding:3px;color:#000000;border-top:solid 1px #333333;border-left:solid 1px #333333;border-right:solid 1px #999999;border-bottom:solid 1px #cccccc;background:url(http://ozbots.org/wp-content/themes/atahualpa367/images/inputbackgr.gif) top left no-repeat}textarea{width:96%;}input.inputblur{color:#777777;width:95%}input.inputfocus{color:#000000;width:95%}input.highlight,textarea.highlight{background:#e8eff7;border-color:#37699f}.button,.Button,input[type=submit]{padding:0 2px;height:24px;line-height:16px;background-color:#777777;color:#ffffff;border:solid 2px #555555;font-weight:bold}input.buttonhover{padding:0 2px;cursor:pointer;background-color:#6b9c6b;color:#ffffff;border:solid 2px #496d49}form#commentform input#submit{ padding:0 .25em; overflow:visible}form#commentform input#submit[class]{width:auto}form#commentform input#submit{padding:4px 10px 4px 10px;font-size:1.2em;line-height:1.5em;height:36px}table.searchform{width:100%}table.searchform td.searchfield{padding:0;width:100%}table.searchform td.searchbutton{padding:0 0 0 5px}table.searchform td.searchbutton input{padding:0 0 0 5px}blockquote{height:1%;display:block;clear:both;color:#555555;padding:1em 1em;background:#f4f4f4;border:solid 1px #e1e1e1}blockquote blockquote{height:1%;display:block;clear:both;color:#444444;padding:1em 1em;background:#e1e1e1;border:solid 1px #d3d3d3}div.post table{border-collapse:collapse;margin:10px 0}div.post table caption{width:auto;margin:0 auto;background:#eeeeee;border:#999999;padding:4px 8px;color:#666666}div.post table th{background:#888888;color:#ffffff;font-weight:bold;font-size:90%;padding:4px 8px;border:solid 1px #ffffff;text-align:left}div.post table td{padding:4px 8px;background-color:#ffffff;border-bottom:1px solid #dddddd;text-align:left}div.post table tfoot td{}div.post table tr.alt td{background:#f4f4f4}div.post table tr.over td{background:#e2e2e2}#calendar_wrap{padding:0;border:none}table#wp-calendar{width:100%;font-size:90%;border-collapse:collapse;background-color:#ffffff;margin:0 auto}table#wp-calendar caption{width:auto;background:#eeeeee;border:none;;padding:3px;margin:0 auto;font-size:1em}table#wp-calendar th{border:solid 1px #eeeeee;background-color:#999999;color:#ffffff;font-weight:bold;padding:2px;text-align:center}table#wp-calendar td{padding:0;line-height:18px;background-color:#ffffff;border:1px solid #dddddd;text-align:center}table#wp-calendar tfoot td{border:solid 1px #eeeeee;background-color:#eeeeee}table#wp-calendar td a{display:block;background-color:#eeeeee;width:100%;height:100%;padding:0}div#respond{margin:25px 0;padding:25px;background:#eee;-moz-border-radius:8px;-khtml-border-radius:8px;-webkit-border-radius:8px;border-radius:8px}p.thesetags{margin:10px 0}h3.reply,h3#reply-title{margin:0;padding:0 0 10px 0}ol.commentlist{margin:15px 0 25px 0;list-style-type:none;padding:0;display:block;border-top:dotted 1px #cccccc}ol.commentlist li{padding:15px 10px;display:block;height:1%;margin:0;background-color:#ffffff;border-bottom:dotted 1px #cccccc}ol.commentlist li.alt{display:block;height:1%;background-color:#eeeeee;border-bottom:dotted 1px #cccccc}ol.commentlist li.authorcomment{display:block;height:1%;background-color:#ffecec}ol.commentlist span.authorname{font-weight:bold;font-size:110%}ol.commentlist span.commentdate{color:#666666;font-size:90%;margin-bottom:5px;display:block}ol.commentlist span.editcomment{display:block}ol.commentlist li p{margin:2px 0 5px 0}div.comment-number{float:right;font-size:2em;line-height:2em;font-family:georgia,serif;font-weight:bold;color:#ddd;margin:-10px 0 0 0;position:relative;height:1%}div.comment-number a:link,div.comment-number a:visited,div.comment-number a:active{color:#ccc}textarea#comment{width:98%;margin:10px 0;display:block}ul.commentlist{margin:15px 0 15px 0;list-style-type:none;padding:0;display:block;border-top:dotted 1px #cccccc}ul.commentlist ul{margin:0;border:none;list-style-type:none;padding:0}ul.commentlist li{padding:0; margin:0;display:block;clear:both;height:1%;}ul.commentlist ul.children li{ margin-left:30px}ul.commentlist div.comment-container{padding:10px;margin:0}ul.children div.comment-container{background-color:transparent;border:dotted 1px #ccc;padding:10px;margin:0 10px 8px 0; -moz-border-radius:5px; -khtml-border-radius:5px; -webkit-border-radius:5px; border-radius:5px}ul.children div.bypostauthor{}ul.commentlist li.thread-even{background-color:#ffffff;border-bottom:dotted 1px #cccccc}ul.commentlist li.thread-odd{background-color:#eeeeee;border-bottom:dotted 1px #cccccc}ul.commentlist div.bypostauthor{background-color:#ffecec}ul.children div.bypostauthor{border:dotted 1px #ffbfbf}ul.commentlist span.authorname{font-size:110%}div.comment-meta a:link,div.comment-meta a:visited,div.comment-meta a:active,div.comment-meta a:hover{font-weight:normal}div#cancel-comment-reply{margin:-5px 0 10px 0}div.comment-number{float:right;font-size:2em;line-height:2em;font-family:georgia,serif;font-weight:bold;color:#ddd;margin:-10px 0 0 0;position:relative;height:1%}div.comment-number a:link,div.comment-number a:visited,div.comment-number a:active{color:#ccc}.page-numbers{padding:2px 6px;border:solid 1px #000000;-moz-border-radius:6px;-khtml-border-radius:6px;-webkit-border-radius:6px;border-radius:6px}span.current{background:#ddd}a.prev,a.next{border:none}a.page-numbers:link,a.page-numbers:visited,a.page-numbers:active{text-decoration:none;color:#2970FF;border-color:#2970FF}a.page-numbers:hover{text-decoration:none;color:#AA0000;border-color:#AA0000}div.xhtml-tags{display:none}abbr em{border:none !important;border-top:dashed 1px #aaa !important;display:-moz-inline-box !important;display:inline-block !important;background:url(http://ozbots.org/wp-content/themes/atahualpa367/images/commentluv.gif) 0% 90% no-repeat;margin-top:8px;padding:5px 5px 2px 20px !important;font-style:normal}p.subscribe-to-comments{margin-bottom:10px}div#gsHeader{display:none;}div.g2_column{margin:0 !important;width:100% !important;font-size:1.2em}div#gsNavBar{border-top-width:0 !important}p.giDescription{font-size:1.2em;line-height:1 !important}p.giTitle{margin:0.3em 0 !important;font-size:1em;font-weight:normal;color:#666}div#wp-email img{border:0;padding:0}div#wp-email input,div#wp-email textarea{margin-top:5px;margin-bottom:2px}div#wp-email p{margin-bottom:10px}input#wp-email-submit{ padding:0; font-size:30px; height:50px; line-height:50px; overflow:visible;}img.WP-EmailIcon{ vertical-align:text-bottom !important}.tw-accordion .tw-widgettitle,.tw-accordion .tw-widgettitle:hover,.tw-accordion .tw-hovered,.tw-accordion .selected,.tw-accordion .selected:hover{ background:transparent !important; background-image:none !important}.tw-accordion .tw-widgettitle span{ padding-left:0 !important}.tw-accordion h3.tw-widgettitle{border-bottom:solid 1px #ccc}.tw-accordion h3.selected{border-bottom:none}td#left .without_title,td#right .without_title{ margin-top:0;margin-bottom:0}ul.tw-nav-list{border-bottom:solid 1px #999;display:block;margin-bottom:5px !important}td#left ul.tw-nav-list li,td#right ul.tw-nav-list li{padding:0 0 1px 0;margin:0 0 -1px 5px; border:solid 1px #ccc;border-bottom:none;-moz-border-radius:5px;-khtml-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;-moz-border-radius-bottomright:0;-moz-border-radius-bottomleft:0;-webkit-border-bottom-right-radius:0;-webkit-border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-left-radius:0;background:#eee}td#left ul.tw-nav-list li.ui-tabs-selected,td#right ul.tw-nav-list li.ui-tabs-selected{ background:none;border:solid 1px #999;border-bottom:solid 1px #fff !important}ul.tw-nav-list li a:link,ul.tw-nav-list li a:visited,ul.tw-nav-list li a:active,ul.tw-nav-list li a:hover{padding:0 8px !important;background:none;border-left:none !important;outline:none}td#left ul.tw-nav-list li.ui-tabs-selected a,td#left li.ui-tabs-selected a:hover,td#right ul.tw-nav-list li.ui-tabs-selected a,td#right li.ui-tabs-selected a:hover{ color:#000000; text-decoration:none;font-weight:bold;background:none !important;outline:none}td#left .ui-tabs-panel,td#right .ui-tabs-panel{ margin:0; padding:0}img{border:0}#dbem-location-map img{ background:none !important}.post img{padding:5px;border:solid 1px #dddddd;background-color:#f3f3f3;-moz-border-radius:3px;-khtml-border-radius:3px;-webkit-border-radius:3px;border-radius:3px;clear:both}.post img.size-full{max-width:96%;width:auto 100%;margin:5px 0 5px 0}div.post img[class~=size-full]{height:auto;}.post img.alignleft{float:left;margin:10px 10px 5px 0;}.post img.alignright{float:right;margin:10px 0 5px 10px;}.post img.aligncenter{display:block;margin:10px auto}.aligncenter,div.aligncenter{ display:block; margin-left:auto; margin-right:auto}.alignleft,div.alignleft{float:left;margin:10px 10px 5px 0}.alignright,div.alignright{ float:right; margin:10px 0 5px 10px}div.archives-page img{border:0;padding:0;background:none;margin-bottom:0;vertical-align:-10%}.wp-caption{max-width:96%;width:auto 100%;height:auto;display:block;border:1px solid #dddddd;text-align:center;background-color:#f3f3f3;padding-top:4px;margin:10px 0 0 0;-moz-border-radius:3px;-khtml-border-radius:3px;-webkit-border-radius:3px;border-radius:3px}* html .wp-caption{height:100%;}.wp-caption img{ margin:0 !important; padding:0 !important; border:0 none !important}.wp-caption p.wp-caption-text{font-size:0.8em;line-height:13px;padding:2px 4px 5px;margin:0;color:#666666}img.wp-post-image{float:left;border:0;padding:0;background:none;margin:0 10px 5px 0}img.wp-smiley{ float:none;border:none !important;margin:0 1px -1px 1px;padding:0 !important;background:none !important}img.avatar{float:left;display:block;margin:0 8px 1px 0;padding:3px;border:solid 1px #ddd;background-color:#f3f3f3;-moz-border-radius:3px;-khtml-border-radius:3px;-webkit-border-radius:3px;border-radius:3px}#comment_quicktags{text-align:left;padding:10px 0 2px 0;display:block}#comment_quicktags input.ed_button{background:#f4f4f4;border:2px solid #cccccc;color:#444444;margin:2px 4px 2px 0;width:auto;padding:0 4px;height:24px;line-height:16px}#comment_quicktags input.ed_button_hover{background:#dddddd;border:2px solid #666666;color:#000000;margin:2px 4px 2px 0;width:auto;padding:0 4px;height:24px;line-height:16px;cursor:pointer}#comment_quicktags #ed_strong{font-weight:bold}#comment_quicktags #ed_em{font-style:italic}@media print{body{background:white;color:black;margin:0;font-size:10pt !important;font-family:arial,sans-serif;}div.post-footer{line-height:normal !important;color:#555 !important;font-size:9pt !important}a:link,a:visited,a:active,a:hover{text-decoration:underline !important;color:#000}h2{color:#000;font-size:14pt !important;font-weight:normal !important}h3{color:#000;font-size:12pt !important;}#header,#footer,.colone,.colthree,.navigation,.navigation-top,.navigation-middle,.navigation-bottom,.wp-pagenavi-navigation,#comment,#respond,.remove-for-print{display:none}td#left,td#right,td#left-inner,td#right-inner{width:0}td#middle{width:100%}*:lang(en) td#left{ display:none}*:lang(en) td#right{ display:none}*:lang(en) td#left-inner{ display:none}*:lang(en) td#right-inner{ display:none}td#left:empty{ display:none}td#right:empty{ display:none}td#left-inner:empty{ display:none}td#right-inner:empty{ display:none}}ul.rMenu,ul.rMenu ul,ul.rMenu li,ul.rMenu a{display:block;margin:0;padding:0}ul.rMenu,ul.rMenu li,ul.rMenu ul{list-style:none}ul.rMenu ul{display:none}ul.rMenu li{position:relative;z-index:1}ul.rMenu li:hover{z-index:999}ul.rMenu li:hover > ul{display:block;position:absolute}ul.rMenu li:hover{background-position:0 0} ul.rMenu-hor li{float:left;width:auto}ul.rMenu-hRight li{float:right}ul.sub-menu li,ul.rMenu-ver li{float:none}div#menu1 ul.sub-menu,div#menu1 ul.sub-menu ul,div#menu1 ul.rMenu-ver,div#menu1 ul.rMenu-ver ul{width:10em}div#menu2 ul.sub-menu,div#menu2 ul.sub-menu ul,div#menu2 ul.rMenu-ver,div#menu2 ul.rMenu-ver ul{width:11em}ul.rMenu-wide{width:100%}ul.rMenu-vRight{float:right}ul.rMenu-lFloat{float:left}ul.rMenu-noFloat{float:none}div.rMenu-center ul.rMenu{float:left;position:relative;left:50%}div.rMenu-center ul.rMenu li{position:relative;left:-50%}div.rMenu-center ul.rMenu li li{left:auto}ul.rMenu-hor ul{top:auto;right:auto;left:auto;margin-top:-1px}ul.rMenu-hor ul ul{margin-top:0;margin-left:0px}ul.sub-menu ul,ul.rMenu-ver ul{left:100%;right:auto;top:auto;top:0}ul.rMenu-vRight ul,ul.rMenu-hRight ul.sub-menu ul,ul.rMenu-hRight ul.rMenu-ver ul{left:-100%;right:auto;top:auto}ul.rMenu-hRight ul{left:auto;right:0;top:auto;margin-top:-1px}div#menu1 ul.rMenu{background:#89CB11;border:none}div#menu2 ul.rMenu{background:#777777;border:solid 1px #000000}div#menu1 ul.rMenu li a{border:none}div#menu2 ul.rMenu li a{border:solid 1px #000000}ul.rMenu-hor li{margin-bottom:-1px;margin-top:-1px;margin-left:-1px}ul#rmenu li{}ul#rmenu li ul li{}ul.rMenu-hor{padding-left:1px }ul.sub-menu li,ul.rMenu-ver li{margin-left:0;margin-top:-1px; }div#menu1 ul.sub-menu,div#menu1 ul.rMenu-ver{border-top:none}div#menu2 ul.sub-menu,div#menu2 ul.rMenu-ver{border-top:solid 1px #000000}div#menu1 ul.rMenu li a{padding:4px 5px}div#menu2 ul.rMenu li a{padding:4px 5px}div#menu1 ul.rMenu li a:link,div#menu1 ul.rMenu li a:hover,div#menu1 ul.rMenu li a:visited,div#menu1 ul.rMenu li a:active{text-decoration:none;margin:0;color:#FFFFFF;text-transform:uppercase;font:12px 'Helvetica Neue',Arial,'Lucida Grande','Lucida Sans Unicode','Microsoft YaHei',sans-serif;;}div#menu2 ul.rMenu li a:link,div#menu2 ul.rMenu li a:hover,div#menu2 ul.rMenu li a:visited,div#menu2 ul.rMenu li a:active{text-decoration:none;margin:0;color:#FFFFFF;text-transform:uppercase;font:11px Arial,Verdana,sans-serif;}div#menu1 ul.rMenu li{background-color:#89CB11}div#menu2 ul.rMenu li{background-color:#777777}div#menu1 ul.rMenu li:hover,div#menu1 ul.rMenu li.sfhover{background:#89CB11}div#menu2 ul.rMenu li:hover,div#menu2 ul.rMenu li.sfhover{background:#000000}div#menu1 ul.rMenu li.current-menu-item > a:link,div#menu1 ul.rMenu li.current-menu-item > a:active,div#menu1 ul.rMenu li.current-menu-item > a:hover,div#menu1 ul.rMenu li.current-menu-item > a:visited,div#menu1 ul.rMenu li.current_page_item > a:link,div#menu1 ul.rMenu li.current_page_item > a:active,div#menu1 ul.rMenu li.current_page_item > a:hover,div#menu1 ul.rMenu li.current_page_item > a:visited{background-color:#89CB11;color:#FFFFFF}div#menu1 ul.rMenu li.current-menu-item a:link,div#menu1 ul.rMenu li.current-menu-item a:active,div#menu1 ul.rMenu li.current-menu-item a:hover,div#menu1 ul.rMenu li.current-menu-item a:visited,div#menu1 ul.rMenu li.current_page_item a:link,div#menu1 ul.rMenu li.current_page_item a:active,div#menu1 ul.rMenu li.current_page_item a:hover,div#menu1 ul.rMenu li.current_page_item a:visited,div#menu1 ul.rMenu li a:hover{background-color:#89CB11;color:#FFFFFF}div#menu2 ul.rMenu li.current-menu-item > a:link,div#menu2 ul.rMenu li.current-menu-item > a:active,div#menu2 ul.rMenu li.current-menu-item > a:hover,div#menu2 ul.rMenu li.current-menu-item > a:visited,div#menu2 ul.rMenu li.current-cat > a:link,div#menu2 ul.rMenu li.current-cat > a:active,div#menu2 ul.rMenu li.current-cat > a:hover,div#menu2 ul.rMenu li.current-cat > a:visited{background-color:#CC0000;color:#FFFFFF}div#menu2 ul.rMenu li.current-menu-item a:link,div#menu2 ul.rMenu li.current-menu-item a:active,div#menu2 ul.rMenu li.current-menu-item a:hover,div#menu2 ul.rMenu li.current-menu-item a:visited,div#menu2 ul.rMenu li.current-cat a:link,div#menu2 ul.rMenu li.current-cat a:active,div#menu2 ul.rMenu li.current-cat a:hover,div#menu2 ul.rMenu li.current-cat a:visited,div#menu2 ul.rMenu li a:hover{background-color:#CC0000;color:#FFFFFF}div#menu1 ul.rMenu li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a{padding-right:15px;padding-left:5px;background-repeat:no-repeat;background-position:100% 50%;background-image:url(http://ozbots.org/wp-content/themes/atahualpa367/images/expand-right.gif)}div#menu2 ul.rMenu li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a{padding-right:15px;padding-left:5px;background-repeat:no-repeat;background-position:100% 50%;background-image:url(http://ozbots.org/wp-content/themes/atahualpa367/images/expand-right-white.gif)}ul.rMenu-vRight li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-vRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a,ul.rMenu-hRight li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand a{padding-right:5px;padding-left:20px;background-image:url(http://ozbots.org/wp-content/themes/atahualpa367/images/expand-left.gif);background-repeat:no-repeat;background-position:-5px 50%}div#menu1 ul.rMenu-hor li.rMenu-expand a{padding-left:5px;padding-right:15px !important;background-position:100% 50%;background-image:url(http://ozbots.org/wp-content/themes/atahualpa367/images/expand-down.gif)}div#menu2 ul.rMenu-hor li.rMenu-expand a{padding-left:5px;padding-right:15px !important;background-position:100% 50%;background-image:url(http://ozbots.org/wp-content/themes/atahualpa367/images/expand-down-white.gif)}div#menu1 ul.rMenu li.rMenu-expand li a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li a,div#menu1 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li a{background-image:none;padding-right:5px;padding-left:5px}div#menu2 ul.rMenu li.rMenu-expand li a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li a,div#menu2 ul.rMenu li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li.rMenu-expand li a{background-image:none;padding-right:5px;padding-left:5px}* html ul.rMenu{display:inline-block;display:block;position:relative;position:static}* html ul.rMenu ul{float:left;float:none}ul.rMenu ul{background-color:#fff}* html ul.sub-menu li,* html ul.rMenu-ver li,* html ul.rMenu-hor li ul.sub-menu li,* html ul.rMenu-hor li ul.rMenu-ver li{width:100%;float:left;clear:left}*:first-child+html ul.sub-menu > li:hover ul,*:first-child+html ul.rMenu-ver > li:hover ul{min-width:0}ul.rMenu li a{position:relative;min-width:0}* html ul.rMenu-hor li{width:6em;width:auto}* html div.rMenu-center{position:relative;z-index:1}html:not([lang*=""]) div.rMenu-center ul.rMenu li a:hover{height:100%}html:not([lang*=""]) div.rMenu-center ul.rMenu li a:hover{height:auto}* html ul.rMenu ul{display:block;position:absolute}* html ul.rMenu ul,* html ul.rMenu-hor ul,* html ul.sub-menu ul,* html ul.rMenu-ver ul,* html ul.rMenu-vRight ul,* html ul.rMenu-hRight ul.sub-menu ul,* html ul.rMenu-hRight ul.rMenu-ver ul,* html ul.rMenu-hRight ul{left:-10000px}* html ul.rMenu li.sfhover{z-index:999}* html ul.rMenu li.sfhover ul{left:auto}* html ul.rMenu li.sfhover ul ul,* html ul.rMenu li.sfhover ul ul ul{display:none}* html ul.rMenu li.sfhover ul,* html ul.rMenu li li.sfhover ul,* html ul.rMenu li li li.sfhover ul{display:block}* html ul.sub-menu li.sfhover ul,* html ul.rMenu-ver li.sfhover ul{left:60%}* html ul.rMenu-vRight li.sfhover ul,* html ul.rMenu-hRight ul.sub-menu li.sfhover ul* html ul.rMenu-hRight ul.rMenu-ver li.sfhover ul{left:-60%}* html ul.rMenu iframe{position:absolute;left:0;top:0;z-index:-1}* html ul.rMenu{margin-left:1px}* html ul.rMenu ul,* html ul.rMenu ul ul,* html ul.rMenu ul ul ul,* html ul.rMenu ul ul ul ul{margin-left:0}.clearfix:after{ content:".";display:block;height:0;clear:both;visibility:hidden}.clearfix{min-width:0;display:inline-block;display:block}* html .clearfix{height:1%;}.clearboth{clear:both;height:1%;font-size:1%;line-height:1%;display:block;padding:0;margin:0}code{font-size:120%;font-family:Consolas,"Lucida Console",Monaco,"Courier New",Courier,monospace}pre{font-size:85%;font-family:Consolas,"Lucida Console",Monaco,"Courier New",Courier,monospace}.post-bodycopy img{display:block;float:left;clear:both;}.excerptimg{margin:0 10px 0 0;display:block;float:left}div.post-headline h2 a:link,div.post-headline h2 a:visited,div.post-headline h2 a:active{color:#2970ff;_background:#ffffff}div.post-headline h2 a:hover{color:#aa0000;_background:#aa0000}div.post-footer a:link,div.post-footer a:visited,div.post-footer a:active{color:#2970ff;}div.post-footer a:hover{color:#aa0000;}.ozimgleftxxlarge{width:1000px;margin:0 1000px 10px 0;}.ozimgleftxlarge{width:800px;margin:0 1000px 10px 0;}.ozimgleftlarge{width:600px;margin:0 1000px 10px 0;}.ozimgleftmedium{width:400px;margin:0 1000px 10px 0;}.ozimgleftsmall{width:300px;margin:0 1000px 10px 0;}.ozimgleftxsmall{width:200px;margin:0 1000px 10px 0;}#menu1{background:#89CB11;padding:10px 0 10px 10px}#_menu1 ul{padding-left:5px;}#menu1 li{margin:0;padding:0 20px 0 20px;}._clearfix.rss-box a{padding:0 25px 0 25px }.clearfix.rss-box{padding-right:15px }#_menu1 .menu-item a:active,#menu1 .page_item a:active{}#_menu1 .menu-item a:link,#menu1 .page_item a:link{}#_menu1 .menu-item a:visited,#menu1 .page_item a:visited{}#_menu1 .menu-item a:hover,#_menu1 .page_item a:hover{ background-color:#ff0000; color:#333333;text-shadow:#000 1px 1px 1px;border-radius:10px;-moz-border-radius:10px; }div#menu1 ul.rMenu li.page_item,div#menu1 ul.rMenu li.menu_item{background-color:#89cb11;}div#menu1 ul.rMenu li.page_item a:hover,div#menu1 ul.rMenu li.menu_item a:hover{text-shadow:#000 1px 1px 1px;}div#menu1 ul.rMenu li.page_item,div#menu1 ul.rMenu li.menu_item{background-color:#89cb11;}div#menu1 ul.rMenu li.page_item.current_page_item a,div#menu1 ul.rMenu li.menu_item.current_menu_item a{background-color:#ffffff;color:#000000;border-radius:10px;-moz-border-radius:10px;}div#oz-read-more-button a{font-weight:normal;border-radius:5px;padding:7px;color:#ffffff;background-color:#2970ff}div#oz-read-more-button a:hover{text-decoration:none;text-shadow:#000 1px 1px 1px}_h1{font-size:34px;line-height:1.2;margin:0.3em 0 10px;}_h2{font-size:28px;line-height:1.3;margin:1em 0 .2em;}_h3{font-size:24px;line-height:1.3;margin:1em 0 .2em;}_h4{font-size:19px;margin:1.33em 0 .2em;}_h5{font-size:1.3em;margin:1.67em 0;font-weight:bold;}_h6{font-size:1.15em;margin:1.67em 0;font-weight:bold;}</style>
+<script type="text/javascript">
+//<![CDATA[
+
+
+
+/* JQUERY */
+jQuery(document).ready(function(){ 
+    
+   
+  
+
+	/* jQuery('ul#rmenu').superfish(); */
+	/* jQuery('ul#rmenu').superfish().find('ul').bgIframe({opacity:false}); */
+ 
+	/* For IE6 */
+	if (jQuery.browser.msie && /MSIE 6\.0/i.test(window.navigator.userAgent) && !/MSIE 7\.0/i.test(window.navigator.userAgent) && !/MSIE 8\.0/i.test(window.navigator.userAgent)) {
+
+		/* Max-width for images in IE6 */		
+		var centerwidth = jQuery("td#middle").width(); 
+		
+		/* Images without caption */
+		jQuery(".post img").each(function() { 
+			var maxwidth = centerwidth - 10 + 'px';
+			var imgwidth = jQuery(this).width(); 
+			var imgheight = jQuery(this).height(); 
+			var newimgheight = (centerwidth / imgwidth * imgheight) + 'px';	
+			if (imgwidth > centerwidth) { 
+				jQuery(this).css({width: maxwidth}); 
+				jQuery(this).css({height: newimgheight}); 
+			}
+		});
+		
+		/* Images with caption */
+		jQuery("div.wp-caption").each(function() { 
+			var captionwidth = jQuery(this).width(); 
+			var maxcaptionwidth = centerwidth + 'px';
+			var captionheight = jQuery(this).height();
+			var captionimgwidth =  jQuery("div.wp-caption img").width();
+			var captionimgheight =  jQuery("div.wp-caption img").height();
+			if (captionwidth > centerwidth) { 
+				jQuery(this).css({width: maxcaptionwidth}); 
+				var newcaptionheight = (centerwidth / captionwidth * captionheight) + 'px';
+				var newcaptionimgheight = (centerwidth / captionimgwidth * captionimgheight) + 'px';
+				jQuery(this).css({height: newcaptionheight}); 
+				jQuery("div.wp-caption img").css({height: newcaptionimgheight}); 
+				}
+		});
+		
+		/* sfhover for LI:HOVER support in IE6: */
+		jQuery("ul li").
+			hover( function() {
+					jQuery(this).addClass("sfhover")
+				}, 
+				function() {
+					jQuery(this).removeClass("sfhover")
+				} 
+			); 
+
+	/* End IE6 */
+	}
+	
+	jQuery(".post table.hover tr").
+		mouseover(function() {
+			jQuery(this).addClass("over");
+		}).
+		mouseout(function() {
+			jQuery(this).removeClass("over");
+		});	
+
+	
+	jQuery(".post table tr:even").
+		addClass("alt");
+
+	
+	jQuery("input.text, input.TextField, input.file, input.password, textarea").
+		focus(function () {  
+			jQuery(this).addClass("highlight"); 
+		}).
+		blur(function () { 
+			jQuery(this).removeClass("highlight"); 
+		})
+	
+	jQuery("input.inputblur").
+		focus(function () {  
+			jQuery(this).addClass("inputfocus"); 
+		}).
+		blur(function () { 
+			jQuery(this).removeClass("inputfocus"); 
+		})
+
+		
+
+	
+	jQuery("input.button, input.Button, input#submit").
+		mouseover(function() {
+			jQuery(this).addClass("buttonhover");
+		}).
+		mouseout(function() {
+			jQuery(this).removeClass("buttonhover");
+		});
+
+	/* toggle "you can use these xhtml tags" */
+	jQuery("a.xhtmltags").
+		click(function(){ 
+			jQuery("div.xhtml-tags").slideToggle(300); 
+		});
+
+	/* For the Tabbed Widgets plugin: */
+	jQuery("ul.tw-nav-list").
+		addClass("clearfix");
+
+		
+	
+});
+
+//]]>
+</script>
+
+<!--[if IE 6]>
+<script type="text/javascript">DD_roundies.addRule("a.posts-icon, a.comments-icon, a.email-icon, img.logo");</script>
+<![endif]-->
+</head>
+<body class="single single-post postid-361 single-format-standard">
+<div id="wrapper">
+<div id="container">
+<table id="layout" border="0" cellspacing="0" cellpadding="0">
+<colgroup>
+<col class="coltwo" />
+<col class="colthree" /></colgroup> 
+	<tr>
+
+		<!-- Header -->
+		<td id="header" colspan="2">
+
+		<table id="logoarea" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td rowspan="2" valign="middle" class="logoarea-title"><h2 class="blogtitle"><a href="http://ozbots.org/">ozbots.org</a></h2><p class="tagline">Personal Robotics Tips, Tricks, and How-To Articles</p></td><td class="feed-icons" valign="middle" align="right"><div class="clearfix rss-box"><a class="comments-icon" href="http://ozbots.org/comments/feed/" title="Subscribe to the COMMENTS feed">Comments</a><a class="email-icon" href="http://feedburner.google.com/fb/a/mailverify?uri=ozbotsdotorg&amp;loc=en_US" title="Subscribe by EMAIL">By Email</a><a class="posts-icon" href="http://ozbots.org/feed/" title="Subscribe to the POSTS feed">Posts</a></div></td></tr><tr><td valign="bottom" class="search-box" align="right"><div class="searchbox">
+					<form method="get" class="searchform" action="http://ozbots.org/">
+					<div class="searchbox-form">
+						<input type="text" class="text inputblur" onfocus="this.value=''" 
+						value="Search" onblur="this.value='Search'" name="s" /></div>
+					</form>
+				</div>
+				</td></tr></table> <div id="menu1"><ul id="rmenu2" class="clearfix rMenu-hor rMenu">
+<li class="page_item"><a href="http://ozbots.org/" title="ozbots.org"><span>Home</span></a></li>
+<li class="page_item page-item-2"><a href="http://ozbots.org/about/"><span>About ozbots.org</span></a></li>
+<li class="page_item page-item-26"><a href="http://ozbots.org/robot-resumes/"><span>Robot Resumes</span></a></li>
+<li class="page_item page-item-43"><a href="http://ozbots.org/contact/"><span>Contact</span></a></li>
+</ul></div>
+ <div class="horbar2">&nbsp;</div>
+		</td>
+		<!-- / Header -->
+
+	</tr>
+
+	<!-- Main Body -->	
+	<tr id="bodyrow">
+
+		
+				
+
+		<!-- Main Column -->
+		<td id="middle">
+
+			
+		
+				<div class="clearfix navigation-top">
+		<div class="older">&laquo; <a href="http://ozbots.org/opencv-install-troubleshooting/" rel="next">Tips and Tricks: A Comprehensive OpenCV Installation Troubleshooting Guide</a> &nbsp;</div><div class="newer">&nbsp; <a href="http://ozbots.org/chumby_kernel_files_3454/" rel="prev">Download: Compiled Kernel Files For Chumby Falconwing Version 1.0.7 Build 1.0.3454</a> &raquo;</div></div>				<div class="post-361 post type-post status-publish format-standard hentry category-tutorials tag-opencv tag-software-2 tag-ubuntu odd" id="post-361">
+						<div class="post-headline">		<h1>Tutorial: A Comprehensive Guide to Installing and Configuring OpenCV 2.3.1 on Ubuntu</h1>
+		</div>		<div class="post-byline"><img src="http://ozbots.org/wp-content/themes/atahualpa367/images/icons/calendar.gif" alt="" /> August 18th, 2011 | <img src="http://ozbots.org/wp-content/themes/atahualpa367/images/icons/user.gif" alt="" /> Posted by Osman Eralp | <img src="http://ozbots.org/wp-content/themes/atahualpa367/images/icons/comment.gif" alt="" /> <a href="http://ozbots.org/opencv-installation/#comments" class="comments-link"  title="Comment on Tutorial: A Comprehensive Guide to Installing and Configuring OpenCV 2.3.1 on Ubuntu">80 comments</a><br><img src="http://ozbots.org/wp-content/themes/atahualpa367/images/icons/tag.gif" alt="" />Tags: <a href="http://ozbots.org/tag/opencv/" rel="tag">opencv</a>, <a href="http://ozbots.org/tag/software-2/" rel="tag">software</a>, <a href="http://ozbots.org/tag/ubuntu/" rel="tag">ubuntu</a> </div>		<div class="post-bodycopy clearfix"><div>
+<p>This guide describes how to install and configure OpenCV 2.3.1 and its dependencies on Ubuntu. It is a compilation of my notes recorded during dozens of OpenCV installs on several different systems. This guide differs from other OpenCV guides in the following ways:</p>
+<ol>
+<li>This guide is comprehensive: you can start with a clean Ubuntu and successfully install OpenCV 2.3.1 by following this guide.</li>
+<li>This guide is for OpenCV 2.3.1. The other guides I found used previous versions of OpenCV.</li>
+<li>This guide includes all of the steps you need to use a webcam with OpenCV.</li>
+</ol>
+<p>Credit and thanks go to FakeOutdoorsman and Sebastian Montabone for their excellent posts, upon which several of the steps in this guide are based.</p>
+<p>If you need help troubleshooting OpenCV installation problems, see the companion guide “<a href="http://ozbots.org/opencv-install-troubleshooting/">A Comprehensive OpenCV Installation Troubleshooting Guide</a>.”</p>
+<p>&nbsp;</p>
+<h3>The Installation Procedure</h3>
+<p>To install and configure OpenCV 2.3.1, complete the following steps.</p>
+<ol>
+<li>Remove any installed versions of ffmpeg and x264 by entering the following command:</li>
+</ol>
+<blockquote><p><code>sudo apt-get remove ffmpeg x264 libx264-dev</code></p></blockquote>
+<ol start="2">
+<li>Get all the dependencies for x264 and ffmpeg by entering the following commands:</li>
+</ol>
+<blockquote><p><code>sudo apt-get update<br />
+sudo apt-get install build-essential checkinstall git cmake libfaac-dev libjack-jackd2-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libsdl1.2-dev libtheora-dev libva-dev libvdpau-dev libvorbis-dev libx11-dev libxfixes-dev libxvidcore-dev texi2html yasm zlib1g-dev</code></p></blockquote>
+<ol start="3">
+<li>Download and install gstreamer by entering the following command:</li>
+</ol>
+<blockquote><p><code>sudo apt-get install libgstreamer0.10-0 libgstreamer0.10-dev gstreamer0.10-tools gstreamer0.10-plugins-base libgstreamer-plugins-base0.10-dev gstreamer0.10-plugins-good gstreamer0.10-plugins-ugly gstreamer0.10-plugins-bad gstreamer0.10-ffmpeg</code></p></blockquote>
+<ol start="4">
+<li>Download and install install x264.</li>
+<ol>
+<li>Download a recent stable snapshot of x264 from <a href="ftp://ftp.videolan.org/pub/videolan/x264/snapshots/">ftp://ftp.videolan.org/pub/videolan/x264/snapshots/</a>. The exact version does not seem to matter. To write this guide, I used version x264-snapshot-20110808-2245-stable.tar.bz2, but I have used previous versions too.</li>
+<li>Configure and build the x264 libraries by entering the following commands:</li>
+</ol>
+</ol>
+<blockquote><p><code>./configure --enable-static<br />
+make<br />
+sudo make install</code></p></blockquote>
+<ol start="5">
+<li>Download and install install ffmpeg.</li>
+<ol>
+<li>Download ffmpeg version 0.8.x from <a href="http://ffmpeg.org/download.html">http://ffmpeg.org/download.html</a>. Note: Versions of OpenCV prior to 2.3.1 require ffmpeg 0.7.x.</li>
+<li>Configure and build ffmpeg by entering the following commands in a terminal:</li>
+</ol>
+</ol>
+<blockquote><p><code>./configure --enable-gpl --enable-libfaac --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libxvid --enable-nonfree --enable-postproc --enable-version3 --enable-x11grab<br />
+make<br />
+sudo make install</code></p></blockquote>
+<ol start="6">
+<li>Download and install gtk by entering the following command:</li>
+</ol>
+<blockquote><p><code>sudo apt-get install libgtk2.0-0 libgtk2.0-dev</code></p></blockquote>
+<ol start="7">
+<li>Download and install libjpeg by entering the following command:</li>
+</ol>
+<blockquote><p><code>sudo apt-get install libjpeg62 libjpeg62-dev</code></p></blockquote>
+<ol start="8">
+<li>Download and install install v4l (video for linux).</li>
+<ol>
+<li>Download v4l-utils-0.8.5.tar.bz2 from <a href="http://www.linuxtv.org/downloads/v4l-utils/">http://www.linuxtv.org/downloads/v4l-utils/</a></li>
+<li>Build v4l by entering the following commands in a terminal:</li>
+</ol>
+</ol>
+<blockquote><p><code>make<br />
+sudo make install</code></p></blockquote>
+<ol start="9">
+<li>Download and install install OpenCV.</li>
+<ol>
+<li>Download OpenCV version 2.3.1 from <a href="http://sourceforge.net/projects/opencvlibrary/files/">http://sourceforge.net/projects/opencvlibrary/files/</a></li>
+<li>Use the following command to untar the source files</li>
+</ol>
+</ol>
+<blockquote><p><code>tar xvf OpenCV-2.3.1.tar.bz2<br />
+cd OpenCV-2.3.1/<br />
+mkdir build<br />
+cd build<br />
+cmake ..</code></p></blockquote>
+<ol start="3">
+<ol start="3">
+<li>Check that the output of cmake includes the following text:</li>
+<ul>
+<li>found gstreamer-base-0.10</li>
+<li>GTK+ 2.x:                   YES</li>
+<li>FFMPEG:                     YES</li>
+<li>GStreamer:                  YES</li>
+<li>V4L/V4L2:                   Using libv4l</li>
+</ul>
+<p>Note: In versions of OpenCV prior to 2.3.1, the binary digit 1 was used instead of the word YES, like this: <code>FFMPEG: 1</code>.</p>
+</ol>
+</ol>
+<ol start="4">
+<ol start="4">
+<li>Run <code>make</code></li>
+<li>Run <code>sudo make install</code></li>
+</ol>
+</ol>
+<ol start="10">
+<li>Configure Linux.</li>
+<ol>
+<li>Tell linux where the shared libraries for OpenCV are located by entering the following shell command:<br />
+<blockquote style="margin-left: 0px;"><p><code>export LD_LIBRARY_PATH=/usr/local/lib</code></p></blockquote>
+<p>Add the command to your .bashrc file so that you don’t have to enter every time your start a new terminal.</p>
+<p>Alternatively, you can configure the system wide library search path. Using your favorite editor, add a single line containing the text <code>/usr/local/lib</code> to the end of a file named <code>/etc/ld.so.conf.d/opencv.conf</code>. Using vi, for example, enter the following commands:</p>
+<blockquote style="margin-left: 0px;"><p><code>sudo vi /etc/ld.so.conf.d/opencv.conf<br />
+G<br />
+o<br />
+/usr/local/lib<br />
+&lt;Esc&gt;<br />
+:wq!</code></p></blockquote>
+</li>
+<li>Using your favorite editor, add the following two lines to the end of /etc/bash.bashrc:<br />
+<blockquote style="margin-left: 0px;"><p><code>PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig<br />
+export PKG_CONFIG_PATH</code></p></blockquote>
+</li>
+<li>Reboot.</li>
+</ol>
+</ol>
+<p>After completing the previous steps, your system should be ready to compile code that uses the OpenCV libraries. The following example shows one way to compile code for OpenCV:</p>
+<blockquote style="margin-left: 0px;"><p><code>g++ `pkg-config opencv --cflags` `pkg-config opencv --libs` my_code.cpp  -o my_code</code></p></blockquote>
+<p>&nbsp;</p>
+<h3>References</h3>
+<ul>
+<li>If you encounter problems installing OpenCV, see the companion guide, &#8220;<a href="http://ozbots.org/opencv-install-troubleshooting/">A Comprehensive OpenCV Installation Troubleshooting Guide</a>.&#8221;</li>
+<li>Sebastian Montabone has several articles on installing OpenCV and image processing. His web site is <a href="http://www.samontab.com/">http://www.samontab.com/</a></li>
+<li>FakeOutdoorsman’s posted an excellent dependency install guide, which is located on the Ubuntu forums: <a href="http://ubuntuforums.org/showthread.php?t=786095">http://ubuntuforums.org/showthread.php?t=786095</a></li>
+</ul>
+</div>
+</div>						</div><!-- / Post -->	
+						
+	
+			
+
+	<a name="comments"></a><!-- named anchor for skip links -->
+	<h3 id="comments">80 comments to Tutorial: A Comprehensive Guide to Installing and Configuring OpenCV 2.3.1 on Ubuntu</h3>
+
+	
+	<!-- Comment List -->
+	<ul class="commentlist">
+		
+			<li class="comment even thread-even depth-1 clearfix" id="comment-153">
+		<div id="div-comment-153" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/e3d9483a536d6b992919a2b662dbf1c9?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">chaitanya</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-153">
+		August 19, 2011 at 12:39 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=153#respond' onclick='return addComment.moveForm("comment-153", "153", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>You have done an excellent Job</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-188">
+		<div id="div-comment-188" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/f4895d0819cf1bbe946c94c4dcd7c65a?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Danielsohn</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-188">
+		September 4, 2011 at 6:39 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=188#respond' onclick='return addComment.moveForm("comment-188", "188", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>The best and most updated guide in the web Osman !<br />
+A glitch that keeps me off a final built:<br />
+When making OpenCv I get<br />
+&#8220;Linking CXX shared library ../../lib/libopencv_highgui.so<br />
+/usr/bin/ld: /usr/local/lib/libavcodec.a(avpacket.o): relocation R_X86_64_32S against `av_destruct_packet_nofree&#8217; can not be used when making a shared object; recompile with -fPIC&#8221;</p>
+<p>I tried both fffmpeg 0.8 as well as 0.7 (with appropriately removing first stuff). Any clue what to do? Ubuntu 10.10</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-189">
+		<div id="div-comment-189" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/f4895d0819cf1bbe946c94c4dcd7c65a?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Danielsohn</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-189">
+		September 4, 2011 at 6:42 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=189#respond' onclick='return addComment.moveForm("comment-189", "189", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Sorry my copy and paste missed sth. This is during<br />
+&#8220;Building CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap_ffmpeg.o&#8221;<br />
+Several warnings and then :<br />
+&#8220;Linking CXX shared library ../../lib/libopencv_highgui.so<br />
+/usr/bin/ld: /usr/local/lib/libavcodec.a(avpacket.o): relocation R_X86_64_32S against `av_destruct_packet_nofree&#8217; can not be used when making a shared object; recompile with -fPIC<br />
+/usr/local/lib/libavcodec.a: could not read symbols: Bad value<br />
+collect2: ld returned 1 exit status<br />
+make[2]: *** [lib/libopencv_highgui.so.2.3.1] Error 1<br />
+make[1]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/all] Error 2<br />
+&#8220;</p>
+		</div>
+</li>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt thread-odd thread-alt depth-1 clearfix" id="comment-190">
+		<div id="div-comment-190" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-190">
+		September 4, 2011 at 8:22 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=190#respond' onclick='return addComment.moveForm("comment-190", "190", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Did you try adding the &#8211;enable-pic option when you configure ffmpeg? You might also need to use &#8211;enable-pic for libraries used by ffmpeg, such as x264. For example, the configure command for x264 would be:</p>
+<p>./configure &#8211;enable-static &#8211;enable-pic</p>
+<p>Does your PC have an AMD processor?</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-2 clearfix" id="comment-262">
+		<div id="div-comment-262" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/01adabea987bee7f3af8ec43dc6dc9ba?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">pitybea</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-262">
+		September 25, 2011 at 4:20 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=262#respond' onclick='return addComment.moveForm("comment-262", "262", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for the great work by Osman!</p>
+<p>I use x64 Ubuntu. By using &#8211;enable-pic option for both x264 and ffmpeg, I cleared the same errors.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-200">
+		<div id="div-comment-200" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/f399f026dfb56ac56ce28b3657e9e0c9?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Fabrizio</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-200">
+		September 10, 2011 at 4:30 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=200#respond' onclick='return addComment.moveForm("comment-200", "200", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Very nice guide.<br />
+Well done.<br />
+It is the best guide that I found.</p>
+		</div>
+</li>
+		<li class="comment byuser comment-author-osman bypostauthor even thread-odd thread-alt depth-1 clearfix" id="comment-202">
+		<div id="div-comment-202" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-202">
+		September 10, 2011 at 8:31 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=202#respond' onclick='return addComment.moveForm("comment-202", "202", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for the compliments. I&#8217;m glad you like the guide.</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-207">
+		<div id="div-comment-207" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/9e0fec70e264f2150c8c50fabd722890?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://ozbots.org/opencv-installation/' rel='external nofollow' class='url'>Manuel</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-207">
+		September 14, 2011 at 3:08 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=207#respond' onclick='return addComment.moveForm("comment-207", "207", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hello</p>
+<p>In step 4 where do you extract the x264 folder? i have extracted it to the desktop and when i run the command in the terminal, it says the i have &#8216;no such file or directory&#8217;. thx</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-208">
+		<div id="div-comment-208" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-208">
+		September 14, 2011 at 8:54 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=208#respond' onclick='return addComment.moveForm("comment-208", "208", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Under my home directory, I usually create a directory called src. The complete path name would be /home/osman/src. I save the downloaded tarfile in the src directory. Here is the complete set of commands:</p>
+<p>cd /home/osman<br />
+mkdir src<br />
+cd src<br />
+mv /home/osman/Downloads/x264-snapshot-20110913-2245-stable.tar.bz2 .<br />
+tar xvf x264-snapshot-20110913-2245-stable.tar.bz2<br />
+cd x264-snapshot-20110913-2245-stable</p>
+<p>In your situation, replace &#8220;osman&#8221; with your user name, replace &#8220;Downloads&#8221; with &#8220;Desktop&#8221; because that&#8217;s where you saved the tarfile, and replace &#8220;x264-snapshot-20110913-2245-stable&#8221; with the actual name of the file.</p>
+<p>Then you can run configure. Hope that helps!</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-235">
+		<div id="div-comment-235" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/851c8c2c8270a4359fac06f1e7c7a1d8?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Panayiotis</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-235">
+		September 17, 2011 at 5:24 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=235#respond' onclick='return addComment.moveForm("comment-235", "235", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thank you Osman! Great guide! I had the same problem with Danielsohn. You have to &#8211;enable-shared when you configure ffmeg and everything works fine. Thanks again!</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-263">
+		<div id="div-comment-263" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bd33ad5485c433a1f47351a7e605946f?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Omi</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-263">
+		September 25, 2011 at 11:02 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=263#respond' onclick='return addComment.moveForm("comment-263", "263", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hiii,,<br />
+do u know how to install Open CV in windows<br />
+for Java Eclipse Platform.<br />
+plzz help me with this,,,i couldn&#8217;t get the answer from many searchings..</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-264">
+		<div id="div-comment-264" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-264">
+		September 26, 2011 at 6:10 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=264#respond' onclick='return addComment.moveForm("comment-264", "264", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Sorry, I have not used the Eclipse IDE for Java. Perhaps someone else will reply.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-odd thread-alt depth-1 clearfix" id="comment-266">
+		<div id="div-comment-266" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/014b8c3d15a1050c2ac3dcaa5c564feb?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Gabriel</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-266">
+		September 27, 2011 at 7:59 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=266#respond' onclick='return addComment.moveForm("comment-266", "266", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hello, thanks for your post, this was usefull for me. But I&#8217;m facing a problem, i get this error msg:</p>
+<p>lib/libopencv_highgui.so.2.2.0: undefined reference to `gst_app_sink_peek_buffer&#8217;<br />
+../../lib/libopencv_highgui.so.2.2.0: undefined reference to `gst_app_sink_get_queue_length&#8217;</p>
+<p>I&#8217;ve tried edit some code on gst config, but I get nothing.</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-267">
+		<div id="div-comment-267" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-267">
+		September 27, 2011 at 9:06 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=267#respond' onclick='return addComment.moveForm("comment-267", "267", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>It looks like a problem with gstreamer. Did you install gstreamer in step 3 of this guide? When you ran &#8220;cmake ..&#8221; in the opencv build directory, did the output say &#8220;GStreamer: YES&#8221;?</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-3 clearfix" id="comment-268">
+		<div id="div-comment-268" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/014b8c3d15a1050c2ac3dcaa5c564feb?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Gabriel</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-268">
+		September 27, 2011 at 12:02 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=268#respond' onclick='return addComment.moveForm("comment-268", "268", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Yes. But I disable GStreamer and OpenCV was compiled right, it&#8217;s working. But I would have preferred to install it with GStreamer.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-269">
+		<div id="div-comment-269" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-269">
+		September 27, 2011 at 1:32 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=269#respond' onclick='return addComment.moveForm("comment-269", "269", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Here&#8217;s one more thing to try if you get unexpected errors: delete the opencv build directory, make a new build directory, run cmake again, and run make again. One time I got some strange errors that I could not explain. Deleting the build directory and creating a new build directory fixed the problem.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-289">
+		<div id="div-comment-289" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/a71dbb58ff5dbdec0a5b221f113c8afa?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://www.comp.nus.edu.sg/~mksaini/' rel='external nofollow' class='url'>Mukesh Saini</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-289">
+		October 5, 2011 at 12:05 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=289#respond' onclick='return addComment.moveForm("comment-289", "289", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks a lot for such a nice guide. It perfectly works <img src='http://ozbots.org/wp-includes/images/smilies/icon_smile.gif' alt=':-)' class='wp-smiley' /> </p>
+		</div>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-301">
+		<div id="div-comment-301" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/6df722e6012f6d2b1e8e71150afade9c?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Marco</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-301">
+		October 9, 2011 at 6:49 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=301#respond' onclick='return addComment.moveForm("comment-301", "301", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I have one question: when I try to add the new module cv2 I get an error</p>
+<p>import cv2.cv as cv</p>
+<p>ImportError: No module named cv2.cv</p>
+<p>Why?<br />
+Thank you</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-318">
+		<div id="div-comment-318" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-318">
+		October 14, 2011 at 2:49 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=318#respond' onclick='return addComment.moveForm("comment-318", "318", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I&#8217;m sorry, I don&#8217;t know the answer. I recommend that you ask this question on the OpenCV yahoo group.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-302">
+		<div id="div-comment-302" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/b6b6df79cd62e6deaaa8c18b630fe427?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">okram</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-302">
+		October 9, 2011 at 12:41 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=302#respond' onclick='return addComment.moveForm("comment-302", "302", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thank you for the guide, but what about the wrapper for python?<br />
+What I need to do to install also this?</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-305">
+		<div id="div-comment-305" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-305">
+		October 9, 2011 at 3:12 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=305#respond' onclick='return addComment.moveForm("comment-305", "305", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I&#8217;m sorry, I have not used the python interface to OpenCV. The first step would be to install python. Here is a good reference: <a href="http://pythonicway.blogspot.com/2011/02/install-python-32-on-linux-ubuntu.html" rel="nofollow">http://pythonicway.blogspot.com/2011/02/install-python-32-on-linux-ubuntu.html</a>. Beyond installing python, I&#8217;m not sure what else you need to do. Perhaps someone else has some advice.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-303">
+		<div id="div-comment-303" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/782f50f9c5212c6bb836e961541381f0?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Gene Wildhart</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-303">
+		October 9, 2011 at 1:23 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=303#respond' onclick='return addComment.moveForm("comment-303", "303", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I tried compiling x264 and ffmpeg with &#8211;enable-pic configure option, and I&#8217;m still getting the following error when trying to compile openCV on Ubuntu 11.10:</p>
+<p>Linking CXX shared library ../../lib/libopencv_highgui.so<br />
+/usr/bin/ld: /usr/local/lib/libavcodec.a(lpc_mmx.o): relocation R_X86_64_PC32 against symbol `ff_pd_1&#8242; can not be used when making a shared object; recompile with -fPIC<br />
+/usr/bin/ld: final link failed: Bad value<br />
+collect2: ld returned 1 exit status<br />
+make[2]: *** [lib/libopencv_highgui.so.2.3.1] Error 1<br />
+make[1]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/all] Error 2<br />
+make: *** [all] Error 2</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-306">
+		<div id="div-comment-306" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-306">
+		October 9, 2011 at 3:22 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=306#respond' onclick='return addComment.moveForm("comment-306", "306", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>The error usually means that the module that failed to link was not compiled with -PIC. You said that you did use that option with the configure command, so it&#8217;s a bit odd. Here&#8217;s a couple suggestions:</p>
+<ol>
+<li>Make sure you installed x264 and ffmpeg after compiling. If you didn&#8217;t install it, the opencv compile script might be pickup up another version of ffmpeg that did not use -PIC.</li>
+<li>Remove the opencv build directory and create a fresh build directory. I&#8217;ve had problems with old files from previous opencv compiles interfering with with subsequent compiles that use different options.</li>
+</ol>
+		</div>
+<ul class='children'>
+		<li class="comment odd alt depth-3 clearfix" id="comment-307">
+		<div id="div-comment-307" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/782f50f9c5212c6bb836e961541381f0?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Gene Wildhart</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-307">
+		October 10, 2011 at 8:44 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=307#respond' onclick='return addComment.moveForm("comment-307", "307", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I tried deleting all directories and starting from scratch. &#8211;enable-pic is used in the configure options for both x264 and ffmpeg.  I removed all x264 and ffmpeg packages from ubuntu before compiling and installing said packages. Still getting the exact same error as posted above, asking me to recompile with -fPIC.  Strange&#8230; any other suggestions?</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-4 clearfix" id="comment-338">
+		<div id="div-comment-338" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/1e13050e99cbac1c5a93eaf8df5cc0a1?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Jon Blake</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-338">
+		October 18, 2011 at 4:38 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=338#respond' onclick='return addComment.moveForm("comment-338", "338", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Bumb. </p>
+<p>I&#8217;m getting the same issue.</p>
+<p>I&#8217;ve tried to use &#8211;enable-pic to configure both x264 and ffmpeg as well as &#8211;enable-shared when configuring ffmpeg.</p>
+<p>Any help would really be appreciated. Thanks for all you&#8217;ve already done Osman</p>
+<p>[ 33%] Building CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_bmp.o<br />
+[ 34%] Building CXX object modules/highgui/CMakeFiles/opencv_highgui.dir/src/grfmt_png.o<br />
+Linking CXX shared library ../../lib/libopencv_highgui.so<br />
+/usr/bin/ld: /usr/local/lib/libavcodec.a(lpc_mmx.o): relocation R_X86_64_PC32 against symbol `ff_pd_1&#8242; can not be used when making a shared object; recompile with -fPIC<br />
+/usr/bin/ld: final link failed: Bad value<br />
+collect2: ld returned 1 exit status<br />
+make[2]: *** [lib/libopencv_highgui.so.2.3.1] Error 1<br />
+make[1]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/all] Error 2<br />
+make: *** [all] Error 2</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-5 clearfix" id="comment-339">
+		<div id="div-comment-339" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-339">
+		October 18, 2011 at 6:46 am</a>
+        		 
+		</div>
+		<p>From Gene&#8217;s comment below, he solved this problem by using both &#8211;enable-shared and &#8211;enable-pic. Make sure you<br />
+1) Use &#8211;enable-shared &#8211;enable-pic when configuring both x264 and ffmpeg<br />
+2) Install x264 and ffmpeg<br />
+3) Delete the OpenCV build directory and create a new build directory. I&#8217;ve seen problems where a incomplete build interferes with future builds.</p>
+<p>Please keep us updated on your results!</p>
+		</div>
+</li>
+		<li class="comment even depth-5 clearfix" id="comment-342">
+		<div id="div-comment-342" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/1e13050e99cbac1c5a93eaf8df5cc0a1?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Jon Blake</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-342">
+		October 18, 2011 at 4:58 pm</a>
+        		 
+		</div>
+		<p>Wow, thanks alot Osman and everyone else who contributed!</p>
+<p>My issue was solved with a combination of adding &#8211;enable-shared to the configuration of X264 as well as updating my apts. THANKS!</p>
+<p>Just a little tip for everyone out there who isn&#8217;t so comfortable with using a VI text editor.</p>
+<p>Since Ubuntu wont let you modify some of the above system files with something like gedit and then save it in place, I did the following:<br />
+     1) Open the file you want to edit<br />
+     2) Copy all the text from the file you want to edit and edit/add any additional text<br />
+     3) Save the file with the same name but to a different location (like the Desktop)<br />
+     4) In the terminal navigate to the directory where you have saved your edited file<br />
+     5) Run the following command:<br />
+ sudo mv -f your_editedf_ile.extension /complete_directory_to_original_location/</p>
+<p>That&#8217;ll force a move from where you dropped the edited file to where you want it (obviously you have to change the file name where it says your_editedf_ile.extension and the correct directory where it says complete_directory_to_original_location</p>
+<p>For example: For the bash file here was the text I used to take it off the desktop and back into /etc/: sudo mv -f bash.bashrc /etc/</p>
+		</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-308">
+		<div id="div-comment-308" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/782f50f9c5212c6bb836e961541381f0?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Gene Wildhart</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-308">
+		October 10, 2011 at 9:15 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=308#respond' onclick='return addComment.moveForm("comment-308", "308", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I first tried ffmpeg 0.8.5, and I got the error above. I then tried with ffmpeg 0.8.4 and I still got the same error.<br />
+My configure for ffmpeg is:<br />
+make clean<br />
+./configure &#8211;enable-gpl &#8211;enable-libfaac &#8211;enable-libmp3lame &#8211;enable-libopencore-amrnb &#8211;enable-libopencore-amrwb &#8211;enable-libtheora &#8211;enable-libvorbis &#8211;enable-libx264 &#8211;enable-libxvid &#8211;enable-nonfree &#8211;enable-postproc &#8211;enable-version3 &#8211;enable-x11grab &#8211;enable-pic<br />
+make<br />
+sudo make install</p>
+<p>for x264 (20111108-stable snapshot)<br />
+make clean<br />
+./configure &#8211;enable-static &#8211;enable-pic<br />
+make<br />
+sudo make install</p>
+<p>I delete the OpenCV build directory and recreate it each time, but still get the same error.<br />
+rm -rf build<br />
+mkdir build<br />
+cd build<br />
+cmake ..<br />
+make (get error in this step)</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-2 clearfix" id="comment-309">
+		<div id="div-comment-309" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/782f50f9c5212c6bb836e961541381f0?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Gene Wildhart</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-309">
+		October 10, 2011 at 9:56 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=309#respond' onclick='return addComment.moveForm("comment-309", "309", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Okay, after two days of messing with different options, I found that I had to add &#8211;enable-shared and &#8211;enable-pic to the ffmpeg config to get things working!</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-3 clearfix" id="comment-310">
+		<div id="div-comment-310" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-310">
+		October 10, 2011 at 12:42 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=310#respond' onclick='return addComment.moveForm("comment-310", "310", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Glad you figured it out. Thanks for sharing the solution. Hopefully this info will help someone else with the same problem.</p>
+		</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-odd thread-alt depth-1 clearfix" id="comment-317">
+		<div id="div-comment-317" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/aed300c67028c4f6f30cc529e8254c4f?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">lvsuno</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-317">
+		October 14, 2011 at 1:02 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=317#respond' onclick='return addComment.moveForm("comment-317", "317", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thx u guy. Very Good JOB</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-322">
+		<div id="div-comment-322" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/50f901bcf7765b923657c9ace0368d84?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Fel To</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-322">
+		October 16, 2011 at 9:06 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=322#respond' onclick='return addComment.moveForm("comment-322", "322", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Many thanks Osman for this helpful tutorial. Greetings from Switzerland!</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-323">
+		<div id="div-comment-323" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-323">
+		October 16, 2011 at 10:03 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=323#respond' onclick='return addComment.moveForm("comment-323", "323", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Greetings! I was lucky to stay in Neuchâtel for a week. It&#8217;s one of the most beautiful areas of the world!</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-324">
+		<div id="div-comment-324" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/9d7071d87624cbdfa71588936199dc3e?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Mal</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-324">
+		October 16, 2011 at 1:30 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=324#respond' onclick='return addComment.moveForm("comment-324", "324", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for the guide!<br />
+On Ubuntu 11.10 64bit for OpenCV 2.3.1:<br />
+Instead of compiling ffmpeg myself I used the precompiled version from a ppa ( <a href="https://launchpad.net/~jon-severinsson/+archive/ffmpeg" rel="nofollow">https://launchpad.net/~jon-severinsson/+archive/ffmpeg</a> ).<br />
+Currently, the latest version available from the ppa is 0.8.4. It also updates libavcodec52 etc.<br />
+Works like a charm <img src='http://ozbots.org/wp-includes/images/smilies/icon_smile.gif' alt=':)' class='wp-smiley' /> </p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-326">
+		<div id="div-comment-326" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-326">
+		October 16, 2011 at 1:53 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=326#respond' onclick='return addComment.moveForm("comment-326", "326", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Good to know. Thanks for the tip!</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-340">
+		<div id="div-comment-340" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/fa28a18bd9969ad48fe72c783827a825?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Ying</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-340">
+		October 18, 2011 at 10:46 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=340#respond' onclick='return addComment.moveForm("comment-340", "340", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thank you for the guide!<br />
+Is it missing the library for tiff?</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-341">
+		<div id="div-comment-341" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-341">
+		October 18, 2011 at 11:14 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=341#respond' onclick='return addComment.moveForm("comment-341", "341", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>When writing the guide, I debated whether or not to include all of the image format libraries, such as tif and jpeg2000. In the end, I decided not to include them. But I noticed that I included many of the libraries for video formats, so maybe it makes sense to include image format libraries too. I&#8217;ll add them when I next update the guide. Thanks for the suggestion.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-348">
+		<div id="div-comment-348" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/16560e93566914f9e0f5c808e3147f4d?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://orighost.tk' rel='external nofollow' class='url'>orighost</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-348">
+		October 20, 2011 at 9:31 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=348#respond' onclick='return addComment.moveForm("comment-348", "348", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>very good,thank you. I know what is the wrong. I fond it is the problem of the version of ffmpeg.</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-365">
+		<div id="div-comment-365" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/f2a3e07c4da152f8ef6c18b12010fe3b?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Andrew</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-365">
+		October 25, 2011 at 11:59 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=365#respond' onclick='return addComment.moveForm("comment-365", "365", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for a great tutorial.</p>
+<p>Thanks for the great tutorial. When building it on Ubuntu 11.10 x64 (Intel) with OpenCV 2.3.1, I get the error message during linking:</p>
+<p>Linking CXX shared library ../../lib/libopencv_highgui.so<br />
+/usr/bin/ld: /usr/local/lib/libavcodec.a(avpacket.o): relocation R_X86_64_32S against `av_destruct_packet&#8217; can not be used when making a shared object; recompile with -fPIC<br />
+/usr/local/lib/libavcodec.a: could not read symbols: Bad value<br />
+collect2: ld returned 1 exit status<br />
+make[2]: *** [lib/libopencv_highgui.so.2.3.1] Error 1<br />
+make[1]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/all] Error 2<br />
+make: *** [all] Error 2</p>
+<p>Do you have any tips to resolve this issue?<br />
+Thanks!</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-377">
+		<div id="div-comment-377" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-377">
+		October 28, 2011 at 7:34 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=377#respond' onclick='return addComment.moveForm("comment-377", "377", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Did you try adding &#8211;enable-shared and &#8211;enable-pic to the ffmpeg configure command? Check out some of the other comments on this article for more tips on solving this issue.</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-3 clearfix" id="comment-379">
+		<div id="div-comment-379" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/a791314acf7067e81b488d9f2c102b32?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Andrew</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-379">
+		October 28, 2011 at 10:34 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=379#respond' onclick='return addComment.moveForm("comment-379", "379", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks! It worked. I&#8217;m sorry for not looking in the comments before. I&#8217;d recommend you to embed this tip into the post.<br />
+I&#8217;d also recommend embedding python build flags in opencv configure and swscale in ffmpeg from <a href="http://www.samontab.com/web/2011/06/installing-opencv-2-2-in-ubuntu-11-04/" rel="nofollow">http://www.samontab.com/web/2011/06/installing-opencv-2-2-in-ubuntu-11-04/</a><br />
+Cheers and thanks!</p>
+		</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-376">
+		<div id="div-comment-376" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/ec1b4e2a7487d7fdb2c05a8379d78d70?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Pedro</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-376">
+		October 28, 2011 at 4:00 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=376#respond' onclick='return addComment.moveForm("comment-376", "376", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for this tutorial! Really useful! It is best than the official one! Congrats!</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-383">
+		<div id="div-comment-383" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/8adabef61f3c45bc03f2b6955647b48a?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://facerank.org' rel='external nofollow' class='url'>Dondon Vizcayno</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-383">
+		October 29, 2011 at 6:25 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=383#respond' onclick='return addComment.moveForm("comment-383", "383", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>It perfectly works on a newly installed Ubuntu 11.10! I just followed the steps as they are!</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-389">
+		<div id="div-comment-389" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/1bdf7891fa56f07831ba85402a9bb29b?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Mattia</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-389">
+		October 31, 2011 at 9:38 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=389#respond' onclick='return addComment.moveForm("comment-389", "389", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for the tutorial, but when i compile the code with &#8220;g++ `pkg-config opencv &#8211;cflags` `pkg-config opencv &#8211;libs` main.cpp  -o eyeCenter&#8221; i get &#8220;undefined reference to&#8221; every opencv functions.<br />
+Can you help me?</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-390">
+		<div id="div-comment-390" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-390">
+		October 31, 2011 at 4:18 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=390#respond' onclick='return addComment.moveForm("comment-390", "390", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Here are some ideas:<br />
+1. Are you sure you installed OpenCV by running &#8220;sudo make install&#8221; in the OpenCV build directory?<br />
+2. After you compile, but before you run your program, run this command: export LD_LIBRARY_PATH=/usr/local/lib<br />
+3. Make sure the output of the pkg-config command looks something like this:</p>
+<p>$ pkg-config opencv &#8211;cflags<br />
+-I/usr/local/include/opencv -I/usr/local/include<br />
+$ pkg-config opencv &#8211;libs<br />
+-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann</p>
+		</div>
+<ul class='children'>
+		<li class="comment odd alt depth-3 clearfix" id="comment-396">
+		<div id="div-comment-396" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/1bdf7891fa56f07831ba85402a9bb29b?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Mattia</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-396">
+		November 2, 2011 at 6:31 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=396#respond' onclick='return addComment.moveForm("comment-396", "396", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>1. yes sure<br />
+2. done<br />
+3.<br />
+$ pkg-config opencv –lib returns :</p>
+<p>-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann </p>
+<p>$ pkg-config opencv –cflags returns:</p>
+<p>-I/usr/local/include/opencv -I/usr/local/include </p>
+<p>Bue I can compile my program with : </p>
+<p>g++ -o display DisplayImage.cpp -lopencv_core -lopencv_imgproc -lopencv_calib3d -lopencv_video -lopencv_features2d -lopencv_ml -lopencv_highgui -lopencv_objdetect -lopencv_contrib -lopencv_legacy</p>
+<p>but when i run the program i have : </p>
+<p>libopencv_core.so.2.3: cannot open shared object file: No such file or directory</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-4 clearfix" id="comment-397">
+		<div id="div-comment-397" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/1bdf7891fa56f07831ba85402a9bb29b?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Mattia</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-397">
+		November 2, 2011 at 6:40 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=397#respond' onclick='return addComment.moveForm("comment-397", "397", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Sorry, i solved the problem: a space before export LD_LIBRARY_PATH=/usr/local/lib</p>
+<p>Thanks Osman</p>
+		</div>
+</li>
+		<li class="comment odd alt depth-4 clearfix" id="comment-422">
+		<div id="div-comment-422" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/ae868c4ab30609de7316ec7651c1d588?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Sam</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-422">
+		November 6, 2011 at 5:07 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=422#respond' onclick='return addComment.moveForm("comment-422", "422", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>To add to the fun, compilation works, but trying to run the program now gives me the error while loading shared libraries: libopencv_core.so.2.3: cannot open shared object file.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even depth-3 clearfix" id="comment-400">
+		<div id="div-comment-400" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/7789fb52caad2be78360bf0d1df1be79?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Nestor</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-400">
+		November 2, 2011 at 4:11 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=400#respond' onclick='return addComment.moveForm("comment-400", "400", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hello Osman<br />
+First of all, thanks a lot for this great guide! I used it when I first intalled openCV in ubuntu 11.04 <img src='http://ozbots.org/wp-includes/images/smilies/icon_razz.gif' alt=':P' class='wp-smiley' />  Now I&#8217;m trying to do the same but in 11.10 and I have encountered the same problema as Mattia :S when I try to compile I keep receiving &#8220;unexpeted reference&#8221; to the opencv functions :S</p>
+<p>My outputs por pkg-config are the same as yours:</p>
+<p>$ pkg-config opencv &#8211;cflags<br />
+-I/usr/local/include/opencv -I/usr/local/include </p>
+<p>$ pkg-config opencv &#8211;libs<br />
+-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann </p>
+<p>I have tried compiling the way Mattia said:</p>
+<p>g++ -o display programa_1.cpp -lopencv_core -lopencv_imgproc -lopencv_calib3d -lopencv_video -lopencv_features2d -lopencv_ml -lopencv_highgui -lopencv_objdetect -lopencv_contrib -lopencv_legacy</p>
+<p>And all I got was an fatal error message telling me cv.h does not exist :S</p>
+<p>Could you give me a hand please?</p>
+<p>Thanks a lot!</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-4 clearfix" id="comment-401">
+		<div id="div-comment-401" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-401">
+		November 2, 2011 at 4:58 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=401#respond' onclick='return addComment.moveForm("comment-401", "401", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Does the error occur when you compile or when you run your program?</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even depth-3 clearfix" id="comment-415">
+		<div id="div-comment-415" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/ae868c4ab30609de7316ec7651c1d588?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Sam</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-415">
+		November 5, 2011 at 4:34 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=415#respond' onclick='return addComment.moveForm("comment-415", "415", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I&#8217;m unfortunately getting the same errors as the person above and would really appreciate any help you could provide. A brief example is below:</p>
+<p>samuel@samuel-Compaq-610:~/opencv/samples/cpp$ make lkdemo<br />
+g++     lkdemo.cpp   -o lkdemo<br />
+/tmp/cc5GLGJD.o: In function `main&#8217;:<br />
+lkdemo.cpp:(.text+0xe9): undefined reference to `cv::VideoCapture::VideoCapture()&#8217;<br />
+lkdemo.cpp:(.text+0x1c0): undefined reference to `cv::VideoCapture::open(int)&#8217;<br />
+lkdemo.cpp:(.text+0&#215;205): undefined reference to `cv::VideoCapture::open(std::basic_string&lt;char, std::char_traits, std::allocator &gt; const&amp;)&#8217;<br />
+lkdemo.cpp:(.text+0&#215;229): undefined reference to `cv::VideoCapture::isOpened() const&#8217;<br />
+lkdemo.cpp:(.text+0x28b): undefined reference to `cv::namedWindow(std::basic_string&lt;char, std::char_traits, std::allocator &gt; const&amp;, int)&#8217;<br />
+lkdemo.cpp:(.text+0x2e1): undefined reference to `cv::setMouseCallback(std::basic_string&lt;char, std::char_traits, std::allocator &gt; const&amp;, void (*)(int, int, int, int, void*), void*)&#8217;<br />
+lkdemo.cpp:(.text+0x35f): undefined reference to `vtable for cv::VideoCapture&#8217;<br />
+[...]</p>
+<p>My pkg-config looks right, so I have no idea what&#8217;s wrong. I&#8217;ve been stuck here for a good few hours. <img src='http://ozbots.org/wp-includes/images/smilies/icon_sad.gif' alt=':(' class='wp-smiley' /> </p>
+<p>samuel@samuel-Compaq-610:~/opencv/samples/cpp$ pkg-config opencv &#8211;cflags<br />
+-I/usr/local/include/opencv -I/usr/local/include<br />
+samuel@samuel-Compaq-610:~/opencv/samples/cpp$ pkg-config opencv &#8211;libs<br />
+-L/usr/local/lib -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann</p>
+		</div>
+<ul class='children'>
+		<li class="comment odd alt depth-4 clearfix" id="comment-416">
+		<div id="div-comment-416" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/ae868c4ab30609de7316ec7651c1d588?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Sam</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-416">
+		November 5, 2011 at 4:39 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=416#respond' onclick='return addComment.moveForm("comment-416", "416", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Strange, I just tried the solution someone mentioned above and it now works. I did: g++ -o test lkdemo.cpp -lopencv_core -lopencv_imgproc -lopencv_calib3d -lopencv_video -lopencv_features2d -lopencv_ml -lopencv_highgui -lopencv_objdetect -lopencv_contrib -lopencv_legacy</p>
+<p>Do you know why this might work where using the pkg config doesn&#8217;t?</p>
+		</div>
+</li>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-4 clearfix" id="comment-417">
+		<div id="div-comment-417" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-417">
+		November 5, 2011 at 8:25 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=417#respond' onclick='return addComment.moveForm("comment-417", "417", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>It&#8217;s odd that two people had this same problem in the last week. I will do more research. Are you using Ubuntu? If so, what version?</p>
+<p>Can you please try running the following command before you compile:</p>
+<p>export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig</p>
+<p>Please let me know the result. Thx.</p>
+		</div>
+</li>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-4 clearfix" id="comment-418">
+		<div id="div-comment-418" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-418">
+		November 5, 2011 at 8:29 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=418#respond' onclick='return addComment.moveForm("comment-418", "418", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>PS. This should work for you:</p>
+<p>g++ `pkg-config opencv &#8211;cflags` `pkg-config opencv &#8211;libs` lkdemo.cpp  -o lkdemo</p>
+<p>It&#8217;s a bit shorter than typing in the libraries by hand.</p>
+		</div>
+<ul class='children'>
+		<li class="comment even depth-5 clearfix" id="comment-420">
+		<div id="div-comment-420" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/ae868c4ab30609de7316ec7651c1d588?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Sam</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-420">
+		November 6, 2011 at 2:30 am</a>
+        		 
+		</div>
+		<p>Thanks for the quick response! I exported the pkg_config_path before doing any of the below. I am using ubuntu 11.10.</p>
+<p>g++ `pkg-config opencv –cflags` `pkg-config opencv –libs` lkdemo.cpp -o lkdemo<br />
+&#8212;</p>
+<p>samuel@samuel-Compaq-610:~$ g++ `pkg-config opencv –cflags` `pkg-config opencv –libs` -o lkdemo lkdemo.cpp<br />
+/tmp/ccT4xgWe.o: In function `main&#8217;:<br />
+lkdemo.cpp:(.text+0xe9): undefined reference to `cv::VideoCapture::VideoCapture()&#8217;<br />
+lkdemo.cpp:(.text+0x1a2): undefined reference to `cv::VideoCapture::open(int)&#8217;<br />
+lkdemo.cpp:(.text+0x1e7): undefined reference to `cv::VideoCapture::open(std::basic_string&lt;char, std::char_traits, std::allocator &gt; const&amp;)&#8217;<br />
+lkdemo.cpp:(.text+0x20b): undefined reference to `cv::VideoCapture::isOpened() const&#8217;<br />
+lkdemo.cpp:(.text+0x26d): undefined reference to `cv::namedWindow(std::basic_string&lt;char, std::char_traits, std::allocator &gt; const&amp;, int)&#8217;<br />
+lkdemo.cpp:(.text+0x2c3): undefined reference to `cv::setMouseCallback(std::basic_string&lt;char, std::char_traits, std::allocator &gt; const&amp;, void (*)(int, int, int, int, void*), void*)&#8217;<br />
+[...etc...]</p>
+<p>g++ -I/usr/local/include/opencv/ -Wall -o lkdemo lkdemo.cpp -lopencv_core -lopencv_imgproc -lopencv_calib3d -lopencv_video -lopencv_features2d -lopencv_ml -lopencv_highgui -lopencv_objdetect -lopencv_contrib -lopencv_legacy<br />
+&#8212;</p>
+		</div>
+</li>
+		<li class="comment odd alt depth-5 clearfix" id="comment-421">
+		<div id="div-comment-421" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/ae868c4ab30609de7316ec7651c1d588?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Sam</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-421">
+		November 6, 2011 at 2:31 am</a>
+        		 
+		</div>
+		<p>Note the first one failed, the second succeeded.</p>
+		</div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-391">
+		<div id="div-comment-391" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/30a6c10c9aef8994b3b79c7c914ba3c4?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://www.rodrigorodrigues.info' rel='external nofollow' class='url'>Rodrigo Rodrigues</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-391">
+		November 1, 2011 at 4:19 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=391#respond' onclick='return addComment.moveForm("comment-391", "391", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for the tutorial, it covers every detail, but I am having problems with the pkg-config step (I think).<br />
+I built opencv with the latest x264 stable, the last ffmpeg from git and the last OpenCV 2.3.1 in the site (which is called 2.3.1a) and compiled both packages with &#8211;enable-shared &#8211;enable-pic.<br />
+I am using a fresh install of Kubuntu 11.10 x64 (intel processor)<br />
+followed every step but when I run pkg-config opencv &#8211;libs<br />
+I get:<br />
+Package opencv was not found in the pkg-config search path.<br />
+Perhaps you should add the directory containing `opencv.pc&#8217;<br />
+to the PKG_CONFIG_PATH environment variable<br />
+No package &#8216;opencv&#8217; found</p>
+<p>I checked /usr/local/lib/pkgconfig and there is no opencv.pc<br />
+Any ideias?</p>
+<p>Thanks</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-419">
+		<div id="div-comment-419" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-419">
+		November 5, 2011 at 8:32 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=419#respond' onclick='return addComment.moveForm("comment-419", "419", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Can you please confirm that you completed step 10.2 in the procedure above?</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-odd thread-alt depth-1 clearfix" id="comment-434">
+		<div id="div-comment-434" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/7789fb52caad2be78360bf0d1df1be79?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Nestor</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-434">
+		November 8, 2011 at 5:18 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=434#respond' onclick='return addComment.moveForm("comment-434", "434", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hello again Osman<br />
+I&#8217;m sorry for the delay in aswering you, the error ocurrs when I compile. I&#8217;ve tried exporting </p>
+<p>export LD_LIBRARY_PATH=/usr/local/lib</p>
+<p>and compiling like you said</p>
+<p>g++ `pkg-config opencv –cflags` `pkg-config opencv –libs` histograma.cpp -o salida</p>
+<p>and i&#8217;m still receiving cv.h: no such file or directory</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-489">
+		<div id="div-comment-489" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/b014aead248e6dec95d8edab78006958?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Aditya</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-489">
+		November 21, 2011 at 3:20 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=489#respond' onclick='return addComment.moveForm("comment-489", "489", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hey Osman,</p>
+<p>I was able to install OpenCV without OpenNI and Primesense after looking at your tutorial&#8230;very thankful for that!(but spent lots of time trying to debug the errors!!)&#8230;</p>
+<p>I am running Ubuntu 11.10 64-bit and OpenCV 2.3.1<br />
+I need to install OpenCV with OpenNI and Primesense now.<br />
+I installed OpenNI and Primesense according to the official website Readme.<br />
+But when I &#8216;make&#8217; OpenCV&#8230;after enabling OpenNI and Primesense&#8230;</p>
+<p>I run into the error shown below..</p>
+<p>I have printed my whole cmake and make log info below&#8230;your help will be very useful..sorry for the clogging of info!</p>
+<p>Thanks<br />
+Aditya<br />
+&#8221;<br />
+aditya@aditya-Inspiron-N5010:~/Downloads/OpenCV-2.3.1/release2$ cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local ..<br />
+&#8211; Detected version of GNU GCC: 46 (406)<br />
+&#8211; Found OpenEXR: /usr/lib/libIlmImf.so<br />
+&#8211;     Use NumPy headers from: /usr/lib/pymodules/python2.7/numpy/core/include<br />
+Traceback (most recent call last):<br />
+  File &#8220;&#8221;, line 1, in<br />
+ImportError: No module named sphinx<br />
+CUDA_TOOLKIT_ROOT_DIR not found or specified<br />
+&#8211; Could NOT find CUDA (missing:  CUDA_TOOLKIT_ROOT_DIR CUDA_NVCC_EXECUTABLE CUDA_INCLUDE_DIRS CUDA_CUDART_LIBRARY) (Required is at least version &#8220;4.0&#8243;)<br />
+&#8211; Parsing &#8216;cvconfig.h.cmake&#8217;<br />
+&#8211;<br />
+&#8211; General configuration for opencv 2.3.1 =====================================<br />
+&#8211;<br />
+&#8211;     Built as dynamic libs?:     YES<br />
+&#8211;     Compiler:                   /usr/bin/c++<br />
+&#8211;     C++ flags (Release):          -Wall -Wno-long-long -pthread -ffunction-sections  -O3 -DNDEBUG  -fomit-frame-pointer -msse -msse2 -DNDEBUG<br />
+&#8211;     C++ flags (Debug):            -Wall -Wno-long-long -pthread -ffunction-sections  -g  -O0 -DDEBUG -D_DEBUG -ggdb3<br />
+&#8211;     Linker flags (Release):<br />
+&#8211;     Linker flags (Debug):<br />
+&#8211;<br />
+&#8211;   GUI:<br />
+&#8211;     GTK+ 2.x:                   YES<br />
+&#8211;     GThread:                    YES<br />
+&#8211;<br />
+&#8211;   Media I/O:<br />
+&#8211;     ZLib:                       YES<br />
+&#8211;     JPEG:                       TRUE<br />
+&#8211;     PNG:                        TRUE<br />
+&#8211;     TIFF:                       TRUE<br />
+&#8211;     JPEG 2000:                  TRUE<br />
+&#8211;     OpenEXR:                    YES<br />
+&#8211;     OpenNI:                     YES<br />
+&#8211;     OpenNI PrimeSensor Modules: YES<br />
+&#8211;     XIMEA:                      NO<br />
+&#8211;<br />
+&#8211;   Video I/O:<br />
+&#8211;     DC1394 1.x:                 NO<br />
+&#8211;     DC1394 2.x:                 YES<br />
+&#8211;     FFMPEG:                     YES<br />
+&#8211;       codec:                    YES<br />
+&#8211;       format:                   YES<br />
+&#8211;       util:                     YES<br />
+&#8211;       swscale:                  YES<br />
+&#8211;       gentoo-style:             YES<br />
+&#8211;     GStreamer:                  YES<br />
+&#8211;     UniCap:                     NO<br />
+&#8211;     PvAPI:                      NO<br />
+&#8211;     V4L/V4L2:                   Using libv4l<br />
+&#8211;     Xine:                       NO<br />
+&#8211;<br />
+&#8211;   Other third-party libraries:<br />
+&#8211;     Use IPP:                    NO<br />
+&#8211;     Use TBB:                    NO<br />
+&#8211;     Use ThreadingFramework:     NO<br />
+&#8211;     Use Cuda:                   NO<br />
+&#8211;     Use Eigen:                  YES<br />
+&#8211;<br />
+&#8211;   Interfaces:<br />
+&#8211;     Python:                     YES<br />
+&#8211;     Python interpreter:         /usr/bin/python2.7 -B (ver 2.7)<br />
+&#8211;     Python numpy:               YES<br />
+&#8211;     Java:                       NO<br />
+&#8211;<br />
+&#8211;   Documentation:<br />
+&#8211;     Sphinx:                     NO<br />
+&#8211;     PdfLaTeX compiler:          NO<br />
+&#8211;     Build Documentation:        NO<br />
+&#8211;<br />
+&#8211;   Tests and samples:<br />
+&#8211;     Tests:                      YES<br />
+&#8211;     Examples:                   YES<br />
+&#8211;<br />
+&#8211;   Install path:                 /usr/local<br />
+&#8211;<br />
+&#8211;   cvconfig.h is in:             /home/aditya/Downloads/OpenCV-2.3.1/release2<br />
+&#8211; &#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;&#8211;<br />
+&#8211;<br />
+&#8211; Configuring done<br />
+&#8211; Generating done<br />
+&#8211; Build files have been written to: /home/aditya/Downloads/OpenCV-2.3.1/release2<br />
+aditya@aditya-Inspiron-N5010:~/Downloads/OpenCV-2.3.1/release2$ make<br />
+[  0%] Built target opencv_imgproc_pch_dephelp<br />
+[  0%] Generating precomp.hpp.gch/opencv_imgproc_RELEASE.gch<br />
+[  1%] Built target pch_Generate_opencv_imgproc<br />
+[  2%] Built target opencv_core_pch_dephelp<br />
+[  2%] Generating precomp.hpp.gch/opencv_core_RELEASE.gch<br />
+[  2%] Built target pch_Generate_opencv_core<br />
+[  5%] Built target opencv_core<br />
+[ 13%] Built target opencv_imgproc<br />
+[ 13%] Built target opencv_calib3d_pch_dephelp<br />
+[ 13%] Generating precomp.hpp.gch/opencv_calib3d_RELEASE.gch<br />
+[ 13%] Built target pch_Generate_opencv_calib3d<br />
+[ 13%] Built target opencv_features2d_pch_dephelp<br />
+[ 13%] Generating precomp.hpp.gch/opencv_features2d_RELEASE.gch<br />
+[ 13%] Built target pch_Generate_opencv_features2d<br />
+[ 13%] Built target opencv_flann_pch_dephelp<br />
+[ 13%] Generating precomp.hpp.gch/opencv_flann_RELEASE.gch<br />
+[ 14%] Built target pch_Generate_opencv_flann<br />
+[ 15%] Built target opencv_flann<br />
+[ 15%] Built target opencv_highgui_pch_dephelp<br />
+[ 15%] Generating precomp.hpp.gch/opencv_highgui_RELEASE.gch<br />
+[ 15%] Built target pch_Generate_opencv_highgui<br />
+[ 19%] Built target opencv_highgui<br />
+[ 22%] Built target opencv_features2d<br />
+[ 24%] Built target opencv_calib3d<br />
+[ 24%] Built target opencv_test_calib3d_pch_dephelp<br />
+[ 24%] Generating test_precomp.hpp.gch/opencv_test_calib3d_RELEASE.gch<br />
+[ 24%] Built target pch_Generate_opencv_test_calib3d<br />
+[ 24%] Built target opencv_ts_pch_dephelp<br />
+[ 24%] Generating precomp.hpp.gch/opencv_ts_RELEASE.gch<br />
+[ 24%] Built target pch_Generate_opencv_ts<br />
+[ 25%] Built target opencv_ts<br />
+Linking CXX executable ../../bin/opencv_test_calib3d<br />
+../../lib/libopencv_highgui.so.2.3.1: undefined reference to `cvCreateCameraCapture_OpenNI(int)&#8217;<br />
+collect2: ld returned 1 exit status<br />
+make[2]: *** [bin/opencv_test_calib3d] Error 1<br />
+make[1]: *** [modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/all] Error 2<br />
+make: *** [all] Error 2<br />
+&#8220;</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-977">
+		<div id="div-comment-977" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-977">
+		December 20, 2011 at 12:46 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=977#respond' onclick='return addComment.moveForm("comment-977", "977", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I&#8217;m sorry, I don&#8217;t know what is causing this error. Perhaps someone else will help.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-493">
+		<div id="div-comment-493" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/709adb190d8929b03f3d3984b84452e1?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">chanhom</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-493">
+		November 22, 2011 at 2:46 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=493#respond' onclick='return addComment.moveForm("comment-493", "493", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Good guide!! Thx!</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-791">
+		<div id="div-comment-791" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/5d9ce36fabc18ecdb8729c235804c3bc?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://ozbots.org/opencv-installation/' rel='external nofollow' class='url'>Please help me!</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-791">
+		December 14, 2011 at 5:36 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=791#respond' onclick='return addComment.moveForm("comment-791", "791", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Problem:<br />
+Linking CXX executable ../../bin/opencv_test_calib3d<br />
+/usr/bin/ld: warning: libx264.so.120, needed by /usr/local/lib/libavcodec.so.53, not found (try using -rpath or -rpath-link)<br />
+/usr/local/lib/libavcodec.so.53: undefined reference to `av_opt_set@LIBAVUTIL_51&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_mpegaudio_decode_header@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_mpa_freq_tab@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_toupper4@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_flac_parse_block_header@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_flac_is_extradata_valid@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_mpeg4audio_get_config@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_split_xiph_headers@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_find_start_code@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_dv_codec_profile@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavcodec.so.53: undefined reference to `av_get_media_type_string@LIBAVUTIL_51&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_dirac_parse_sequence_header@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavcodec.so.53: undefined reference to `x264_encoder_open_120&#8242;<br />
+/usr/local/lib/libavcodec.so.53: undefined reference to `av_sample_fmt_is_planar@LIBAVUTIL_51&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_mpeg4audio_sample_rates@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_aac_parse_header@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavcodec.so.53: undefined reference to `av_samples_get_buffer_size@LIBAVUTIL_51&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_frame_rate_tab@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_flac_parse_streaminfo@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_mpa_bitrate_tab@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_dv_frame_profile@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_mpa_decode_header@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_copy_pce_data@LIBAVCODEC_53&#8242;<br />
+/usr/local/lib/libavformat.so.53: undefined reference to `ff_ac3_parse_header@LIBAVCODEC_53&#8242;<br />
+collect2: ld returned 1 exit status<br />
+make[2]: *** [bin/opencv_test_calib3d] Error 1<br />
+make[1]: *** [modules/calib3d/CMakeFiles/opencv_test_calib3d.dir/all] Error 2<br />
+make: *** [all] Error 2</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-792">
+		<div id="div-comment-792" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/5d9ce36fabc18ecdb8729c235804c3bc?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://ozbots.org/opencv-installation/' rel='external nofollow' class='url'>Please help me!</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-792">
+		December 14, 2011 at 5:38 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=792#respond' onclick='return addComment.moveForm("comment-792", "792", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I built opencv with the latest x264 stable, the last ffmpeg from git and the last OpenCV 2.3.1 in the site (which is called 2.3.1a) and compiled both packages with –enable-shared –enable-pic.<br />
+I am using ubuntu 10.04 x32 (intel processor)</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-808">
+		<div id="div-comment-808" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-808">
+		December 14, 2011 at 9:49 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=808#respond' onclick='return addComment.moveForm("comment-808", "808", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>If you used git to get ffmpeg, you might have grabbed version 0.9. I have not tested version 0.9. Can you try downloading the tarball for ffmpeg 0.8 and installing that version?</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-796">
+		<div id="div-comment-796" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/13491a35fd352283330058d491bb8247?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">enekochan</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-796">
+		December 14, 2011 at 10:50 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=796#respond' onclick='return addComment.moveForm("comment-796", "796", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thank you very much! It worked very well, not as many other guides I found around.</p>
+<p>By the way, may be it&#8217;s not necesary to reboot after creating /etc/ld.so.conf.d/opencv.conf file, just running:</p>
+<p>sudo ldconfig /etc/ld.so.conf</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor even depth-2 clearfix" id="comment-806">
+		<div id="div-comment-806" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-806">
+		December 14, 2011 at 9:39 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=806#respond' onclick='return addComment.moveForm("comment-806", "806", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thanks for the tip. I&#8217;ll make the correction in the next revision of the guide.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-817">
+		<div id="div-comment-817" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/c8b6f368e7ddc0670d57aad996324952?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://www.pranavashok.com/blog' rel='external nofollow' class='url'>Pranav</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-817">
+		December 15, 2011 at 1:23 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=817#respond' onclick='return addComment.moveForm("comment-817", "817", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hey, thanks a lot! I was trying to make OpenCV initialize my cam for the past week. Finally it started working after following this tutorial <img src='http://ozbots.org/wp-includes/images/smilies/icon_smile.gif' alt=':)' class='wp-smiley' />  Kudos!</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-835">
+		<div id="div-comment-835" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/72f8ff8b8de87447d62b9a2d13ef5f2f?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">dani</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-835">
+		December 16, 2011 at 9:51 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=835#respond' onclick='return addComment.moveForm("comment-835", "835", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I am guessing that at least some of the libraries in the output of</p>
+<p>pkg-config opencv &#8211;libs</p>
+<p>are archive libraries. It is incorrect to put archive libraries before sources that need them (test_1.cpp in this case): the order of sources and libraries on the link line matters.</p>
+<p>Try</p>
+<p>g++ -o test_1 test_1.cpp `pkg-config opencv &#8211;cflags &#8211;libs`</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-845">
+		<div id="div-comment-845" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/cc3352ad5db1f7e94b195ffc86428086?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Nick H</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-845">
+		December 16, 2011 at 5:45 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=845#respond' onclick='return addComment.moveForm("comment-845", "845", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Thank you for all the tutorial and all the tips&#8230; </p>
+<p>These may help others:</p>
+<p>I&#8217;m was struggling to get openCV 2.3.1 to see ffmpeg. I&#8217;ve tried both ffmpeg 0.7.8 and ffmpeg 0.8.7 , using &#8211;enable-pic &#8211;enable-shared .  I&#8217;ve tried sudo ldconfig , but the problem remained.</p>
+<p>It compiled, but the /opencv_test_highgui  Highgui_FFmpeg_WriteBigVideo fails with a segmentation fault and a warning about<br />
+&#8220;Using network protocols without global network initialization. Please use avformat_network_init(), this will become mandatory later.&#8221; </p>
+<p>It seems part of ffmpeg was installed in the directory it was built in.<br />
+The fix was :<br />
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/nick/ffmpeg-0.7.8<br />
+======</p>
+<p>Separately, it may save others time to know that the test data can be downloaded by :<br />
+snv co <a href="https://code.ros.org/svn/opencv/tags/2.3.1/opencv_extra/" rel="nofollow">https://code.ros.org/svn/opencv/tags/2.3.1/opencv_extra/</a></p>
+<p>and the environment variable needs to be set :<br />
+export OPENCV_TEST_DATA=[insert directory path here]/opencv_extra/testdata</p>
+<p>Thank you again for an excellent tutorial.</p>
+<p>Nick</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-965">
+		<div id="div-comment-965" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/6fc65c06ee308b2b902a6a07254c080b?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Miroslav</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-965">
+		December 20, 2011 at 6:27 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=965#respond' onclick='return addComment.moveForm("comment-965", "965", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Hi. Just wanted to say that I kept getting a linker error &#8220;recompile with -fPIC&#8221;. Worked couple of hours on it. Finally everything worked when I added &#8220;&#8211;enable-shared&#8221; to the configuration of ffmpeg.</p>
+<p>A colleague successfully built the lib without the aforementioned flag.</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-976">
+		<div id="div-comment-976" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-976">
+		December 20, 2011 at 12:43 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=976#respond' onclick='return addComment.moveForm("comment-976", "976", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>This is a common problem. I don&#8217;t know why only some people get this error. Search the other comments for &#8220;fPIC&#8221; to see how other people solved this issue. What type of processor do you have? Is it AMD or Intel?</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-odd thread-alt depth-1 clearfix" id="comment-1358">
+		<div id="div-comment-1358" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/910c9be1eedba0e47c7fa1c8f0e2fd5d?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Jake</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1358">
+		December 30, 2011 at 9:22 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1358#respond' onclick='return addComment.moveForm("comment-1358", "1358", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Great Guide. Thanks for putting it together!!</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-even depth-1 clearfix" id="comment-1447">
+		<div id="div-comment-1447" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/5560f35854153eecfef7190508cba442?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Guy van den Berg</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1447">
+		January 2, 2012 at 10:04 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1447#respond' onclick='return addComment.moveForm("comment-1447", "1447", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Great article. Very useful. Thx.</p>
+<p>I was also getting the error:</p>
+<p>“Linking CXX shared library ../../lib/libopencv_highgui.so<br />
+/usr/bin/ld: /usr/local/lib/libavcodec.a(avpacket.o): relocation R_X86_64_32S against `av_destruct_packet_nofree’ can not be used when making a shared object; recompile with -fPIC</p>
+<p>To fix it I configured x264 with &#8211;enable-shared instead of &#8211;enable-static</p>
+		</div>
+</li>
+		<li class="comment even thread-odd thread-alt depth-1 clearfix" id="comment-1474">
+		<div id="div-comment-1474" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/fac6e8a49b58a42660ddf84151323f0b?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">molecula21</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1474">
+		January 3, 2012 at 9:55 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1474#respond' onclick='return addComment.moveForm("comment-1474", "1474", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Great Guide indeed! Only worked after reading all the comments though. I suggest you put the &#8211;enable-shared and &#8211;enable-pic information in the guide itself to complete it. Exelent work though <img src='http://ozbots.org/wp-includes/images/smilies/icon_smile.gif' alt=':)' class='wp-smiley' /> </p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-1475">
+		<div id="div-comment-1475" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1475">
+		January 3, 2012 at 10:25 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1475#respond' onclick='return addComment.moveForm("comment-1475", "1475", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Given how many people need to use the &#8211;enable-pic option, I agree that I should add this info in the guide itself. I&#8217;ll make the addition in the next update. Thanks for the feedback.</p>
+		</div>
+</li>
+</ul>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-1562">
+		<div id="div-comment-1562" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://0.gravatar.com/avatar/cd3823efbc536a887e8f82abbf4fd03f?s=55&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname"><a href='http://www.andol.info' rel='external nofollow' class='url'>andol</a></span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1562">
+		January 7, 2012 at 9:28 am</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1562#respond' onclick='return addComment.moveForm("comment-1562", "1562", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>an error was encountered during prior to the opencv installation &#8211; when making the v4l, one error was given as &#8216; QMainWindow: No such file or directory&#8217;. Anyway, v4l was installed via synaptic package manager, and in the opencv congifuration list the v4l item showed -using v4l correctly.<br />
+cheers</p>
+		</div>
+</li>
+		<li class="comment odd alt thread-odd thread-alt depth-1 clearfix" id="comment-1720">
+		<div id="div-comment-1720" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/d7c65847e5761756a9a25ae8aff7a93f?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">djdm</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1720">
+		January 13, 2012 at 3:25 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1720#respond' onclick='return addComment.moveForm("comment-1720", "1720", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I am having problems with my build of opencv 2.3.1. Used &#8211;enable-pic and &#8211;enable-shared for both x264 and ffmpeg. It falls oevr at 19% with the following errors</p>
+<p>make[2]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap_ffmpeg.o] Error 1<br />
+make[1]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/all] Error 2<br />
+make: *** [all] Error 2</p>
+<p>Please help!!!!</p>
+		</div>
+</li>
+		<li class="comment even thread-even depth-1 clearfix" id="comment-1721">
+		<div id="div-comment-1721" class="clearfix comment-container">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/d7c65847e5761756a9a25ae8aff7a93f?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">djdm</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1721">
+		January 13, 2012 at 3:29 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1721#respond' onclick='return addComment.moveForm("comment-1721", "1721", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>Sorry, here is some more of the error dump.</p>
+<p>is there a problem with my ffmpeg or some missing libraries????</p>
+<p>/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:547:13: error: ‘CODEC_TYPE_VIDEO’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp: In member function ‘bool CvCapture_FFMPEG::grabFrame()’:<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:640:34: error: ‘avcodec_decode_video’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp: In function ‘const char* icvFFMPEGErrStr(int)’:<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:917:10: error: ‘AVERROR_NUMEXPECTED’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:921:10: error: ‘AVERROR_NOFMT’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:923:10: error: ‘AVERROR_IO’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:925:10: error: ‘AVERROR_NOMEM’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp: In function ‘AVStream* icv_add_video_stream_FFMPEG(AVFormatContext*, CodecID, int, int, int, double, int)’:<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1012:70: error: ‘CODEC_TYPE_VIDEO’ was not declared in this scope<br />
+In file included from /home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg.cpp:45:0:<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp: In member function ‘void CvVideoWriter_FFMPEG::close()’:<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1298:3: warning: ‘int url_fclose(AVIOContext*)’ is deprecated (declared at /usr/include/libavformat/avio.h:279) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1298:20: warning: ‘int url_fclose(AVIOContext*)’ is deprecated (declared at /usr/include/libavformat/avio.h:279) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp: In member function ‘bool CvVideoWriter_FFMPEG::open(const char*, int, double, int, int, bool)’:<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1339:41: error: ‘guess_format’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1367:31: error: ‘av_alloc_format_context’ was not declared in this scope<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1411:9: warning: ‘int av_set_parameters(AVFormatContext*, AVFormatParameters*)’ is deprecated (declared at /usr/include/libavformat/avformat.h:1336) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1411:35: warning: ‘int av_set_parameters(AVFormatContext*, AVFormatParameters*)’ is deprecated (declared at /usr/include/libavformat/avformat.h:1336) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1415:5: warning: ‘void dump_format(AVFormatContext*, int, const char*, int)’ is deprecated (declared at /usr/include/libavformat/avformat.h:1458) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1415:35: warning: ‘void dump_format(AVFormatContext*, int, const char*, int)’ is deprecated (declared at /usr/include/libavformat/avformat.h:1458) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1479:13: warning: ‘int url_fopen(AVIOContext**, const char*, int)’ is deprecated (declared at /usr/include/libavformat/avio.h:278) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1479:52: warning: ‘int url_fopen(AVIOContext**, const char*, int)’ is deprecated (declared at /usr/include/libavformat/avio.h:278) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1485:5: warning: ‘int av_write_header(AVFormatContext*)’ is deprecated (declared at /usr/include/libavformat/avformat.h:1394) [-Wdeprecated-declarations]<br />
+/home/andrew/Downloads/OpenCV-2.3.1/modules/highgui/src/cap_ffmpeg_impl.hpp:1485:25: warning: ‘int av_write_header(AVFormatContext*)’ is deprecated (declared at /usr/include/libavformat/avformat.h:1394) [-Wdeprecated-declarations]<br />
+make[2]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/src/cap_ffmpeg.o] Error 1<br />
+make[1]: *** [modules/highgui/CMakeFiles/opencv_highgui.dir/all] Error 2<br />
+make: *** [all] Error 2</p>
+		</div>
+<ul class='children'>
+		<li class="comment byuser comment-author-osman bypostauthor odd alt depth-2 clearfix" id="comment-1723">
+		<div id="div-comment-1723" class="clearfix comment-container bypostauthor">
+		<div class="comment-author vcard">
+		<img alt='' src='http://1.gravatar.com/avatar/bbfc25eb5f01a3f375a47a96a27ffc49?s=55&amp;d=http%3A%2F%2F1.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D55&amp;r=G' class='avatar avatar-55 photo' height='55' width='55' />		<span class="authorname">Osman Eralp</span>
+		</div>
+				<div class="comment-meta commentmetadata">
+		<a href="http://ozbots.org/opencv-installation/#comment-1723">
+		January 13, 2012 at 4:10 pm</a>
+        <span class="comment-reply-link"><a class='comment-reply-link' href='/opencv-installation/?replytocom=1723#respond' onclick='return addComment.moveForm("comment-1723", "1723", "respond", "361")'> &middot; Reply</a></span>		 
+		</div>
+		<p>I have some info about this error in my other article: <a href="http://ozbots.org/opencv-install-troubleshooting/" rel="nofollow">http://ozbots.org/opencv-install-troubleshooting/</a>. Can you check if that info solves your problem?</p>
+		</div>
+</li>
+</ul>
+</li>
+	
+	</ul>
+	<!-- / Comment List -->
+
+	
+
+
+
+								<div id="respond">
+				<h3 id="reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="/opencv-installation/#respond" style="display:none;">Cancel reply</a></small></h3>
+									<form action="http://ozbots.org/wp-comments-post.php" method="post" id="commentform">
+																										<p><input class="text author" id="author" name="author" type="text" value="" size="30" tabindex="1" />&nbsp;&nbsp;<label for="author"><strong>Name</strong> (required)</label></p>
+<p><input class="text email" id="email" name="email" type="text" value="" size="30"  tabindex="2" />&nbsp;&nbsp;<label for="email"><strong>Email</strong> (will not be published) (required)</label></p>
+<p><input class="text url" id="url" name="url" type="text" value="" size="30"  tabindex="3" />&nbsp;&nbsp;<label for="url">Website</label></p>
+												<p><textarea name="comment" id="comment" rows="10" cols="10" tabindex="4"></textarea></p>						
+		<p class="thesetags clearfix">You can use <a class="xhtmltags" href="#" onclick="return false;">these HTML tags</a></p>
+		<div class="xhtml-tags"><p><code>&lt;a href=&quot;&quot; title=&quot;&quot;&gt; &lt;abbr title=&quot;&quot;&gt; &lt;acronym title=&quot;&quot;&gt; &lt;b&gt; &lt;blockquote cite=&quot;&quot;&gt; &lt;cite&gt; &lt;code&gt; &lt;del datetime=&quot;&quot;&gt; &lt;em&gt; &lt;i&gt; &lt;q cite=&quot;&quot;&gt; &lt;strike&gt; &lt;strong&gt; 
+		</code></p></div>						<p class="form-submit">
+							<input name="submit" type="submit" id="submit" value="Post Comment" />
+							<input type='hidden' name='comment_post_ID' value='361' id='comment_post_ID' />
+<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+						</p>
+						<p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="fd4c862701" /></p>					</form>
+							</div><!-- #respond -->
+									
+
+</td>
+<!-- / Main Column -->
+
+<!-- Right Inner Sidebar -->
+
+<!-- Right Sidebar -->
+<td id="right">
+
+	<div id="categories-2" class="widget widget_categories"><div class="widget-title"><h3>Categories</h3></div>		<ul>
+	<li class="cat-item cat-item-22"><a href="http://ozbots.org/category/downloads/" title="View all posts filed under Downloads">Downloads</a> (1)
+</li>
+	<li class="cat-item cat-item-17"><a href="http://ozbots.org/category/news/" title="View all posts filed under News">News</a> (1)
+</li>
+	<li class="cat-item cat-item-15"><a href="http://ozbots.org/category/tips-and-tricks/" title="View all posts filed under Tips and Tricks">Tips and Tricks</a> (3)
+</li>
+	<li class="cat-item cat-item-34"><a href="http://ozbots.org/category/tutorials/" title="View all posts filed under Tutorials">Tutorials</a> (4)
+</li>
+		</ul>
+</div><div id="tag_cloud-3" class="widget widget_tag_cloud"><div class="widget-title"><h3>Tags</h3></div><div class="tagcloud"><a href='http://ozbots.org/tag/a2d/' class='tag-link-31' title='1 topic' style='font-size: 8pt;'>a2d</a>
+<a href='http://ozbots.org/tag/accelerometer/' class='tag-link-7' title='1 topic' style='font-size: 8pt;'>accelerometer</a>
+<a href='http://ozbots.org/tag/balancing/' class='tag-link-30' title='1 topic' style='font-size: 8pt;'>balancing</a>
+<a href='http://ozbots.org/tag/blinky/' class='tag-link-27' title='1 topic' style='font-size: 8pt;'>blinky</a>
+<a href='http://ozbots.org/tag/chumby-2/' class='tag-link-6' title='6 topics' style='font-size: 22pt;'>chumby</a>
+<a href='http://ozbots.org/tag/code/' class='tag-link-8' title='3 topics' style='font-size: 15.636363636364pt;'>code</a>
+<a href='http://ozbots.org/tag/falconwing/' class='tag-link-24' title='1 topic' style='font-size: 8pt;'>falconwing</a>
+<a href='http://ozbots.org/tag/hacking/' class='tag-link-10' title='3 topics' style='font-size: 15.636363636364pt;'>hacking</a>
+<a href='http://ozbots.org/tag/hardware/' class='tag-link-11' title='2 topics' style='font-size: 12.581818181818pt;'>hardware</a>
+<a href='http://ozbots.org/tag/kernel/' class='tag-link-25' title='1 topic' style='font-size: 8pt;'>kernel</a>
+<a href='http://ozbots.org/tag/opencv/' class='tag-link-13' title='2 topics' style='font-size: 12.581818181818pt;'>opencv</a>
+<a href='http://ozbots.org/tag/pwm/' class='tag-link-32' title='1 topic' style='font-size: 8pt;'>pwm</a>
+<a href='http://ozbots.org/tag/robogames/' class='tag-link-29' title='1 topic' style='font-size: 8pt;'>robogames</a>
+<a href='http://ozbots.org/tag/robot/' class='tag-link-28' title='1 topic' style='font-size: 8pt;'>robot</a>
+<a href='http://ozbots.org/tag/software-2/' class='tag-link-26' title='5 topics' style='font-size: 20.218181818182pt;'>software</a>
+<a href='http://ozbots.org/tag/ssh/' class='tag-link-23' title='1 topic' style='font-size: 8pt;'>ssh</a>
+<a href='http://ozbots.org/tag/ubuntu/' class='tag-link-14' title='2 topics' style='font-size: 12.581818181818pt;'>ubuntu</a>
+<a href='http://ozbots.org/tag/windows/' class='tag-link-9' title='1 topic' style='font-size: 8pt;'>windows</a></div>
+</div><div id="archives-2" class="widget widget_archive"><div class="widget-title"><h3>Archives</h3></div>		<ul>
+			<li><a href='http://ozbots.org/2011/08/' title='August 2011'>August 2011</a></li>
+	<li><a href='http://ozbots.org/2011/05/' title='May 2011'>May 2011</a></li>
+	<li><a href='http://ozbots.org/2011/04/' title='April 2011'>April 2011</a></li>
+	<li><a href='http://ozbots.org/2011/03/' title='March 2011'>March 2011</a></li>
+	<li><a href='http://ozbots.org/2011/02/' title='February 2011'>February 2011</a></li>
+		</ul>
+</div>
+</td>
+<!-- / Right Sidebar -->
+
+</tr>
+<!-- / Main Body -->
+<tr>
+
+<!-- Footer -->
+<td id="footer" colspan="2">
+    <p>
+    Copyright &copy; 2012 <a href="http://ozbots.org/">ozbots.org</a> - All Rights Reserved<br />Powered by <a href="http://wordpress.org/">WordPress</a> &amp; <a href="http://forum.bytesforall.com/">Atahualpa</a>    </p>
+    
+    
+    </td>
+
+
+</tr>
+</table><!-- / layout -->
+</div><!-- / container -->
+</div><!-- / wrapper -->
+</body>
+</html>

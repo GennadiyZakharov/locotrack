@@ -18,26 +18,26 @@ LEFT, ABOVE = range(2)
 
 class LabelledLineEdit(QWidget):
 
-    def __init__(self, labelText=QString(), position=LEFT,parent=None):
+    def __init__(self, labelText=QString(), leftTopPos=LEFT,parent=None):
         super(LabelledLineEdit, self).__init__(parent)
         self.label = QLabel(labelText)
         self.lineEdit = QLineEdit()
         self.label.setBuddy(self.lineEdit)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if position == LEFT else QBoxLayout.TopToBottom)
+                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.lineEdit)
         self.setLayout(layout)
 
 class LabelledTextEdit(QWidget):
 
-    def __init__(self, labelText=QString(), position=LEFT,parent=None):
+    def __init__(self, labelText=QString(), leftTopPos=LEFT,parent=None):
         super(LabelledTextEdit, self).__init__(parent)
         self.label = QLabel(labelText)
         self.textEdit = QTextEdit()
         self.label.setBuddy(self.textEdit)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if position == LEFT else QBoxLayout.TopToBottom)
+                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.textEdit)
         self.setLayout(layout)
@@ -45,7 +45,7 @@ class LabelledTextEdit(QWidget):
 class LabelledSlider(QWidget):
 
     def __init__(self, labelText=QString(),orientation=Qt.Horizontal,
-                 position=LEFT,parent=None):
+                 leftTopPos=LEFT,parent=None):
         super(LabelledSlider, self).__init__(parent)
         
         self.labelText = labelText
@@ -54,7 +54,7 @@ class LabelledSlider(QWidget):
         self.label.setBuddy(self.slider)
         self.connect(self.slider,signalValueChanged, self.on_sliderMove)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if position == LEFT else QBoxLayout.TopToBottom)
+                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.slider)
         self.setLayout(layout)
@@ -74,14 +74,14 @@ class LabelledSlider(QWidget):
         
 class LabelledCheckBox(QWidget):
 
-    def __init__(self, labelText=QString(),position=LEFT,checked=False,parent=None):
+    def __init__(self, labelText=QString(),leftTopPos=LEFT,checked=False,parent=None):
         super(LabelledCheckBox, self).__init__(parent)
         
         self.checkBox = QCheckBox()
         self.label = QLabel(labelText)
         self.label.setBuddy(self.checkBox)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if position == LEFT else QBoxLayout.TopToBottom)
+                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.checkBox)
         self.setLayout(layout)

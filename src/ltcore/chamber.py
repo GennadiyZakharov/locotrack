@@ -1,16 +1,16 @@
 '''
 Created on 18.03.2011
-
 @author: Gena
 '''
+
 from PyQt4 import QtCore
 from ltcore.ltobject import LtObject
 
 class Chamber(QtCore.QRect):
     '''
     This is class for one chamber
-    It holds all chamber attributes: position, size,
-    also it holds property ltobject -- all data for 
+    It holds all chamber attributes: leftTopPos, size, etc
+    also it holds property ltObject -- all data for 
     detected object on current step
     '''
     
@@ -22,32 +22,20 @@ class Chamber(QtCore.QRect):
         self.ltObject = LtObject()
         self.resetTrajectory()
       
-    def getPos(self) :
+    def leftTopPos(self) :
         return self.left(), self.top()
     
-    def getPos2(self):
+    def bottomRightPos(self):
         return self.right(), self.bottom()
     
-    def getSize(self):
+    def size(self):
         return self.size()
-    
-    def setObjectPos(self, frame, pos=None):
-        self.objectPos = pos
-        self.trajectory.append((frame,) + pos)
         
-    def trajEnd(self, count):
-        trajend = [(int(x),int(y)) for (frame, x, y) in self.trajectory[-count:]]
-        return trajend
-        
-    def setMaxBrightPos(self, pos=None):
-        self.MaxBrightPos = pos
-            
     def resetTrajectory(self):
-        self.trajectory = []
+        self.ltTrajectory = None
     
     def saveTrajectory(self, fileName):
-        for frame,x,y in self.trajectory :
-            print frame, x, y
+        pass
     
     def loadTrajectory(self, fileName):
         pass
