@@ -31,7 +31,7 @@ class CvPlayer(QtCore.QObject):
         self.fileName = None
         self.captureDevice = None
         self.videoLength = None
-        self.leftTopPos = None       
+        self.frameNumber = None       
         #self.emit(signalCvPlayerCapturing, None)
         
     def captureFromFile(self, fileName):
@@ -52,7 +52,7 @@ class CvPlayer(QtCore.QObject):
         print 'Opened file:', self.fileName
         print 'File length:', int(self.videoLength), 'frames', self.frameRate, 'fps' 
         
-        self.emit(signalCvPlayerCapturing, self.videoLength)
+        self.emit(signalCvPlayerCapturing, self.videoLength, self.frameRate)
         self.timerEvent() # Process first frame
     
     def captureFromCam(self, camNumber):
@@ -72,6 +72,9 @@ class CvPlayer(QtCore.QObject):
             self.timer = self.startTimer(1000 / self.frameRate)
         
     def stop(self):
+        '''
+        Stop playing by timer
+        '''
         if self.timer is not None :
             self.killTimer(self.timer)
             self.timer = None
@@ -85,10 +88,13 @@ class CvPlayer(QtCore.QObject):
         pass
     
     def onSeek(self, frameNumber):
+        '''
+        Seek to frame number
+        '''
         #TODO: fix
         if self.captureDevice is None :
             return
-        if frameNumber == self.leftTopPos :
+        if frameNumber == self.frameNumber :
             return
         cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, frameNumber)
         self.timerEvent()
@@ -102,10 +108,13 @@ class CvPlayer(QtCore.QObject):
             cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_CONTRAST, value)
     #
     def timerEvent(self, event=None) :
-        self.leftTopPos = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+        '''
+        Event from timer
+        It is called to capture next frame from video device
+        '''
+        self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
         frame = cv.QueryFrame(self.captureDevice)
         if frame is None :
             self.stop()
         else :
-            # self.emit(signalValueChanged, self.leftTopPos)
-            self.emit(signalNextFrame, frame, self.leftTopPos)
+            self.emit(signalNextFrame, frame, self.frameNumber)

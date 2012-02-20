@@ -17,6 +17,7 @@ from ltgui.cvlabel import CvLabel
 from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
 from ltgui.cvprocessorwidget import CvProcessorWidget
+from ltgui.trajectorywidget import TrajectoryWidget
 
 
 class LtMainWindow(QtGui.QMainWindow):
@@ -72,6 +73,16 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, cvProcessorDockPanel)
         self.cvProcessorWidget = CvProcessorWidget() 
         cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
+        
+        # ---- Creating dock panel for trajectory Widget
+        cvTrajectoryDockPanel = QtGui.QDockWidget("Trajectory", self) # Created and set caption
+        cvTrajectoryDockPanel.setObjectName("TrajectoryDockWidget")
+        cvTrajectoryDockPanel.setAllowedAreas(QtCore.Qt.RightDockWidgetArea)
+        cvTrajectoryDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
+        self.cvTrajectoryWidget = TrajectoryWidget() 
+        cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
+        self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.writeTrajectory)
                      
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
@@ -83,11 +94,11 @@ class LtMainWindow(QtGui.QMainWindow):
         # ==== Making Connections actions ====
         # ---- Core video processing ----
         
-        self.connect(self.cvProcessor.cvPlayer, signalNextFrame, self.videoWidget.on_NextFrame)
+        self.connect(self.cvProcessor.cvPlayer, signalNextFrame, self.videoWidget.nextFrame)
         self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)
         
-        self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.on_RegionSelected)
-        self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.on_EnableDnD)
+        self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
+        self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)
         
         # ---- self ----
         self.connect(self, signalCaptureFromFile, self.cvProcessor.cvPlayer.captureFromFile)
@@ -98,12 +109,13 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
         self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
         self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvProcessor.cvPlayer.onSeek)
-        self.connect(self.cvProcessor.cvPlayer, signalCvPlayerCapturing, self.videoWidget.on_videoCapturing)
+        self.connect(self.cvProcessor.cvPlayer, signalCvPlayerCapturing, self.videoWidget.videoCapturing)
+        '''
         self.connect(self.videoWidget.brighnessSlider, signalValueChanged,
                      self.cvProcessor.cvPlayer.setBrightness)
         self.connect(self.videoWidget.contrastSlider, signalValueChanged,
                      self.cvProcessor.cvPlayer.setContrast)
-        
+        '''
         # ---- chambersWidget ----
        
         self.connect(self.chambersWidget, signalSetChamber,
@@ -126,7 +138,6 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.cvProcessor.setShowContour)
         self.connect(self.cvProcessorWidget.tresholdSlider, signalValueChanged,
                      self.cvProcessor.setTreshold)
-        self.connect(self.cvProcessorWidget, signalAccumulate, self.cvProcessor.accumulate)
         
         
         # ---- Main menu ----

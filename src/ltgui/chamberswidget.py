@@ -12,7 +12,7 @@ class ChambersWidget(QtGui.QWidget):
     '''
     This widget is responsible for chamber list
     It displays list of chambers, 
-    holds buttos to create, delete chambers and scale label
+    holds buttons to create, delete chambers and scale label
     '''
 
     def __init__(self, parent=None):
@@ -20,9 +20,8 @@ class ChambersWidget(QtGui.QWidget):
         Constructor
         '''
         super(ChambersWidget, self).__init__(parent)
-        
+        # Creating GUI elements
         layout = QtGui.QGridLayout()
-        
         chambersLabel = QtGui.QLabel('Chambers')
         # list of chambers
         self.chambersList = QtGui.QListWidget()
@@ -40,18 +39,18 @@ class ChambersWidget(QtGui.QWidget):
         # Clear chamber button
         self.clearChamberButton = QtGui.QPushButton('Clear chamber')
         layout.addWidget(self.clearChamberButton,2,1)
-        self.connect(self.clearChamberButton, signalClicked, self.chamberCleared)
+        self.connect(self.clearChamberButton, signalClicked, self.chamberClear)
         # Set scale button
         self.scaleButton = QtGui.QPushButton('Set Scale')
         self.scaleButton.setCheckable(True)
         layout.addWidget(self.scaleButton)      
         self.connect(self.scaleButton, signalToggled, self.setScaleOrChamber)
-        
+        # Set Layout
         self.setLayout(layout)
         
     def chamberSelectionChanged(self, item) :
         '''
-        Select different chamber, od deselect current
+        Select different chamber, or unselect current
         '''
         if self.selectedChamber == self.chambersList.currentRow() :
             self.selectedChamber = -1
@@ -61,7 +60,7 @@ class ChambersWidget(QtGui.QWidget):
         # Emit signal with new chamber number       
         self.emit(signalChangeSelection,self.selectedChamber)
   
-    def on_RegionSelected(self, rect):
+    def regionSelected(self, rect):
         '''
         This procedure is called, when some region
         was selected on cvLabel
@@ -79,14 +78,14 @@ class ChambersWidget(QtGui.QWidget):
         This procedure is called, when setScale or setChamber button
         is pressed
         '''
-        # We sent dignal to enab;e drag on cvLabel
+        # We sent signal to enable drag on cvLabel
         self.emit(signalEnableDnD, checked)
-        # Now we oly can wait for signal from cvLabel to recieve 
+        # Now we only can wait for signal from cvLabel to receive 
         # selected Rectangle
         
-    def chamberCleared(self):
+    def chamberClear(self):
         '''
-        Delete chamber
+        Delete selected chamber
         '''
         reply = QtGui.QMessageBox.question(self, "Chamber manager",
                                          "Clear selected chamber with all recorded data?",
@@ -94,14 +93,14 @@ class ChambersWidget(QtGui.QWidget):
         if reply == QtGui.QMessageBox.Yes:
             self.emit(signalClearChamber)
         
-    def chamberListUpdated(self, list, selected):
+    def chamberListUpdated(self, chambersList, selected):
         '''
         chamber list was modified
-        Rebuilding tambe according to the list
+        Rebuilding table according to the chambersList
         '''
         self.chambersList.clear()
-        for i in range(len(list)) :
-            text = 'Chamber '+str(i)+' '+list[i].__str__()
+        for i in range(len(chambersList)) :
+            text = 'Chamber '+str(i)
             self.chambersList.addItem(text)
         # Selecting chamber
         self.selectedChamber = selected

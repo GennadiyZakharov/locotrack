@@ -17,7 +17,7 @@ class CvLabel(QtGui.QLabel):
     Also it can handle mouse drag across the frame
     this ability is uded to define chambers and scale
     '''
-    # Itial size of the label
+    # Initial size of the label
     initialCvLabelSize = (640, 480)
 
     def __init__(self, parent=None):
@@ -27,13 +27,13 @@ class CvLabel(QtGui.QLabel):
         super(CvLabel, self).__init__(parent)
         
         self.setAcceptDrops(True)
-        # This fla is used to enable selection
+        # This flag is used to enable selection
         self.enableDnD = False
         self.selectedRect = None
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         # Creating black rectangle
         self.putImage(cv.CreateImage(self.initialCvLabelSize, cv.IPL_DEPTH_8U, 3))
-        # Creating colortable to display gray image as indexed 8bit
+        # Creating color table to display gray image as indexed 8bit
         self.colortable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
     
     def putImage(self, iplImage) :
@@ -59,11 +59,12 @@ class CvLabel(QtGui.QLabel):
                 # TODO: Make exception
                 print("This number of channels is not supported")   
         else :
+            # TODO: Make exception
             print("This type of IplImage is not implemented")
 
     def updateImage(self):
         '''
-        Display frame on label and draw selected region
+        Display frame and draw selected region
         '''
         if self.selectedRect is not None :
             # We neet to draw somethong on image
@@ -86,68 +87,102 @@ class CvLabel(QtGui.QLabel):
             # Painting diagonal line     
             painter.drawLine(QtCore.QLine(self.selectedRect.topLeft(),
                                            self.selectedRect.bottomRight()))
-            painter.end()
-            self.setPixmap(QtGui.QPixmap.fromImage(image))
-            
+            painter.end()            
         else :
-            # Nothing to draw -- creating image from stored frame
-            self.setPixmap(QtGui.QPixmap.fromImage(self.frame))
+            # Nothing to draw -- image is equal to stored frame
+            image = self.frame
+        # Display image on pixmap
+        self.setPixmap(QtGui.QPixmap.fromImage(image))
             
     
-    def on_EnableDnD(self, enable):
+    def enableSelection(self, enable):
+        '''
+        Enable region selection
+        '''
         self.enableDnD = enable
 
     def mousePressEvent(self, event) :
+        '''
+        Hander is called, when mouse button is pressed
+        '''
+        # If selection not enabled -- exit
         if not self.enableDnD :
             return
+        # If it is left button -- store position
         if (event.button() == QtCore.Qt.LeftButton) :
             self.dragStartPosition = event.pos()
 
     def mouseMoveEvent(self, event) :
+        '''
+        Hander is called, when mouse moves
+        '''
+        # If selection not enabled -- exit
         if not self.enableDnD :
             return
+        # If left button not pressed -- exit
         if not (event.buttons() & QtCore.Qt.LeftButton) :
             return
+        # If distance between current and start point too small --exit
         if (event.pos() - self.dragStartPosition).manhattanLength() < QtGui.QApplication.startDragDistance() :
             return
-        
+        # Everything ok
+        # Clear previous rect
+        self.selectedRect = None
+        # Constructing data with start pos 
         mimeData = QtCore.QMimeData();
         data = QtCore.QByteArray()
         stream = QtCore.QDataStream(data, QtCore.QIODevice.WriteOnly)
         stream << self.dragStartPosition
         mimeData.setData("cvlabel/pos", data);
-        
+        # Creating drag event
         drag = QtGui.QDrag(self);
         drag.setMimeData(mimeData);
         '''
+        # Set icon
         pixmap = icon.pixmap(24, 24)
         drag.setHotSpot(QtCore.QPoint(12, 12))
         drag.setPixmap(pixmap)
         '''
+        # Starting drag
         drag.start(QtCore.Qt.CopyAction)
-        
-        self.selectedRect = None
+        # Update image to draw selected region on it
         self.updateImage()
     
     def dragEnterEvent(self, event) :
+        '''
+        Starting drag
+        '''
+        # If selection not enabled -- exit
         if not self.enableDnD :
             return
+        
         if event.mimeData().hasFormat("cvlabel/pos") :
             event.acceptProposedAction()
             
     def dragMoveEvent(self, event):
+        '''
+        Hander is called, when drag event processes
+        '''
+        # If selection not enabled -- exit
         if not self.enableDnD :
             return
-        #self.emit(signalDragging,))
-        # # Drawing the main rectangle
+        # Saving currenly selected rectangle
         self.selectedRect = QtCore.QRect(self.dragStartPosition, event.pos())
         self.updateImage()
     
     def dropEvent(self, event) :
+        '''
+        Hander is called, when drag finished
+        '''
+        # If selection not enabled -- exit
         if not self.enableDnD :
             return
+        # Check if we receive drag event with coordinates
         if event.mimeData().hasFormat("cvlabel/pos") :
+            # Put selection area into QRect 
             rect = QtCore.QRect(self.dragStartPosition, event.pos())
+            # And send it via signal
             self.emit(signalRegionSelected, rect)
             event.acceptProposedAction()
+            self.selectedRect = None
             

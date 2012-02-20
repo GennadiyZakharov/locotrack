@@ -27,13 +27,15 @@ class LtTrajectory(object):
         self.startFrame=startFrame
         self.endFrame = endFrame
         self.lastNumber = None
-        self.x = numpy.array()
+        # TODO: fix array init
+        self.x = numpy.array(int)
+        self.y = numpy.array(int)
     
     def frameNumberToInternal(self, frameNumber):
         '''
         Covers frame number to internal number (numpy array)
         '''
-        if (frameNumber < self.startFrame) or 
+        if (frameNumber < self.startFrame) or \
             (frameNumber > self.endFrame)  :
                 # TODO: paste exception
                 return
@@ -46,6 +48,7 @@ class LtTrajectory(object):
         internalNumber = self.frameNumberToInternal(frameNumber)
         self.lastNumber = internalNumber
         self.x[internalNumber],self.y[internalNumber] = ltObject.centralPoint()
+        print 'saved trajectory frame',frameNumber
         
     def lastObject(self):
         '''

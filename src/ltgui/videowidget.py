@@ -10,24 +10,20 @@ from ltgui.labeledwidgets import *
 
 class VideoWidget(QtGui.QWidget):
     '''
-    classdocs
+    This class holds GUI for cvPlayer
     '''
-
-
     def __init__(self, parent=None):
         '''
         Constructor
         '''
         super(VideoWidget, self).__init__(parent)
-        
-        #Slider and label
+        # Slider and label
         layout1 = QtGui.QHBoxLayout()
         self.videoSlider = QtGui.QSlider(QtCore.Qt.Horizontal)
         layout1.addWidget(self.videoSlider)
         self.timeLabel = QtGui.QLabel('0')
         layout1.addWidget(self.timeLabel)
-        
-        #Play/pause buttons
+        # Play/pause buttons
         layout2 = QtGui.QHBoxLayout()
         self.rewButt = QtGui.QPushButton("<<")
         layout2.addWidget(self.rewButt)
@@ -37,7 +33,7 @@ class VideoWidget(QtGui.QWidget):
         layout2.addWidget(self.stopButt)
         self.fwdButt = QtGui.QPushButton(">>")
         layout2.addWidget(self.fwdButt)
-        
+        '''
         # Brightness/Contrast
         layout3 = QtGui.QHBoxLayout()
                 
@@ -45,36 +41,33 @@ class VideoWidget(QtGui.QWidget):
         layout3.addWidget(self.brighnessSlider)      
         self.contrastSlider = LabelledSlider("&Contrast:", QtCore.Qt.Horizontal)
         layout3.addWidget(self.contrastSlider)
-        
+        '''
         # Main Layout
         layout = QtGui.QVBoxLayout()
         layout.addLayout(layout1)
         layout.addLayout(layout2)
-        layout.addLayout(layout3)
+        #layout.addLayout(layout3)
         self.setLayout(layout)
-        
         #Creating video player actions
-                
-        self.connect(self.videoSlider, signalValueChanged, self.on_videoSlider_move)
-         
-    #Calling this method when video opened    
-    def on_videoCapturing(self, duration=None):
-        if duration is not None :
-            self.videoSlider.setMaximum(int(duration))
+        self.connect(self.videoSlider, signalValueChanged, self.videoSliderMove)
+             
+    def videoCapturing(self, videoLength=None):
+        '''
+        Calling this method when video opened
+        '''
+        if videoLength is not None :
+            self.videoSlider.setMaximum(int(videoLength))
             self.videoSlider.setValue(0)            
     
-    #Calling this method when beginning capturing
-    def videoCaptured(self):
-        pass
+    def nextFrame(self, image, time):
+        self.videoSlider.setValue(time)
     
-    def on_NextFrame(self, image, time):
-        #self.videoSlider.setValue(time)
-        pass
-    
-    #videosource closed
+    #video source closed
     def videoClosed(self):
         pass
     
-    def on_videoSlider_move(self, value):
+    def videoSliderMove(self, value):
         self.timeLabel.setText(str(value))
+        
+        
         

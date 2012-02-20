@@ -32,21 +32,30 @@ class CvProcessor(QtCore.QObject):
         
         self.cvPlayer = CvPlayer(self)
         self.connect(self.cvPlayer, signalNextFrame, self.getNextFrame)
+        self.connect(self.cvPlayer, signalCvPlayerCapturing, self.videoOpened)
         #
         self.chambers = [] 
         self.selected = -1
         self.scale = None
         self.frame = None
-        self.accumulate(None)
         self.invertImage = False
         self.treshold = 0.6
         self.showProcessedImage = False
         self.showContour = True
+        self.writeTrajectory(False)
+        self.videoLength = None
         # Visual Parameters
         self.scaleLabelPosition = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
         self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
         self.font = cv.InitFont(3, 1, 1)
+        
+    def videoOpened(self, length, frameRate):
+        '''
+        Get length and frame rate of opened video file
+        '''
+        self.videoLength = length
+        self.frameRate = frameRate 
         
     def getNextFrame(self, frame, frameNumber):
         '''
@@ -82,24 +91,11 @@ class CvProcessor(QtCore.QObject):
         
     def preProcess(self, frame):
         '''
-        All processing before analysing searate chambers
+        All processing before analysing separate chambers
         '''
         # Inverting frame if needed
         if self.invertImage :
             cv.Not(frame, frame)
-        """
-        # Accumulate background
-        if self.tempAccumulateFrames is not None :
-            cv.ScaleAdd(frame, 1 / self.accumulateFrames,
-                        self.background, self.background)
-            self.tempAccumulateFrames -= 1
-            if self.tempAccumulateFrames == 0 :
-                self.tempAccumulateFrames = None
-        
-        # Substract background if it avaliable
-        if self.background is not None :
-            cv.Sub(frame, self.background, frame)
-        """ 
         # Discarding color information
         grayImage = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
         cv.CvtColor(frame, grayImage, cv.CV_RGB2GRAY);
@@ -109,6 +105,7 @@ class CvProcessor(QtCore.QObject):
         '''
         Detect object properties on frame inside chamber
         '''
+        chamber.frameNumber = self.frameNumber
         # Set ROI according to chamber size
         cv.SetImageROI(frame, chamber.getRect())       
         # Finding min and max 
@@ -125,18 +122,23 @@ class CvProcessor(QtCore.QObject):
         tempimage = cv.CloneImage(frame)
         chamber.ltObject.contours = cv.FindContours(tempimage, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
-        # The ability to calculate moments of image was
-        # broken in OpenCV 2.3 HATE_HAE_HATE!!!!
-        #moments = cv.Moments(frame)lculatimc mass center of contour
-        # So, caclulating moments of contour
-        moments = cv.Moments(chamber.ltObject.contours)
-        # Calculating mass center by moments
-        m00 = cv.GetSpatialMoment(moments, 0, 0)
-        if m00 != 0 :
-            m10 = cv.GetSpatialMoment(moments, 1, 0)
-            m01 = cv.GetSpatialMoment(moments, 0, 1)            
-            chamber.ltObject.massCenter = ( m10/m00, m01/m00 ) 
         #contours = cv.ApproxPoly (contours,storage, cv.CV_POLY_APPROX_DP, 5)
+        # The ability to calculate moments of image was
+        # broken in OpenCV 2.3 HATE_HATE_HATE!!!!
+        #moments = cv.Moments(frame)lculatimc mass center of contour
+        
+        # So, calclulating moments of contour
+        if chamber.ltObject.contours is not None :
+            moments = cv.Moments(chamber.ltObject.contours)
+            # Calculating mass center by moments
+            m00 = cv.GetSpatialMoment(moments, 0, 0)
+            if m00 != 0 :
+                m10 = cv.GetSpatialMoment(moments, 1, 0)
+                m01 = cv.GetSpatialMoment(moments, 0, 1)            
+                chamber.ltObject.massCenter = ( m10/m00, m01/m00 ) 
+        # Reset area selection
+        if self.saveTrajectory :
+            chamber.saveToTrajectory
         
         cv.ResetImageROI(frame)
         
@@ -179,24 +181,18 @@ class CvProcessor(QtCore.QObject):
             """  
             # Reset to full image
             cv.ResetImageROI(frame)
-            
-                       
-    def accumulate(self, value):
-        if value is not None :
-            self.accumulateFrames = value
-            self.tempAccumulateFrames = value
-            self.background = cv.CreateImage(cv.GetSize(self.frame), cv.IPL_DEPTH_8U, 3)
-        else :
-            self.accumulateFrames = 0
-            self.tempAccumulateFrames = None
-            self.background = None
-            self.processFrame()
 
     def setNegative(self, value):
+        '''
+        Set if we need to negative image
+        '''
         self.invertImage = value
         self.processFrame()
         
     def setShowProcessed(self, value):
+        '''
+        Sent processed or original image
+        '''
         self.showProcessedImage = value
         self.processFrame()
         
@@ -207,7 +203,7 @@ class CvProcessor(QtCore.QObject):
     def setChamber(self, rect):
         '''
         Create chamber from rect and insert it 
-        into selected leftTopPos
+        into selected frameNumber
         '''
         chamber = Chamber(rect)
         if self.selected == -1 :
@@ -219,7 +215,7 @@ class CvProcessor(QtCore.QObject):
             
     def setScale(self, rect):
         '''
-        set scale accordind to rect
+        set scale according to rect
         '''
         self.scale = sqrt(rect.width()**2 + rect.height()**2)
         self.processFrame() # Update current frame
@@ -243,9 +239,20 @@ class CvProcessor(QtCore.QObject):
             self.emit(signalChambersUpdated, list(self.chambers), self.selected)
     
     def setTreshold(self, value):
+        '''
+        Set theshold value (in percents)
+        '''
         self.treshold = value / 100.0
         self.processFrame() # Update current frame
         
-    def resetBackground(self):
-        self.background = None
-        self.processFrame() # Update current frame
+    def writeTrajectory(self, value):
+        self.saveTrajectory = value
+        if self.saveTrajectory :
+            lastFrame = (self.videoLength - self.frameNumber) \
+                        if self.videoLength is not None else 10*1800
+                 # TODO: fix right index
+            for chamber in self.chambers :
+                chamber.initTrajectory(self.frameNumber, lastFrame)
+        else:
+            for chamber in self.chambers :
+                chamber.resetTrajectory()

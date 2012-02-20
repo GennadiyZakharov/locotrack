@@ -17,7 +17,10 @@ from PyQt4.QtGui import (QBoxLayout,
 LEFT, ABOVE = range(2)
 
 class LabelledLineEdit(QWidget):
-
+    '''
+    This class holds QLineEdit, budded to QLabel
+    This is used only to simplify GUI creation 
+    '''
     def __init__(self, labelText=QString(), leftTopPos=LEFT,parent=None):
         super(LabelledLineEdit, self).__init__(parent)
         self.label = QLabel(labelText)
@@ -30,7 +33,10 @@ class LabelledLineEdit(QWidget):
         self.setLayout(layout)
 
 class LabelledTextEdit(QWidget):
-
+    '''
+    This class holds QTextEdit, budded to QLabel
+    This is used only to simplify GUI creation 
+    '''
     def __init__(self, labelText=QString(), leftTopPos=LEFT,parent=None):
         super(LabelledTextEdit, self).__init__(parent)
         self.label = QLabel(labelText)
@@ -43,7 +49,10 @@ class LabelledTextEdit(QWidget):
         self.setLayout(layout)
         
 class LabelledSlider(QWidget):
-
+    '''
+    This class holds QSlider, budded to QLabel
+    This is used only to simplify GUI creation 
+    '''
     def __init__(self, labelText=QString(),orientation=Qt.Horizontal,
                  leftTopPos=LEFT,parent=None):
         super(LabelledSlider, self).__init__(parent)
@@ -52,28 +61,29 @@ class LabelledSlider(QWidget):
         self.slider = QSlider(orientation)
         self.label = QLabel(self.labelText+' '+str(self.slider.value()))
         self.label.setBuddy(self.slider)
-        self.connect(self.slider,signalValueChanged, self.on_sliderMove)
+        self.connect(self.slider,signalValueChanged, self.sliderMove)
         layout = QBoxLayout(QBoxLayout.LeftToRight
                 if leftTopPos == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.slider)
         self.setLayout(layout)
-        
         # Creating links to functions
         self.value = self.slider.value
         self.setValue = self.slider.setValue
         self.setMaximum = self.slider.setMaximum
         self.setMinimum = self.slider.setMinimum
-        
         self.setText = self.label.setText
         self.text = self.label.text
     
-    def on_sliderMove(self,value):
+    def sliderMove(self,value):
         self.label.setText(self.labelText+' '+str(value))
         self.emit(signalValueChanged,value)
         
 class LabelledCheckBox(QWidget):
-
+    '''
+    This class holds QCheckBox, budded to QLabel
+    This is used only to simplify GUI creation 
+    '''
     def __init__(self, labelText=QString(),leftTopPos=LEFT,checked=False,parent=None):
         super(LabelledCheckBox, self).__init__(parent)
         

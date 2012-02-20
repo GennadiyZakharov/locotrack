@@ -10,10 +10,9 @@ from ltgui.labeledwidgets import *
 
 class CvProcessorWidget(QtGui.QWidget):
     '''
-    classdocs
+    This widget is connected to cvProcessor and has GUI to
+    manipulate processing properties
     '''
-
-
     def __init__(self, parent=None):
         '''
         Constructor
@@ -21,22 +20,7 @@ class CvProcessorWidget(QtGui.QWidget):
         super(CvProcessorWidget, self).__init__(parent)
         
         layout = QtGui.QGridLayout()
-        
-        accumulateLabel = QtGui.QLabel("&Frames number")
-        self.accumulateSpinBox = QtGui.QSpinBox()
-        self.accumulateSpinBox.setMaximum(200)
-        self.accumulateSpinBox.setValue(100)
-        accumulateLabel.setBuddy(self.accumulateSpinBox)
-        self.accumulateButton = QtGui.QPushButton("Accumulate background")
-        self.connect(self.accumulateButton, signalClicked, self.accumulate)
-        self.resetBackgroundButton = QtGui.QPushButton("Reset background")
-        self.connect(self.resetBackgroundButton, signalClicked, self.on_resetBackground)
-        
-        layout.addWidget(accumulateLabel, 0, 0)        
-        layout.addWidget(self.accumulateSpinBox, 0, 1)
-        layout.addWidget(self.accumulateButton, 1, 0)        
-        layout.addWidget(self.resetBackgroundButton, 1, 1)
-        
+        # Some checkboxes
         self.showProcessedChechBox = LabelledCheckBox("Show processed image")
         layout.addWidget(self.showProcessedChechBox, 2, 0)
         self.negativeChechBox = LabelledCheckBox("Negative")
@@ -44,19 +28,20 @@ class CvProcessorWidget(QtGui.QWidget):
         self.showContourChechBox = LabelledCheckBox("Show Contour")
         layout.addWidget(self.showContourChechBox, 3, 0)
         self.showContourChechBox.setCheckState(QtCore.Qt.Checked)
-        
-        
+        # Treshold slider
         self.tresholdSlider = LabelledSlider('Treshold')
         self.tresholdSlider.setMaximum(100)
         self.tresholdSlider.setValue(60)
         layout.addWidget(self.tresholdSlider, 4, 0, 1, 2)
-        
-        
+        # Layout
         self.setLayout(layout)
         
     def accumulate(self):
         self.emit(signalAccumulate, self.accumulateSpinBox.value())
         
-    def on_resetBackground(self):
+    def resetBackground(self):
+        '''
+        Clear accumulated background
+        '''
         self.emit(signalAccumulate, None)
         

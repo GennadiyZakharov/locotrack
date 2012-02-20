@@ -35,3 +35,5 @@ signalClearChamber = SIGNAL("clearChamber")
 signalSetScale = SIGNAL("setScale")
 signalChangeSelection  = SIGNAL("changeSelection")
 signalChambersUpdated = SIGNAL("chambersUpdated")
+
+signalWriteTrajectory = SIGNAL("writeTrajectory")
