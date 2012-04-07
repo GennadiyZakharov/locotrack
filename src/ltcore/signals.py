@@ -37,3 +37,4 @@ signalChangeSelection  = SIGNAL("changeSelection")
 signalChambersUpdated = SIGNAL("chambersUpdated")
 
 signalWriteTrajectory = SIGNAL("writeTrajectory")
+signalAnalyseTrajectory = SIGNAL("analyseTrajectory")

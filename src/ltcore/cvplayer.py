@@ -113,8 +113,9 @@ class CvPlayer(QtCore.QObject):
         It is called to capture next frame from video device
         '''
         self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+        self.frameTime = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_MSEC))
         frame = cv.QueryFrame(self.captureDevice)
         if frame is None :
             self.stop()
         else :
-            self.emit(signalNextFrame, frame, self.frameNumber)
+            self.emit(signalNextFrame, frame, self.frameNumber, self.frameTime)

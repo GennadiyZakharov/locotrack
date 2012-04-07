@@ -29,21 +29,24 @@ class CvProcessor(QtCore.QObject):
         Constructor
         '''
         super(CvProcessor, self).__init__(parent)
-        
+        # Video Player
         self.cvPlayer = CvPlayer(self)
         self.connect(self.cvPlayer, signalNextFrame, self.getNextFrame)
         self.connect(self.cvPlayer, signalCvPlayerCapturing, self.videoOpened)
-        #
+        # Chamber list
         self.chambers = [] 
         self.selected = -1
         self.scale = None
         self.frame = None
+        # Parameters
         self.invertImage = False
         self.treshold = 0.6
         self.showProcessedImage = False
         self.showContour = True
-        self.writeTrajectory(False)
+        # Reset Trajectory
+        self.saveTrajectory = False
         self.videoLength = None
+        
         # Visual Parameters
         self.scaleLabelPosition = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -57,12 +60,13 @@ class CvProcessor(QtCore.QObject):
         self.videoLength = length
         self.frameRate = frameRate 
         
-    def getNextFrame(self, frame, frameNumber):
+    def getNextFrame(self, frame, frameNumber, frameTime):
         '''
         get frame from cvPlayer, save it and process
         '''
         self.frame = frame
         self.frameNumber = frameNumber
+        self.frameTime = frameTime
         self.processFrame() #
         
     def processFrame(self):
@@ -113,19 +117,18 @@ class CvProcessor(QtCore.QObject):
         chamber.ltObject.maxBright = maxBrightPos
         # Tresholding image
         treshold = (maxVal-minVal) * self.treshold + minVal 
-        cv.Threshold(frame, frame, treshold, 200, cv.CV_THRESH_TOZERO)
+        cv.Threshold(frame, frame, treshold, 255, cv.CV_THRESH_TOZERO)
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
         
-        # create the storage area
+        # create the storage area for contour
         storage = cv.CreateMemStorage (0)
         # Find object contours
         tempimage = cv.CloneImage(frame)
         chamber.ltObject.contours = cv.FindContours(tempimage, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
-        #contours = cv.ApproxPoly (contours,storage, cv.CV_POLY_APPROX_DP, 5)
         # The ability to calculate moments of image was
         # broken in OpenCV 2.3 HATE_HATE_HATE!!!!
-        #moments = cv.Moments(frame)lculatimc mass center of contour
+        #moments = cv.Moments(frame) # Calculating mass center of contour
         
         # So, calclulating moments of contour
         if chamber.ltObject.contours is not None :
@@ -136,27 +139,29 @@ class CvProcessor(QtCore.QObject):
                 m10 = cv.GetSpatialMoment(moments, 1, 0)
                 m01 = cv.GetSpatialMoment(moments, 0, 1)            
                 chamber.ltObject.massCenter = ( m10/m00, m01/m00 ) 
-        # Reset area selection
+            else :
+                chamber.ltObject.massCenter = ( -1, -1 )
+        # Saving to trajectory if we need it
         if self.saveTrajectory :
-            chamber.saveToTrajectory
-        
+            chamber.saveToTrajectory()
+        # Reset area selection
         cv.ResetImageROI(frame)
         
     def drawChambers(self, frame) :
         '''
-        Draw chambers, detected object position, scale label, etc
+        Draw chambers, object position, scale label, etc
         '''
         # Draw scale label
         if self.scale is not None :
-            cv.Line(frame, self.scaleLabelPosition, (self.scaleLabelPosition[0] + self.scale, self.scaleLabelPosition[1]),
+            cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + self.scale), self.scaleLabelPosition[1]),
                     self.chamberColor, 2)
         # Drawing chambers
-        for i in xrange(len(self.chambers)) :   
+        for i in range(len(self.chambers)) :   
             if i == self.selected :
                 color = self.chamberSelectedColor
             else :
                 color = self.chamberColor
-             
+            # Draw chamber borders
             cv.Rectangle(frame, self.chambers[i].leftTopPos(), self.chambers[i].bottomRightPos(),
                          color, 2)
             cv.PutText(frame, str(i), self.chambers[i].leftTopPos(),
@@ -207,8 +212,10 @@ class CvProcessor(QtCore.QObject):
         '''
         chamber = Chamber(rect)
         if self.selected == -1 :
+            # Append chamber to list
             self.chambers.append(chamber)
         else :
+            # Replace selected chamber 
             self.chambers[self.selected] = chamber
         self.processFrame() # Update current frame
         self.emit(signalChambersUpdated, list(self.chambers), self.selected)
@@ -246,13 +253,30 @@ class CvProcessor(QtCore.QObject):
         self.processFrame() # Update current frame
         
     def writeTrajectory(self, value):
+        '''
+        Enable/Disable trajectory saving
+        '''
+        if self.scale is None :
+            return
         self.saveTrajectory = value
         if self.saveTrajectory :
+            
+            '''
+            # Determine Length
             lastFrame = (self.videoLength - self.frameNumber) \
                         if self.videoLength is not None else 10*1800
                  # TODO: fix right index
-            for chamber in self.chambers :
-                chamber.initTrajectory(self.frameNumber, lastFrame)
+            # Init array for trajectory from current 
+            '''
+            for i in range(len(self.chambers)) :
+                self.chambers[i].initTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i), self.scale, self.cvPlayer.frameRate)
+            
         else:
+            # Clear wrote Trajectory
             for chamber in self.chambers :
                 chamber.resetTrajectory()
+    
+    def analyseTrajectory(self):
+        print "analysing trajectory"
+        for i in range(len(self.chambers)) :
+            pass

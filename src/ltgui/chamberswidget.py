@@ -78,6 +78,8 @@ class ChambersWidget(QtGui.QWidget):
         This procedure is called, when setScale or setChamber button
         is pressed
         '''
+        if self.scaleButton.isChecked() :
+            self.setChamberButton.setChecked(False)
         # We sent signal to enable drag on cvLabel
         self.emit(signalEnableDnD, checked)
         # Now we only can wait for signal from cvLabel to receive 

@@ -83,7 +83,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvTrajectoryWidget = TrajectoryWidget() 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
         self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.writeTrajectory)
-                     
+        self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseTrajectory)             
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
         self.ltActions.addActions(projectMenu, self.ltActions.projectActions)

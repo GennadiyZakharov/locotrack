@@ -22,28 +22,55 @@ class Chamber(QtCore.QRect):
         super(Chamber, self).__init__(rect.normalized())
         self.ltObject = LtObject()
         self.frameNumber = -1
+        self.trajectoryFile = None
         self.resetTrajectory()
+        self.fileCaption = ("LocoTrack 1.0\n" + 
+            "Frame    Time      X     Y\n" + 
+            "==========================\n")
       
     def leftTopPos(self) :
         return self.left(), self.top()
     
     def bottomRightPos(self):
         return self.right(), self.bottom()
-    
-    def size(self):
-        return self.size()
-    
+    '''
     def initTrajectory(self, firstFrame, lastFrame):
         self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
-        
+    ''' 
+    def initTrajectory(self, fileName, scale, frameRate):
+        self.firstFrame = self.frameNumber
+        self.trajectoryFile = open(fileName, 'w')
+        self.trajectoryFile.write(self.fileCaption)
+        self.trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
+        self.trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()) )
+        self.trajectoryFile.write("{0}\n".format(scale))
+        self.trajectoryFile.write("{0}\n".format(frameRate))
+        self.trajectoryFile.write("{0}\n".format(self.firstFrame))
+        self.trajectoryFile.write("=============\n")
+        print "file {0} created".format(fileName)
+        self.saveToTrajectory()
+        #self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
+    
     def resetTrajectory(self):
-        self.ltTrajectory = None
+        #self.ltTrajectory = None
+        if self.trajectoryFile is not None :
+            self.trajectoryFile.close()
+            print "File closed"
+        self.trajectoryFile = None
+        self.errors = 0
         
     def saveToTrajectory(self):
-        if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
-            self.ltTrajectory.setObject(self.ltObject, self.frameNumber)
+        if (self.trajectoryFile is not None) and (self.frameNumber >= 0):
+            # save point to file
+            fileString = "{0:10} {1:18.6f} {2:18.6f}\n".format(self.frameNumber-self.firstFrame,
+                                     self.ltObject.massCenter[0], self.ltObject.massCenter[1])
+            self.trajectoryFile.write(fileString)
             
-    
+            
+        '''
+        if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
+            self.ltTrajectory.setObject(self.frameNumber, self.ltObject)
+        '''      
     def saveTrajectory(self, fileName):
         pass
     

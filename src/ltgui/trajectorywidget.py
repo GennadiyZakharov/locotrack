@@ -23,15 +23,22 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         layout=QtGui.QVBoxLayout()
         #
-        self.recordTrajectoryButton = QtGui.QPushButton('Record trajecctory')
+        self.recordTrajectoryButton = QtGui.QPushButton('Record trajectory')
         self.recordTrajectoryButton.setCheckable(True)
         self.connect(self.recordTrajectoryButton, signalToggled, self.setTrajectoryRecord)
         layout.addWidget(self.recordTrajectoryButton)
-        
+        #
+        self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
+        self.connect(self.analyseTrajectoryButton, signalClicked, self.analyseTrajectory)
+        layout.addWidget(self.analyseTrajectoryButton)
+        #
         self.setLayout(layout)
         
         
     def setTrajectoryRecord(self, checked):
         self.emit(signalWriteTrajectory, checked)
+        
+    def analyseTrajectory(self):
+        self.emit(signalAnalyseTrajectory)
         
     
