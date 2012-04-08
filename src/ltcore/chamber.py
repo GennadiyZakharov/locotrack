@@ -24,9 +24,7 @@ class Chamber(QtCore.QRect):
         self.frameNumber = -1
         self.trajectoryFile = None
         self.resetTrajectory()
-        self.fileCaption = ("LocoTrack 1.0\n" + 
-            "Frame    Time      X     Y\n" + 
-            "==========================\n")
+        self.fileCaption = "LocoTrack 1.0\n"
       
     def leftTopPos(self) :
         return self.left(), self.top()
@@ -38,14 +36,13 @@ class Chamber(QtCore.QRect):
         self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
     ''' 
     def initTrajectory(self, fileName, scale, frameRate):
-        self.firstFrame = self.frameNumber
         self.trajectoryFile = open(fileName, 'w')
         self.trajectoryFile.write(self.fileCaption)
         self.trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
         self.trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()) )
-        self.trajectoryFile.write("{0}\n".format(scale))
+        self.trajectoryFile.write("{0}\n".format(scale/15))
+        # TODO: implement mm
         self.trajectoryFile.write("{0}\n".format(frameRate))
-        self.trajectoryFile.write("{0}\n".format(self.firstFrame))
         self.trajectoryFile.write("=============\n")
         print "file {0} created".format(fileName)
         self.saveToTrajectory()
@@ -62,10 +59,9 @@ class Chamber(QtCore.QRect):
     def saveToTrajectory(self):
         if (self.trajectoryFile is not None) and (self.frameNumber >= 0):
             # save point to file
-            fileString = "{0:10} {1:18.6f} {2:18.6f}\n".format(self.frameNumber-self.firstFrame,
+            fileString = "{0:10} {1:18.6f} {2:18.6f}\n".format(self.frameNumber,
                                      self.ltObject.massCenter[0], self.ltObject.massCenter[1])
             self.trajectoryFile.write(fileString)
-            
             
         '''
         if (self.ltTrajectory is not None) and (self.frameNumber >= 0):

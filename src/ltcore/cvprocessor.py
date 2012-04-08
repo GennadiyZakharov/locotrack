@@ -13,6 +13,7 @@ from ltcore.signals import *
 from ltcore.ltactions import LtActions
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
+from ltcore.trajectoryanalysis import RunRestAnalyser
 
 
 class CvProcessor(QtCore.QObject):
@@ -277,6 +278,8 @@ class CvProcessor(QtCore.QObject):
                 chamber.resetTrajectory()
     
     def analyseTrajectory(self):
-        print "analysing trajectory"
+        analyser = RunRestAnalyser(self)
         for i in range(len(self.chambers)) :
-            pass
+            trajFileName = self.cvPlayer.fileName+".ch{0}.lt1".format(i)
+            analyser.analyse(trajFileName)
+            
