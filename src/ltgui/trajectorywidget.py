@@ -23,8 +23,19 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         layout=QtGui.QVBoxLayout()
         #
+        self.speciesEdit = LabelledLineEdit('Line')
+        layout.addWidget(self.speciesEdit)
+        self.speciesEdit.lineEdit.textChanged.connect(self.descriptionChanged)
+        self.genderEdit = LabelledLineEdit('Gender')
+        layout.addWidget(self.genderEdit)
+        self.genderEdit.lineEdit.textChanged.connect(self.descriptionChanged)
+        self.conditionEdit = LabelledLineEdit('Condition')
+        layout.addWidget(self.conditionEdit)
+        self.conditionEdit.lineEdit.textChanged.connect(self.descriptionChanged)
+        #
         self.recordTrajectoryButton = QtGui.QPushButton('Record trajectory')
         self.recordTrajectoryButton.setCheckable(True)
+        self.recordTrajectoryButton.setEnabled(False)
         self.connect(self.recordTrajectoryButton, signalToggled, self.setTrajectoryRecord)
         layout.addWidget(self.recordTrajectoryButton)
         #
@@ -36,9 +47,19 @@ class TrajectoryWidget(QtGui.QWidget):
         
         
     def setTrajectoryRecord(self, checked):
-        self.emit(signalWriteTrajectory, checked)
+        self.emit(signalWriteTrajectory, checked,self.speciesEdit.text(),
+                  self.genderEdit.text(), self.conditionEdit.text())
         
     def analyseTrajectory(self):
         self.emit(signalAnalyseTrajectory)
+        
+    def descriptionChanged(self):
+        flag = (self.speciesEdit.text() != '' and 
+                self.genderEdit.text() != '' and
+                self.conditionEdit.text() != '')
+        self.recordTrajectoryButton.setEnabled(flag)
+        if flag :
+            self.emit(signalSampleNameChanged, self.speciesEdit.text(),
+                      self.genderEdit.text(), self.conditionEdit.text())
         
     

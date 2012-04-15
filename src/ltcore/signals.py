@@ -15,6 +15,7 @@ signalStateChanged = SIGNAL("stateChanged(int)")
 signalTriggered = SIGNAL("triggered()")
 signalToggled = SIGNAL("toggled(bool)")
 
+
 # ==== Custom signals ====
 # ---- CvPlayer ----
 signalCaptureFromFile = SIGNAL("captureFromFile")
@@ -38,3 +39,4 @@ signalChambersUpdated = SIGNAL("chambersUpdated")
 
 signalWriteTrajectory = SIGNAL("writeTrajectory")
 signalAnalyseTrajectory = SIGNAL("analyseTrajectory")
+signalSampleNameChanged = SIGNAL("sampleNameChanged")

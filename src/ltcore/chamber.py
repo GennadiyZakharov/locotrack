@@ -35,7 +35,8 @@ class Chamber(QtCore.QRect):
     def initTrajectory(self, firstFrame, lastFrame):
         self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
     ''' 
-    def initTrajectory(self, fileName, scale, frameRate):
+   
+    def initTrajectory(self, fileName, scale, frameRate, line, gender, condition):
         self.trajectoryFile = open(fileName, 'w')
         self.trajectoryFile.write(self.fileCaption)
         self.trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
@@ -43,6 +44,9 @@ class Chamber(QtCore.QRect):
         self.trajectoryFile.write("{0}\n".format(scale/15))
         # TODO: implement mm
         self.trajectoryFile.write("{0}\n".format(frameRate))
+        self.trajectoryFile.write(line+"\n")
+        self.trajectoryFile.write(gender+"\n")
+        self.trajectoryFile.write(condition+"\n")
         self.trajectoryFile.write("=============\n")
         print "file {0} created".format(fileName)
         self.saveToTrajectory()

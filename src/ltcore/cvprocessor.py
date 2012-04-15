@@ -110,11 +110,16 @@ class CvProcessor(QtCore.QObject):
         '''
         Detect object properties on frame inside chamber
         '''
+        if frame is None :
+            print 'Error -- None frame is send to ProcessFrame'
+            return
         chamber.frameNumber = self.frameNumber
+        chamber.ltObject.massCenter = ( -1, -1 )
+        
         # Set ROI according to chamber size
         cv.SetImageROI(frame, chamber.getRect())       
         # Finding min and max 
-        (minVal, maxVal, minPoint, maxBrightPos) = cv.MinMaxLoc(frame)
+        (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         chamber.ltObject.maxBright = maxBrightPos
         # Tresholding image
         treshold = (maxVal-minVal) * self.treshold + minVal 
@@ -122,26 +127,42 @@ class CvProcessor(QtCore.QObject):
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
         
         # create the storage area for contour
-        storage = cv.CreateMemStorage (0)
+        storage = cv.CreateMemStorage(0)
         # Find object contours
         tempimage = cv.CloneImage(frame)
-        chamber.ltObject.contours = cv.FindContours(tempimage, storage,
+        if tempimage is None :
+            print "Error -- nothing to find contours"
+            # Saving to trajectory if we need it
+            if self.saveTrajectory :
+                chamber.saveToTrajectory()
+            # Reset area selection
+            cv.ResetImageROI(frame)
+            return
+        try :
+            chamber.ltObject.contours = cv.FindContours(tempimage, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
         # The ability to calculate moments of image was
         # broken in OpenCV 2.3 HATE_HATE_HATE!!!!
-        #moments = cv.Moments(frame) # Calculating mass center of contour
+        # moments = cv.Moments(frame) # Calculating mass center of contour
         
         # So, calclulating moments of contour
-        if chamber.ltObject.contours is not None :
-            moments = cv.Moments(chamber.ltObject.contours)
+            if chamber.ltObject.contours is None :
+                if self.saveTrajectory :
+                    chamber.saveToTrajectory()
+                cv.ResetImageROI(frame)
+                return
+            else :
+                moments = cv.Moments(chamber.ltObject.contours)
+        except :
+            print "error founding center"
+        else :
             # Calculating mass center by moments
             m00 = cv.GetSpatialMoment(moments, 0, 0)
             if m00 != 0 :
                 m10 = cv.GetSpatialMoment(moments, 1, 0)
                 m01 = cv.GetSpatialMoment(moments, 0, 1)            
                 chamber.ltObject.massCenter = ( m10/m00, m01/m00 ) 
-            else :
-                chamber.ltObject.massCenter = ( -1, -1 )
+                    
         # Saving to trajectory if we need it
         if self.saveTrajectory :
             chamber.saveToTrajectory()
@@ -253,13 +274,13 @@ class CvProcessor(QtCore.QObject):
         self.treshold = value / 100.0
         self.processFrame() # Update current frame
         
-    def writeTrajectory(self, value):
+    def writeTrajectory(self, checked, line, gender, condition):
         '''
         Enable/Disable trajectory saving
         '''
         if self.scale is None :
             return
-        self.saveTrajectory = value
+        self.saveTrajectory = checked
         if self.saveTrajectory :
             
             '''
@@ -270,7 +291,8 @@ class CvProcessor(QtCore.QObject):
             # Init array for trajectory from current 
             '''
             for i in range(len(self.chambers)) :
-                self.chambers[i].initTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i), self.scale, self.cvPlayer.frameRate)
+                self.chambers[i].initTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i), 
+                                                self.scale, self.cvPlayer.frameRate, line, gender, condition)
             
         else:
             # Clear wrote Trajectory
@@ -282,4 +304,8 @@ class CvProcessor(QtCore.QObject):
         for i in range(len(self.chambers)) :
             trajFileName = self.cvPlayer.fileName+".ch{0}.lt1".format(i)
             analyser.analyse(trajFileName)
-            
+    
+    def setSampleName(self, line, gender, condition):
+        self.line = line
+        self.gender = gender
+        self.condition = condition    

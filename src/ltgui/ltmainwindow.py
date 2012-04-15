@@ -83,7 +83,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvTrajectoryWidget = TrajectoryWidget() 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
         self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.writeTrajectory)
-        self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseTrajectory)             
+        self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseTrajectory)
+        self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)             
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
         self.ltActions.addActions(projectMenu, self.ltActions.projectActions)
@@ -105,6 +106,7 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ---- videoWidget ----
         self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
+        self.connect(self.videoWidget.runTroughButton, signalClicked, self.cvProcessor.cvPlayer.RunTrough)
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
         self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)

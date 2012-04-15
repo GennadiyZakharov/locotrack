@@ -31,7 +31,7 @@ class CvPlayer(QtCore.QObject):
         self.fileName = None
         self.captureDevice = None
         self.videoLength = None
-        self.frameNumber = None       
+        self.frameNumber = None
         #self.emit(signalCvPlayerCapturing, None)
         
     def captureFromFile(self, fileName):
@@ -68,13 +68,25 @@ class CvPlayer(QtCore.QObject):
         '''
         Start extracting frames by timer
         '''
-        if (self.captureDevice is not None) and (self.timer is None) :
+        if self.captureDevice is None : return
+        if self.runTroughFlag :
+            self.runTroughFlag = False
+        if self.timer is None :
             self.timer = self.startTimer(1000 / self.frameRate)
-        
+            
+    def RunTrough(self):
+        if self.captureDevice is None : return
+        self.stop()
+        self.runTroughFlag = True
+        while self.runTroughFlag :
+            self.timerEvent()
+            QtCore.QCoreApplication.processEvents()
+            
     def stop(self):
         '''
         Stop playing by timer
         '''
+        self.runTroughFlag = False
         if self.timer is not None :
             self.killTimer(self.timer)
             self.timer = None
@@ -111,11 +123,11 @@ class CvPlayer(QtCore.QObject):
         '''
         Event from timer
         It is called to capture next frame from video device
-        '''
-        self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
-        self.frameTime = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_MSEC))
+        '''    
         frame = cv.QueryFrame(self.captureDevice)
         if frame is None :
             self.stop()
         else :
+            self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+            self.frameTime = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_MSEC))
             self.emit(signalNextFrame, frame, self.frameNumber, self.frameTime)

@@ -31,6 +31,7 @@ class LabelledLineEdit(QWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.lineEdit)
         self.setLayout(layout)
+        self.text = self.lineEdit.text
 
 class LabelledTextEdit(QWidget):
     '''

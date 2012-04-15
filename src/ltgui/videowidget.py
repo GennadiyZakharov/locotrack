@@ -33,6 +33,8 @@ class VideoWidget(QtGui.QWidget):
         layout2.addWidget(self.stopButt)
         self.fwdButt = QtGui.QPushButton(">>")
         layout2.addWidget(self.fwdButt)
+        self.runTroughButton = QtGui.QPushButton('Run')
+        layout2.addWidget(self.runTroughButton)
         '''
         # Brightness/Contrast
         layout3 = QtGui.QHBoxLayout()
