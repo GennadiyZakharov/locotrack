@@ -61,8 +61,8 @@ class VideoWidget(QtGui.QWidget):
             self.videoSlider.setMaximum(int(videoLength))
             self.videoSlider.setValue(0)            
     
-    def nextFrame(self, image, time):
-        self.videoSlider.setValue(time)
+    def nextFrame(self, image, frameNumber, time):
+        self.videoSlider.setValue(frameNumber)
     
     #video source closed
     def videoClosed(self):

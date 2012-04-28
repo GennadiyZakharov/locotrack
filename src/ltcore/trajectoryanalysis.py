@@ -8,11 +8,12 @@ Created on 07.04.2012
 
 from __future__ import division
 from math import sqrt
+import os
 
 from PyQt4 import QtCore
 
-totalActivityName = "0-TotalActivity_.csv"
-activityName = "1-TotalActivity.csv"
+totalActivityName = "0-TotalActivity.csv"
+activityName = "1-Activity.csv"
 restName = "2-Rest.csv"
 runName = "3-Run.csv"
 graphName = ".graph.txt"
@@ -28,7 +29,7 @@ class RunRestAnalyser(QtCore.QObject):
         '''
         super(RunRestAnalyser, self).__init__(parent)
         self.quantDuration = 1.0
-        self.intervalDuration = 50.0
+        self.intervalDuration = 300.0
         self.speedTreshold = 0.28
         self.errorTreshold = 5.0
         
@@ -40,32 +41,46 @@ class RunRestAnalyser(QtCore.QObject):
         return (frameNumber / self.frameRate, x / self.scale, y / self.scale)
     
     def activityString(self, interval, activity, runFreq):
-        return '{0:10}; {1:5}; {2:10}; {3:5}; {4:18.6f}; {5:18.6f};\n'.format(
+        return '{0:>10}; {1:>5}; {2:>10}; {3:5}; {4:18.6f}; {5:18.6f};\n'.format(
             self.line, self.gender, self.condition, interval, 
             activity, runFreq)
     
     def restString(self, interval, restDuration):
-        return '{0:10}; {1:5}; {2:10}; {3:5}; {4:18.6f};\n'.format(
+        return '{0:>10}; {1:>5}; {2:>10}; {3:5}; {4:18.6f};\n'.format(
             self.line, self.gender, self.condition,
             interval, restDuration)
     
     def runString(self, interval, runDuration, runLength):
-        return '{0:10}; {1:5}; {2:10}; {3:5}; {4:18.6f}; {5:18.6f}; {6:18.6f};\n'.format(
+        return '{0:>10}; {1:>5}; {2:>10}; {3:5}; {4:18.6f}; {5:18.6f}; {6:18.6f};\n'.format(
             self.line, self.gender, self.condition,interval, 
             runDuration, runLength, runLength/runDuration)
+        
+    def setErrorTreshold(self, value):
+        self.errorTreshold = value
+        
+    def setRunRestTreshold(self, value):
+        self.speedTreshold = value
+    def setIntervalDuration(self, value):
+        self.intervalDuration = value
     
-    def analyse(self, fileName):
+    def analyseDir(self, dirName):
+        for dir, dirnames, filenames in os.walk(dirName):
+            for filename in filenames:
+                if filename[-3:] == 'lt1' :
+                    self.analyseFile(os.path.join(dirName, filename), dirName)
+
+    def analyseFile(self, fileName, dirName):
         '''
         Do analysis of one track
         '''
         #
-        print "Starting analysis of file"+fileName
-        
-        self.totalActivityFile = open(totalActivityName,'a')
-        self.activityFile = open(activityName,'a')
-        self.restFile = open(restName,'a')
-        self.runFile = open(runName,'a')
-        self.graphFile = open(fileName+graphName,'w') 
+        print "Starting analysis of file "+fileName
+        self.totalActivityFile = open(os.path.join(dirName,totalActivityName),'a')
+        self.activityFile = open(os.path.join(dirName,activityName),'a')
+        self.restFile = open(os.path.join(dirName,restName),'a')
+        self.runFile = open(os.path.join(dirName,runName),'a')
+        self.graphFile = open(fileName+graphName,'w')
+        self.errorFile = open(fileName+'.errors.txt','w') 
         #
         self.trajectoryFile = open(fileName, 'r')
         if self.trajectoryFile is None :
@@ -76,20 +91,24 @@ class RunRestAnalyser(QtCore.QObject):
         width, height = [int(x) for x in self.trajectoryFile.readline().split()]
         self.scale = float(self.trajectoryFile.readline())
         self.frameRate = float(self.trajectoryFile.readline())
-        self.line = self.trajectoryFile.readline()
-        self.gender = self.trajectoryFile.readline()
-        self.condition = self.trajectoryFile.readline()
+        # TODO: truncate \n
+        self.line = self.trajectoryFile.readline().rstrip()
+        self.gender = self.trajectoryFile.readline().rstrip()
+        self.condition = self.trajectoryFile.readline().rstrip()
         self.trajectoryFile.readline()
         # 
         lastState = -1 # стостяние движения личинки
         # //0 - покой, 1 - движение, -1 - не определено
         secondPoint = self.readPoint()
+        # Store start time
+        startTime = secondPoint[0]
         
         errorCount = 0
         intervalNumber = 0
+        # Total parameters by all record length
         totalRunDuration = 0.0
         totalRunCount = 0
-        #
+        # This is variables to calculate run/rest 
         restDuration = 0.0
         runDuration = 0.0
         runLen = 0.0
@@ -99,15 +118,12 @@ class RunRestAnalyser(QtCore.QObject):
         while True : 
             # Resetting Interval Values
             intervalDuration = 0.0
-            intervalRestDuration = 0.0
             intervalRunDuration = 0.0
             intervalRunCount = 0
             # interval cycle
             while True : 
                 firstPoint = secondPoint
-                
                 intervalNumber +=1
-                #print "Interval "+str(intervalNumber)
                 # Reading Next Point according to quant duration
                 while True :
                     secondPoint = self.readPoint()
@@ -115,21 +131,23 @@ class RunRestAnalyser(QtCore.QObject):
                     if secondPoint is None :
                         # Input File ended
                         break
+                    quantDuration = secondPoint[0] - firstPoint[0]
+                    # Checking if it is enough to quant 
+                    if quantDuration < self.quantDuration :
+                        continue
                     if secondPoint[1] < 0 : # This was error 
                         errorCount += 1
-                        print "Error -- no object found"
+                        self.errorFile.write("{0:5} Error {1:3} -- no object found\n".format(secondPoint[0],errorCount))
                         continue
-                    quantDuration = secondPoint[0] - firstPoint[0]
-                    if quantDuration >= self.quantDuration :
-                        quantLen = sqrt((secondPoint[1] - firstPoint[1]) ** 2 + 
+                    quantLen = sqrt((secondPoint[1] - firstPoint[1]) ** 2 + 
                             (secondPoint[2] - firstPoint[2]) ** 2)
-                        speed = quantLen / quantDuration
-                        if speed > self.errorTreshold :
-                            errorCount += 1
-                            print 'Error -- speed too much'
-                            continue
-                        else :
-                            break 
+                    speed = quantLen / quantDuration
+                    if speed > self.errorTreshold :
+                        errorCount += 1
+                        self.errorFile.write('{0:5} Error {1:3} -- speed too much\n'.format(secondPoint[0],errorCount))
+                        continue
+                    else :
+                        break 
                 #
                 if secondPoint is None :
                     break
@@ -142,10 +160,11 @@ class RunRestAnalyser(QtCore.QObject):
                 if speed > self.speedTreshold :
                     #//личинка двигалась на данном кванте
                     runDuration += quantDuration #//добавляет этот квант к побежке
+                    intervalRunDuration += quantDuration
+                    totalRunDuration += quantDuration
                     runLen += quantLen
                     if lastState == 0 :
                         #//кончился предыдущий период покоя закончился -- записываем
-                        intervalRestDuration += restDuration #//суммарное время отдыха
                         #//записываем в выходной файл данные об отдыхе
                         string = self.restString(restStart, restDuration)
                         self.restFile.write(string)
@@ -161,9 +180,7 @@ class RunRestAnalyser(QtCore.QObject):
                     # личинка не двигалась
                     restDuration += quantDuration
                     if lastState == 1 :
-                        # кончилась побежка - -записываем
-                        intervalRunDuration += runDuration 
-                        totalRunDuration += runDuration
+                        # кончилась побежка - -записываем 
                         # записываем в выходной файл данные о побежке
                         string = self.runString(runStart, runDuration, runLen)
                         self.runFile.write(string)
@@ -189,9 +206,14 @@ class RunRestAnalyser(QtCore.QObject):
         self.restFile.close()
         self.graphFile.close()
         
-        self.totalActivityFile = open(totalActivityName,'w')
+        if errorCount == 0 :
+            self.errorFile.write('0')
+        self.errorFile.close()
+        
+        #self.totalActivityFile = open(totalActivityName,'w')
         string = self.activityString(-1, 
-                         totalRunDuration/firstPoint[0], 100*totalRunCount/firstPoint[0])
+                         totalRunDuration/(firstPoint[0]-startTime), 100*totalRunCount/firstPoint[0])
         self.totalActivityFile.write(string)
         self.totalActivityFile.close()
-        print 'Line {0}, errors:{1}'.format(fileName, errorCount)
+        print 'file {0}, errors:{1}'.format(fileName, errorCount)
+        

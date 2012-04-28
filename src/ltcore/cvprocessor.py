@@ -53,6 +53,8 @@ class CvProcessor(QtCore.QObject):
         self.chamberColor = cv.CV_RGB(0, 255, 0)
         self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
         self.font = cv.InitFont(3, 1, 1)
+        #
+        self.runRestAnalyser = RunRestAnalyser(self)
         
     def videoOpened(self, length, frameRate):
         '''
@@ -125,43 +127,27 @@ class CvProcessor(QtCore.QObject):
         treshold = (maxVal-minVal) * self.treshold + minVal 
         cv.Threshold(frame, frame, treshold, 255, cv.CV_THRESH_TOZERO)
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
+        #
+        subFrame = cv.CreateImage( (chamber.width(), chamber.height()), cv.IPL_DEPTH_8U, 1 );
+        cv.Copy(frame, subFrame);
+        # Calculating mass center
+        mat=cv.GetMat(subFrame)
+        moments = cv.Moments(mat) # Calculating mass center of contour
+        m00 = cv.GetSpatialMoment(moments, 0, 0)
+        if m00 != 0 :
+            m10 = cv.GetSpatialMoment(moments, 1, 0)
+            m01 = cv.GetSpatialMoment(moments, 0, 1)            
+            chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
         
         # create the storage area for contour
         storage = cv.CreateMemStorage(0)
         # Find object contours
-        tempimage = cv.CloneImage(frame)
-        if tempimage is None :
-            print "Error -- nothing to find contours"
-            # Saving to trajectory if we need it
-            if self.saveTrajectory :
-                chamber.saveToTrajectory()
-            # Reset area selection
-            cv.ResetImageROI(frame)
-            return
         try :
+            tempimage = cv.CloneImage(frame)
             chamber.ltObject.contours = cv.FindContours(tempimage, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
-        # The ability to calculate moments of image was
-        # broken in OpenCV 2.3 HATE_HATE_HATE!!!!
-        # moments = cv.Moments(frame) # Calculating mass center of contour
-        
-        # So, calclulating moments of contour
-            if chamber.ltObject.contours is None :
-                if self.saveTrajectory :
-                    chamber.saveToTrajectory()
-                cv.ResetImageROI(frame)
-                return
-            else :
-                moments = cv.Moments(chamber.ltObject.contours)
         except :
-            print "error founding center"
-        else :
-            # Calculating mass center by moments
-            m00 = cv.GetSpatialMoment(moments, 0, 0)
-            if m00 != 0 :
-                m10 = cv.GetSpatialMoment(moments, 1, 0)
-                m01 = cv.GetSpatialMoment(moments, 0, 1)            
-                chamber.ltObject.massCenter = ( m10/m00, m01/m00 ) 
+            print "error founding contoure"
                     
         # Saving to trajectory if we need it
         if self.saveTrajectory :
@@ -300,10 +286,9 @@ class CvProcessor(QtCore.QObject):
                 chamber.resetTrajectory()
     
     def analyseTrajectory(self):
-        analyser = RunRestAnalyser(self)
         for i in range(len(self.chambers)) :
             trajFileName = self.cvPlayer.fileName+".ch{0}.lt1".format(i)
-            analyser.analyse(trajFileName)
+            self.runRestAnalyser.analyse(trajFileName)
     
     def setSampleName(self, line, gender, condition):
         self.line = line

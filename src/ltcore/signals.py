@@ -40,3 +40,7 @@ signalChambersUpdated = SIGNAL("chambersUpdated")
 signalWriteTrajectory = SIGNAL("writeTrajectory")
 signalAnalyseTrajectory = SIGNAL("analyseTrajectory")
 signalSampleNameChanged = SIGNAL("sampleNameChanged")
+
+signalSpeedTheshold = SIGNAL('speedTheshold')
+signalErrorTheshold = SIGNAL('errorTheshold')
+signalIntervalDuration = SIGNAL('intervalDuration')
