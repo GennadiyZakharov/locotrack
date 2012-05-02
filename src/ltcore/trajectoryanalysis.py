@@ -42,7 +42,7 @@ class RunRestAnalyser(QtCore.QObject):
     
     def activityString(self, interval, activity, runFreq):
         return '{0:>10}; {1:>5}; {2:>10}; {3:5}; {4:18.6f}; {5:18.6f};\n'.format(
-            self.line, self.gender, self.condition, interval, 
+            self.line, self.gender, self.condition, interval,
             activity, runFreq)
     
     def restString(self, interval, restDuration):
@@ -52,8 +52,8 @@ class RunRestAnalyser(QtCore.QObject):
     
     def runString(self, interval, runDuration, runLength):
         return '{0:>10}; {1:>5}; {2:>10}; {3:5}; {4:18.6f}; {5:18.6f}; {6:18.6f};\n'.format(
-            self.line, self.gender, self.condition,interval, 
-            runDuration, runLength, runLength/runDuration)
+            self.line, self.gender, self.condition, interval,
+            runDuration, runLength, runLength / runDuration)
         
     def setErrorTreshold(self, value):
         self.errorTreshold = value
@@ -68,19 +68,33 @@ class RunRestAnalyser(QtCore.QObject):
             for filename in filenames:
                 if filename[-3:] == 'lt1' :
                     self.analyseFile(os.path.join(dirName, filename), dirName)
+    def openOutputFile(self, name, captionString):
+        if os.path.isfile(name) :
+            mode = 'a'
+        else :
+            mode = 'w'
+        outFile = open(name, mode)
+        if mode == 'a' :
+            outFile.write(captionString)
+        return outFile
 
     def analyseFile(self, fileName, dirName):
         '''
         Do analysis of one track
         '''
         #
-        print "Starting analysis of file "+fileName
-        self.totalActivityFile = open(os.path.join(dirName,totalActivityName),'a')
-        self.activityFile = open(os.path.join(dirName,activityName),'a')
-        self.restFile = open(os.path.join(dirName,restName),'a')
-        self.runFile = open(os.path.join(dirName,runName),'a')
-        self.graphFile = open(fileName+graphName,'w')
-        self.errorFile = open(fileName+'.errors.txt','w') 
+        print "Starting analysis of file " + fileName
+        
+        self.totalActivityFile = self.openOutputFile(os.path.join(dirName, totalActivityName),
+            '      Line;    Gn;       Cond;   Int;           Activity;            RunFreq;\n')                          
+        self.activityFile = self.openOutputFile(os.path.join(dirName, activityName),
+            '      Line;    Gn;       Cond;   Int;           Activity;            RunFreq;\n')
+        self.restFile = self.openOutputFile(os.path.join(dirName, restName),
+            '      Line;    Gn;       Cond;   Int;           RestTime;\n')
+        self.runFile = self.openOutputFile(os.path.join(dirName, runName),
+            '      Line;    Gn;       Cond;   Int;            RunTime;             RunLen;           RunSpeed;\n')
+        self.graphFile = open(fileName + graphName, 'w')
+        self.errorFile = open(fileName + '.errors.txt', 'w') 
         #
         self.trajectoryFile = open(fileName, 'r')
         if self.trajectoryFile is None :
@@ -91,7 +105,6 @@ class RunRestAnalyser(QtCore.QObject):
         width, height = [int(x) for x in self.trajectoryFile.readline().split()]
         self.scale = float(self.trajectoryFile.readline())
         self.frameRate = float(self.trajectoryFile.readline())
-        # TODO: truncate \n
         self.line = self.trajectoryFile.readline().rstrip()
         self.gender = self.trajectoryFile.readline().rstrip()
         self.condition = self.trajectoryFile.readline().rstrip()
@@ -104,7 +117,7 @@ class RunRestAnalyser(QtCore.QObject):
         startTime = secondPoint[0]
         
         errorCount = 0
-        intervalNumber = 0
+        intervalNumber = 1
         # Total parameters by all record length
         totalRunDuration = 0.0
         totalRunCount = 0
@@ -120,10 +133,10 @@ class RunRestAnalyser(QtCore.QObject):
             intervalDuration = 0.0
             intervalRunDuration = 0.0
             intervalRunCount = 0
+            print "interval started " + str(intervalNumber)
             # interval cycle
             while True : 
                 firstPoint = secondPoint
-                intervalNumber +=1
                 # Reading Next Point according to quant duration
                 while True :
                     secondPoint = self.readPoint()
@@ -137,22 +150,24 @@ class RunRestAnalyser(QtCore.QObject):
                         continue
                     if secondPoint[1] < 0 : # This was error 
                         errorCount += 1
-                        self.errorFile.write("{0:5} Error {1:3} -- no object found\n".format(secondPoint[0],errorCount))
+                        self.errorFile.write("{0:5} Error {1:3} -- no object found\n".format(secondPoint[0], errorCount))
                         continue
                     quantLen = sqrt((secondPoint[1] - firstPoint[1]) ** 2 + 
                             (secondPoint[2] - firstPoint[2]) ** 2)
                     speed = quantLen / quantDuration
                     if speed > self.errorTreshold :
                         errorCount += 1
-                        self.errorFile.write('{0:5} Error {1:3} -- speed too much\n'.format(secondPoint[0],errorCount))
+                        self.errorFile.write('{0:5} Error {1:3} -- speed too much\n'.format(secondPoint[0], errorCount))
                         continue
                     else :
                         break 
                 #
                 if secondPoint is None :
                     break
+                #print 'readed quant '+str(quantDuration)
                 # Calculating speed by quant
                 intervalDuration += quantDuration
+                #print 'intduration',intervalDuration
                 
                 self.graphFile.write("{0:10.2f} {1:12.4f}\n".format(
                     secondPoint[0], quantLen / quantDuration))
@@ -171,10 +186,10 @@ class RunRestAnalyser(QtCore.QObject):
                         # Обнуляем
                         restDuration = 0
                               
-                    if (lastState== -1) or (lastState==0) : # начали анализировать движение
+                    if (lastState == -1) or (lastState == 0) : # начали анализировать движение
                         lastState = 1 # поставили анализируемый период
-                        intervalRunCount+=1 # на данном интервале началась еще одна побежка
-                        totalRunCount+=1
+                        intervalRunCount += 1 # на данном интервале началась еще одна побежка
+                        totalRunCount += 1
                         runStart = intervalNumber # запомнили, на каком интервале началась побежка
                 else :
                     # личинка не двигалась
@@ -186,33 +201,35 @@ class RunRestAnalyser(QtCore.QObject):
                         self.runFile.write(string)
                         runDuration = 0
                         runLen = 0
-                    if (lastState== -1) or (lastState==1) : # начали анализировать покой
+                    if (lastState == -1) or (lastState == 1) : # начали анализировать покой
                         lastState = 0 #; // поставили анализируемый период
                         restStart = intervalNumber #запомнили, на каком интервале начался период покоя
     
-                if secondPoint[0] >= self.intervalDuration*intervalNumber : 
+                if intervalDuration >= self.intervalDuration : 
                     #; // закончилась обработка интервала
+                    print 'time {0}, int {1} dur {2} ended'.format(secondPoint[0], intervalNumber, intervalDuration)
+                    string = self.activityString(intervalNumber,
+                            intervalRunDuration / intervalDuration, 100 * intervalRunCount / intervalDuration)
+                    self.activityFile.write(string)
+                    intervalNumber += 1 
                     break
-                # Writing interval activity index and run count
-                string = self.activityString(intervalNumber, 
-                         intervalRunDuration/intervalDuration, 100*intervalRunCount/intervalDuration)
-                self.activityFile.write(string)
+            # Writing interval activity index and run count
             if secondPoint is None :
                 break
-            
+        
         self.trajectoryFile.close()
         self.activityFile.close()
         self.runFile.close()
         self.restFile.close()
         self.graphFile.close()
-        
-        if errorCount == 0 :
-            self.errorFile.write('0')
         self.errorFile.close()
+        if errorCount == 0 :
+            os.remove(fileName + '.errors.txt')
+        
         
         #self.totalActivityFile = open(totalActivityName,'w')
-        string = self.activityString(-1, 
-                         totalRunDuration/(firstPoint[0]-startTime), 100*totalRunCount/firstPoint[0])
+        string = self.activityString(-1,
+                         totalRunDuration / (firstPoint[0] - startTime), 100 * totalRunCount / firstPoint[0])
         self.totalActivityFile.write(string)
         self.totalActivityFile.close()
         print 'file {0}, errors:{1}'.format(fileName, errorCount)

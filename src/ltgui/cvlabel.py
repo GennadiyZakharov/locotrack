@@ -18,7 +18,7 @@ class CvLabel(QtGui.QLabel):
     this ability is uded to define chambers and scale
     '''
     # Initial size of the label
-    initialCvLabelSize = (640, 480)
+    initialCvLabelSize = (320, 200)
 
     def __init__(self, parent=None):
         '''
@@ -31,10 +31,12 @@ class CvLabel(QtGui.QLabel):
         self.enableDnD = False
         self.selectedRect = None
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+        self.setScaledContents(False)
         # Creating black rectangle
         self.putImage(cv.CreateImage(self.initialCvLabelSize, cv.IPL_DEPTH_8U, 3))
         # Creating color table to display gray image as indexed 8bit
         self.colortable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
+        #self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored,QtGui.QSizePolicy.Ignored))
     
     def putImage(self, iplImage) :
         '''
@@ -92,7 +94,9 @@ class CvLabel(QtGui.QLabel):
             # Nothing to draw -- image is equal to stored frame
             image = self.frame
         # Display image on pixmap
-        self.setPixmap(QtGui.QPixmap.fromImage(image))
+        pixmap = QtGui.QPixmap.fromImage(image)
+        self.setPixmap(pixmap)
+        self.setFixedSize(pixmap.size())
             
     
     def enableSelection(self, enable):

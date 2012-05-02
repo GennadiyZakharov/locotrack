@@ -15,7 +15,6 @@ from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
 from ltcore.trajectoryanalysis import RunRestAnalyser
 
-
 class CvProcessor(QtCore.QObject):
     '''
     This is main class for video processing
@@ -130,9 +129,16 @@ class CvProcessor(QtCore.QObject):
         #
         subFrame = cv.CreateImage( (chamber.width(), chamber.height()), cv.IPL_DEPTH_8U, 1 );
         cv.Copy(frame, subFrame);
-        # Calculating mass center
-        mat=cv.GetMat(subFrame)
-        moments = cv.Moments(mat) # Calculating mass center of contour
+        
+        #moments = cv.Moments(subFrame) # Calculating mass center of contour
+        
+        # Calculating mass center      
+        
+        # !!! This Operation leads to memory leak
+        # This is OpenCV bug !!!!!
+        mat = cv.GetMat(subFrame)
+        moments = cv.Moments(mat)
+        del mat
         m00 = cv.GetSpatialMoment(moments, 0, 0)
         if m00 != 0 :
             m10 = cv.GetSpatialMoment(moments, 1, 0)
@@ -142,13 +148,8 @@ class CvProcessor(QtCore.QObject):
         # create the storage area for contour
         storage = cv.CreateMemStorage(0)
         # Find object contours
-        try :
-            tempimage = cv.CloneImage(frame)
-            chamber.ltObject.contours = cv.FindContours(tempimage, storage,
-                                           cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)
-        except :
-            print "error founding contoure"
-                    
+        chamber.ltObject.contours = cv.FindContours(subFrame, storage,
+                                           cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)   
         # Saving to trajectory if we need it
         if self.saveTrajectory :
             chamber.saveToTrajectory()
