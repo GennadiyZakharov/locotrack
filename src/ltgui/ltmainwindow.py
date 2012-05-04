@@ -179,6 +179,7 @@ class LtMainWindow(QtGui.QMainWindow):
         
         if fname is not None :
             self.emit(signalCaptureFromFile, fname)
+            self.setWindowTitle(fname)
         
     def on_CvPlayerCapturing(self, length):
         pass 

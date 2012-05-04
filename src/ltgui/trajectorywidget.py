@@ -24,15 +24,9 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         layout=QtGui.QVBoxLayout()
         #
-        self.speciesEdit = LabelledLineEdit('Line')
-        layout.addWidget(self.speciesEdit)
-        self.speciesEdit.lineEdit.textChanged.connect(self.descriptionChanged)
-        self.genderEdit = LabelledLineEdit('Gender')
-        layout.addWidget(self.genderEdit)
-        self.genderEdit.lineEdit.textChanged.connect(self.descriptionChanged)
-        self.conditionEdit = LabelledLineEdit('Condition')
-        layout.addWidget(self.conditionEdit)
-        self.conditionEdit.lineEdit.textChanged.connect(self.descriptionChanged)
+        self.sampleEdit = LabelledLineEdit('Sample Name')
+        layout.addWidget(self.sampleEdit)
+        self.sampleEdit.lineEdit.textChanged.connect(self.descriptionChanged)
         #
         self.recordTrajectoryButton = QtGui.QPushButton('Record trajectory')
         self.recordTrajectoryButton.setCheckable(True)
@@ -68,8 +62,7 @@ class TrajectoryWidget(QtGui.QWidget):
         
         
     def setTrajectoryRecord(self, checked):
-        self.emit(signalWriteTrajectory, checked,self.speciesEdit.text(),
-                  self.genderEdit.text(), self.conditionEdit.text())
+        self.emit(signalWriteTrajectory, checked, self.sampleEdit.text())
 
     def setErrorTheshold(self, value):
         self.emit(signalErrorTheshold, value/100)
@@ -100,14 +93,10 @@ class TrajectoryWidget(QtGui.QWidget):
     
     def descriptionChanged(self):
         #
-        species = str(self.speciesEdit.text())
-        gender = str(self.genderEdit.text())
-        condition = str(self.conditionEdit.text())
-        flag = (species != '' and 
-                gender != '' and
-                condition != '')
+        sampleName = str(self.sampleEdit.text())
+        flag = (sampleName != '')
         self.recordTrajectoryButton.setEnabled(flag)
         if flag :
-            self.emit(signalSampleNameChanged, species, gender, condition)
+            self.emit(signalSampleNameChanged, sampleName)
         
     

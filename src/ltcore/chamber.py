@@ -2,7 +2,9 @@
 Created on 18.03.2011
 @author: Gena
 '''
+from __future__ import division
 
+from numpy import meshgrid,arange
 from PyQt4 import QtCore
 from ltcore.ltobject import LtObject
 from ltcore.lttrajectory import LtTrajectory
@@ -25,6 +27,8 @@ class Chamber(QtCore.QRect):
         self.trajectoryFile = None
         self.resetTrajectory()
         self.fileCaption = "LocoTrack 1.0\n"
+        x,y = arange(0,self.width(),1),arange(0,self.height(),1)
+        self.X,self.Y = meshgrid(x,y)
       
     def leftTopPos(self) :
         return self.left(), self.top()
@@ -36,7 +40,7 @@ class Chamber(QtCore.QRect):
         self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
     ''' 
    
-    def initTrajectory(self, fileName, scale, frameRate, line, gender, condition):
+    def initTrajectory(self, fileName, scale, frameRate, sampleName):
         self.trajectoryFile = open(fileName, 'w')
         self.trajectoryFile.write(self.fileCaption)
         self.trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
@@ -44,10 +48,9 @@ class Chamber(QtCore.QRect):
         self.trajectoryFile.write("{0}\n".format(scale/15))
         # TODO: implement mm
         self.trajectoryFile.write("{0}\n".format(frameRate))
-        self.trajectoryFile.write(line+"\n")
-        self.trajectoryFile.write(gender+"\n")
-        self.trajectoryFile.write(condition+"\n")
+        self.trajectoryFile.write(sampleName+"\n")
         self.trajectoryFile.write("=============\n")
+        self.trajectoryFile.write("     Frame                  X                  Y\n")
         print "file {0} created".format(fileName)
         self.saveToTrajectory()
         #self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)

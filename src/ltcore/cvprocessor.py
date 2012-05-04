@@ -14,6 +14,7 @@ from ltcore.ltactions import LtActions
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
 from ltcore.trajectoryanalysis import RunRestAnalyser
+from numpy import asarray
 
 class CvProcessor(QtCore.QObject):
     '''
@@ -102,6 +103,15 @@ class CvProcessor(QtCore.QObject):
         # Inverting frame if needed
         if self.invertImage :
             cv.Not(frame, frame)
+        # Crop
+        for chamber in self.chambers :
+            cv.SetImageROI(frame, chamber.getRect())
+            center = (int(chamber.width()/2), int(chamber.height()/2))
+            th=int(max(center)/3)
+            axes = (int(chamber.width()/2+th/2), int(chamber.height()/2+th/2))
+            cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0,0,0), thickness=th)
+            cv.ResetImageROI(frame)
+            
         # Discarding color information
         grayImage = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
         cv.CvtColor(frame, grayImage, cv.CV_RGB2GRAY);
@@ -125,26 +135,32 @@ class CvProcessor(QtCore.QObject):
         # Tresholding image
         treshold = (maxVal-minVal) * self.treshold + minVal 
         cv.Threshold(frame, frame, treshold, 255, cv.CV_THRESH_TOZERO)
+        
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
-        #
+        
+        # Calculating mass center
         subFrame = cv.CreateImage( (chamber.width(), chamber.height()), cv.IPL_DEPTH_8U, 1 );
         cv.Copy(frame, subFrame);
+     
+        #moments = cv.Moments(subFrame) # Calculating mass center of contour        
+        mat = asarray(subFrame[:,:])
         
-        #moments = cv.Moments(subFrame) # Calculating mass center of contour
+        m00 = mat.sum()
+        if m00 != 0 :
+            m10 = (mat*chamber.X).sum()
+            m01 = (mat*chamber.Y).sum()           
+            chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
         
-        # Calculating mass center      
-        
-        # !!! This Operation leads to memory leak
-        # This is OpenCV bug !!!!!
-        mat = cv.GetMat(subFrame)
-        moments = cv.Moments(mat)
+        #mat = cv.GetMat(subFrame)
+        '''
+        moments = cv.Moments(cv.fromarray(mat))
         del mat
         m00 = cv.GetSpatialMoment(moments, 0, 0)
         if m00 != 0 :
             m10 = cv.GetSpatialMoment(moments, 1, 0)
             m01 = cv.GetSpatialMoment(moments, 0, 1)            
             chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
-        
+        '''
         # create the storage area for contour
         storage = cv.CreateMemStorage(0)
         # Find object contours
@@ -261,7 +277,7 @@ class CvProcessor(QtCore.QObject):
         self.treshold = value / 100.0
         self.processFrame() # Update current frame
         
-    def writeTrajectory(self, checked, line, gender, condition):
+    def writeTrajectory(self, checked, sampleName):
         '''
         Enable/Disable trajectory saving
         '''
@@ -279,19 +295,12 @@ class CvProcessor(QtCore.QObject):
             '''
             for i in range(len(self.chambers)) :
                 self.chambers[i].initTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i), 
-                                                self.scale, self.cvPlayer.frameRate, line, gender, condition)
+                                                self.scale, self.cvPlayer.frameRate, sampleName)
             
         else:
             # Clear wrote Trajectory
             for chamber in self.chambers :
                 chamber.resetTrajectory()
     
-    def analyseTrajectory(self):
-        for i in range(len(self.chambers)) :
-            trajFileName = self.cvPlayer.fileName+".ch{0}.lt1".format(i)
-            self.runRestAnalyser.analyse(trajFileName)
-    
-    def setSampleName(self, line, gender, condition):
-        self.line = line
-        self.gender = gender
-        self.condition = condition    
+    def setSampleName(self, sampleName):
+        self.sampleName = sampleName    
