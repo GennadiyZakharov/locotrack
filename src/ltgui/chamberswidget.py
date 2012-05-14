@@ -6,7 +6,6 @@ Created on 18.12.2010
 
 from PyQt4 import QtCore, QtGui
 #from ltcore.actions import LtActions
-from ltcore.signals import *
 
 class ChambersWidget(QtGui.QWidget):
     '''
@@ -20,43 +19,51 @@ class ChambersWidget(QtGui.QWidget):
         Constructor
         '''
         super(ChambersWidget, self).__init__(parent)
+        # self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         # Creating GUI elements
         layout = QtGui.QGridLayout()
         chambersLabel = QtGui.QLabel('Chambers')
         # list of chambers
-        self.chambersList = QtGui.QListWidget()
+        
+        self.chambersList = QtGui.QTableWidget()
         chambersLabel.setBuddy(self.chambersList)
+        self.chambersList.setColumnCount(2)
         layout.addWidget(chambersLabel, 0, 0, 1, 2)
         layout.addWidget(self.chambersList, 1, 0, 1, 2)
-        self.chambersList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.chambersList.itemClicked.connect(self.chamberSelectionChanged)
         self.selectedChamber = -1
+        self.chambersList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        self.chambersList.cellPressed.connect(self.chamberSelectionChanged)
         # Add chamber button    
         self.setChamberButton = QtGui.QPushButton('Set chamber')
         self.setChamberButton.setCheckable(True)
         layout.addWidget(self.setChamberButton,2,0)
-        self.connect(self.setChamberButton, signalToggled, self.setScaleOrChamber)
+        self.setChamberButton.toggled.connect(self.setScaleOrChamber)
         # Clear chamber button
         self.clearChamberButton = QtGui.QPushButton('Clear chamber')
         layout.addWidget(self.clearChamberButton,2,1)
-        self.connect(self.clearChamberButton, signalClicked, self.chamberClear)
+        self.clearChamberButton.clicked.connect(self.chamberClear)
         # Set scale button
         self.scaleButton = QtGui.QPushButton('Set Scale')
         self.scaleButton.setCheckable(True)
         layout.addWidget(self.scaleButton)      
-        self.connect(self.scaleButton, signalToggled, self.setScaleOrChamber)
+        self.scaleButton.toggled.connect(self.setScaleOrChamber) 
         # Set Layout
         self.setLayout(layout)
         
-    def chamberSelectionChanged(self, item) :
+    def chamberSelectionChanged(self) :
         '''
         Select different chamber, or unselect current
         '''
-        if self.selectedChamber == self.chambersList.currentRow() :
-            self.selectedChamber = -1
+        currentRow = self.chambersList.currentRow()
+        
+        #self.chambersList.clearFocus()
+        if self.selectedChamber == currentRow :
             self.chambersList.clearSelection()
+            self.selectedChamber = -1
         else :
-            self.selectedChamber = self.chambersList.row(item)  
+            self.selectedChamber = currentRow
+            #self.chambersList.setCurrentCell(currentRow, 0)
+        print self.selectedChamber
         # Emit signal with new chamber number       
         self.emit(signalChangeSelection,self.selectedChamber)
   
@@ -101,11 +108,17 @@ class ChambersWidget(QtGui.QWidget):
         Rebuilding table according to the chambersList
         '''
         self.chambersList.clear()
+        self.chambersList.setRowCount(len(chambersList))
         for i in range(len(chambersList)) :
-            text = 'Chamber '+str(i)
-            self.chambersList.addItem(text)
+            text = 'Chamber '+str(i+1)
+            self.chambersList.setCellWidget(i,0,QtGui.QLabel(text))
+            slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+            slider.setMaximum(99)
+            slider.setValue(chambersList[i].threshold)
+            slider.valueChanged.connect(chambersList[i].setThreshold)
+            self.chambersList.setCellWidget(i,1,slider)
         # Selecting chamber
         self.selectedChamber = selected
-        self.chambersList.setCurrentRow(self.selectedChamber)
+        self.chambersList.setCurrentCell(self.selectedChamber, 0)
         
         

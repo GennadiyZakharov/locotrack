@@ -5,9 +5,7 @@ Created on 18.03.2011
 
 from PyQt4 import QtCore, QtGui
 import cv
-
 from ltcore.signals import *
-
 
 class CvLabel(QtGui.QLabel):
     '''
@@ -15,7 +13,7 @@ class CvLabel(QtGui.QLabel):
     IplImage format, used by OpenCV
     
     Also it can handle mouse drag across the frame
-    this ability is uded to define chambers and scale
+    this ability is used to define chambers and scale
     '''
     # Initial size of the label
     initialCvLabelSize = (320, 200)
@@ -25,51 +23,48 @@ class CvLabel(QtGui.QLabel):
         Constructor
         '''
         super(CvLabel, self).__init__(parent)
-        
         self.setAcceptDrops(True)
         # This flag is used to enable selection
         self.enableDnD = False
         self.selectedRect = None
         self.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         self.setScaledContents(False)
-        # Creating black rectangle
-        self.putImage(cv.CreateImage(self.initialCvLabelSize, cv.IPL_DEPTH_8U, 3))
         # Creating color table to display gray image as indexed 8bit
-        self.colortable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
-        #self.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.Ignored,QtGui.QSizePolicy.Ignored))
-    
+        self.colorTable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
+        # Creating black rectangle
+        self.putImage(cv.CreateImage(self.initialCvLabelSize, cv.IPL_DEPTH_8U, 1))
+          
+    @QtCore.pyqtSlot(object)
     def putImage(self, iplImage) :
         '''
-        convert iplImage to QLabel and store it in self.frame
+        convert iplImage to QPixMap and store it in self.frame
         '''
         if iplImage is None :
             return
-        # switch between bit depths
-        if iplImage.depth == cv.IPL_DEPTH_8U :
-            if  iplImage.nChannels == 3:
-                # Displaying color image
-                cstr = iplImage.tostring()
-                self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_RGB888).rgbSwapped()
-                self.updateImage()
-            elif iplImage.nChannels == 1:
-                # Displaying B&W image as 8bit indexed
-                cstr = iplImage.tostring()
-                self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_Indexed8)
-                self.frame.setColorTable(self.colortable)
-                self.updateImage()
-            else :
-                # TODO: Make exception
-                print("This number of channels is not supported")   
-        else :
+        # checking bit depths
+        if iplImage.depth != cv.IPL_DEPTH_8U :
             # TODO: Make exception
             print("This type of IplImage is not implemented")
+        cstr = iplImage.tostring()
+        if  iplImage.nChannels == 3:
+            # Displaying color image
+            self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_RGB888).rgbSwapped()        
+        elif iplImage.nChannels == 1:
+            # Displaying B&W image as 8bit indexed
+            self.frame = QtGui.QImage(cstr, iplImage.width, iplImage.height, QtGui.QImage.Format_Indexed8)
+            self.frame.setColorTable(self.colorTable)
+        else :
+            # TODO: Make exception
+            print("This number of channels is not supported")
+            return 
+        self.updateImage()  
 
     def updateImage(self):
         '''
         Display frame and draw selected region
         '''
         if self.selectedRect is not None :
-            # We neet to draw somethong on image
+            # We need to draw something on image
             # Creating image from stored frame
             image = QtGui.QImage(self.frame)
             # Creating pen to draw
@@ -96,30 +91,34 @@ class CvLabel(QtGui.QLabel):
         # Display image on pixmap
         pixmap = QtGui.QPixmap.fromImage(image)
         self.setPixmap(pixmap)
-        self.setFixedSize(pixmap.size())
-            
+        self.setFixedSize(pixmap.size())            
     
+    @QtCore.pyqtSlot(bool)
     def enableSelection(self, enable):
         '''
         Enable region selection
         '''
         self.enableDnD = enable
 
+    # TODO: deal with drag. it seems, that it is something wrong
     def mousePressEvent(self, event) :
         '''
         Hander is called, when mouse button is pressed
         '''
+        print "mousePressed event"
         # If selection not enabled -- exit
         if not self.enableDnD :
             return
         # If it is left button -- store position
         if (event.button() == QtCore.Qt.LeftButton) :
             self.dragStartPosition = event.pos()
+            
 
     def mouseMoveEvent(self, event) :
         '''
         Hander is called, when mouse moves
         '''
+        print "MouseMove Event"
         # If selection not enabled -- exit
         if not self.enableDnD :
             return
@@ -148,6 +147,7 @@ class CvLabel(QtGui.QLabel):
         drag.setPixmap(pixmap)
         '''
         # Starting drag
+        print "drag start"
         drag.start(QtCore.Qt.CopyAction)
         # Update image to draw selected region on it
         self.updateImage()
@@ -156,10 +156,10 @@ class CvLabel(QtGui.QLabel):
         '''
         Starting drag
         '''
+        print "dragEnter Event"
         # If selection not enabled -- exit
         if not self.enableDnD :
             return
-        
         if event.mimeData().hasFormat("cvlabel/pos") :
             event.acceptProposedAction()
             
@@ -167,6 +167,7 @@ class CvLabel(QtGui.QLabel):
         '''
         Hander is called, when drag event processes
         '''
+        print "DragMove event"
         # If selection not enabled -- exit
         if not self.enableDnD :
             return
@@ -178,6 +179,7 @@ class CvLabel(QtGui.QLabel):
         '''
         Hander is called, when drag finished
         '''
+        print "dropEvent"
         # If selection not enabled -- exit
         if not self.enableDnD :
             return

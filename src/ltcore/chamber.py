@@ -9,32 +9,41 @@ from PyQt4 import QtCore
 from ltcore.ltobject import LtObject
 from ltcore.lttrajectory import LtTrajectory
 
-class Chamber(QtCore.QRect):
+class Chamber(QtCore.QObject):
     '''
     This is class for one chamber
     It holds all chamber attributes: position, size, etc
     also it holds property ltObject -- all data for 
     detected object on current step
     '''
+    chamberDataUpdated = QtCore.pyqtSignal()
     
-    def __init__(self, rect):
+    def __init__(self, rect, parent=None):
         '''
         Constructor
         '''
-        super(Chamber, self).__init__(rect.normalized())
+        super(Chamber, self).__init__(parent)
+        self.rect = QtCore.QRect(rect.normalized())
+        self.width = self.rect.width
+        self.height = self.rect.height
+        self.topLeft = self.rect.topLeft
+        self.getRect = self.rect.getRect
         self.ltObject = LtObject()
+        
         self.frameNumber = -1
         self.trajectoryFile = None
         self.resetTrajectory()
+        self.threshold = 60
         self.fileCaption = "LocoTrack 1.0\n"
+        # This matrices is used to calculate mass center of object
         x,y = arange(0,self.width(),1),arange(0,self.height(),1)
         self.X,self.Y = meshgrid(x,y)
       
     def leftTopPos(self) :
-        return self.left(), self.top()
+        return self.rect.left(), self.rect.top()
     
     def bottomRightPos(self):
-        return self.right(), self.bottom()
+        return self.rect.right(), self.rect.bottom()
     '''
     def initTrajectory(self, firstFrame, lastFrame):
         self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
@@ -79,3 +88,8 @@ class Chamber(QtCore.QRect):
     
     def loadTrajectory(self, fileName):
         pass
+    
+    def setThreshold(self, value):
+        self.threshold = value
+        self.chamberDataUpdated.emit()
+

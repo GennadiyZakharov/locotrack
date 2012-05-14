@@ -33,7 +33,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.setWindowTitle(appName + ' ' + appVersion)
         self.setObjectName("ltMainWindow")
                 
-        self.dirty = True
+        self.dirty = False
         
         # ==== Creating core functional units ====
         self.ltActions = LtActions(self) # Actions
@@ -98,7 +98,7 @@ class LtMainWindow(QtGui.QMainWindow):
         # ==== Making Connections actions ====
         # ---- Core video processing ----
         
-        self.connect(self.cvProcessor.cvPlayer, signalNextFrame, self.videoWidget.nextFrame)
+        self.cvProcessor.cvPlayer.nextFrame.connect(self.videoWidget.nextFrame)
         self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)
         
         self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
@@ -109,18 +109,14 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ---- videoWidget ----
         self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
-        self.connect(self.videoWidget.runTroughButton, signalClicked, self.cvProcessor.cvPlayer.RunTrough)
+        self.connect(self.videoWidget.runTroughButton, signalClicked, self.cvProcessor.cvPlayer.runTrough)
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
         self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
-        self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvProcessor.cvPlayer.onSeek)
-        self.connect(self.cvProcessor.cvPlayer, signalCvPlayerCapturing, self.videoWidget.videoCapturing)
-        '''
-        self.connect(self.videoWidget.brighnessSlider, signalValueChanged,
-                     self.cvProcessor.cvPlayer.setBrightness)
-        self.connect(self.videoWidget.contrastSlider, signalValueChanged,
-                     self.cvProcessor.cvPlayer.setContrast)
-        '''
+        self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvProcessor.cvPlayer.seek)
+        self.cvProcessor.cvPlayer.videoSourceOpened.connect(self.videoWidget.videoCapturing)
+        self.videoWidget.speedChanged.connect(self.cvProcessor.cvPlayer.setSpeed)
+
         # ---- chambersWidget ----
        
         self.connect(self.chambersWidget, signalSetChamber,

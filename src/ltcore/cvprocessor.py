@@ -32,16 +32,16 @@ class CvProcessor(QtCore.QObject):
         super(CvProcessor, self).__init__(parent)
         # Video Player
         self.cvPlayer = CvPlayer(self)
-        self.connect(self.cvPlayer, signalNextFrame, self.getNextFrame)
-        self.connect(self.cvPlayer, signalCvPlayerCapturing, self.videoOpened)
+        self.cvPlayer.nextFrame.connect(self.getNextFrame)
+        self.cvPlayer.videoSourceOpened.connect(self.videoOpened)
         # Chamber list
         self.chambers = [] 
         self.selected = -1
         self.scale = None
         self.frame = None
         # Parameters
+        self.threshold = 60
         self.invertImage = False
-        self.treshold = 0.6
         self.showProcessedImage = False
         self.showContour = True
         # Reset Trajectory
@@ -63,13 +63,12 @@ class CvProcessor(QtCore.QObject):
         self.videoLength = length
         self.frameRate = frameRate 
         
-    def getNextFrame(self, frame, frameNumber, frameTime):
+    def getNextFrame(self, frame, frameNumber):
         '''
         get frame from cvPlayer, save it and process
         '''
         self.frame = frame
         self.frameNumber = frameNumber
-        self.frameTime = frameTime
         self.processFrame() #
         
     def processFrame(self):
@@ -107,7 +106,7 @@ class CvProcessor(QtCore.QObject):
         for chamber in self.chambers :
             cv.SetImageROI(frame, chamber.getRect())
             center = (int(chamber.width()/2), int(chamber.height()/2))
-            th=int(max(center)/3)
+            th=int(max(center)/2)
             axes = (int(chamber.width()/2+th/2), int(chamber.height()/2+th/2))
             cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0,0,0), thickness=th)
             cv.ResetImageROI(frame)
@@ -116,7 +115,10 @@ class CvProcessor(QtCore.QObject):
         grayImage = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
         cv.CvtColor(frame, grayImage, cv.CV_RGB2GRAY);
         return grayImage
-            
+    
+    def calculatePosition(self, frame):
+        pass
+           
     def processChamber(self, frame, chamber):
         '''
         Detect object properties on frame inside chamber
@@ -133,7 +135,7 @@ class CvProcessor(QtCore.QObject):
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         chamber.ltObject.maxBright = maxBrightPos
         # Tresholding image
-        treshold = (maxVal-minVal) * self.treshold + minVal 
+        treshold = (maxVal-minVal) * chamber.threshold/100 + minVal 
         cv.Threshold(frame, frame, treshold, 255, cv.CV_THRESH_TOZERO)
         
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
@@ -189,7 +191,7 @@ class CvProcessor(QtCore.QObject):
             # Draw chamber borders
             cv.Rectangle(frame, self.chambers[i].leftTopPos(), self.chambers[i].bottomRightPos(),
                          color, 2)
-            cv.PutText(frame, str(i), self.chambers[i].leftTopPos(),
+            cv.PutText(frame, str(i+1), self.chambers[i].leftTopPos(),
                          self.font, color)
             # Draw contours
             cv.SetImageROI(frame, self.chambers[i].getRect())
@@ -236,6 +238,8 @@ class CvProcessor(QtCore.QObject):
         into selected frameNumber
         '''
         chamber = Chamber(rect)
+        chamber.chamberDataUpdated.connect(self.chambersDataUpdated)
+        chamber.setThreshold(self.threshold)
         if self.selected == -1 :
             # Append chamber to list
             self.chambers.append(chamber)
@@ -243,8 +247,12 @@ class CvProcessor(QtCore.QObject):
             # Replace selected chamber 
             self.chambers[self.selected] = chamber
         self.processFrame() # Update current frame
-        self.emit(signalChambersUpdated, list(self.chambers), self.selected)
-            
+        self.emit(signalChambersUpdated, self.chambers, self.selected)
+        
+    def setChamberTreshold(self, number, value):
+        self.chambers[number].setTreshold(value)
+        self.emit(signalChambersUpdated, self.chambers, self.selected)
+        
     def setScale(self, rect):
         '''
         set scale according to rect
@@ -270,12 +278,16 @@ class CvProcessor(QtCore.QObject):
             self.processFrame() # Update current frame
             self.emit(signalChambersUpdated, list(self.chambers), self.selected)
     
+    @QtCore.pyqtSlot(int)
     def setTreshold(self, value):
         '''
         Set theshold value (in percents)
         '''
-        self.treshold = value / 100.0
-        self.processFrame() # Update current frame
+        self.threshold = value
+        for chamber in self.chambers :
+            chamber.setThreshold(value)
+        self.emit(signalChambersUpdated, list(self.chambers), self.selected)
+        #self.processFrame() # Update current frame
         
     def writeTrajectory(self, checked, sampleName):
         '''
@@ -294,7 +306,7 @@ class CvProcessor(QtCore.QObject):
             # Init array for trajectory from current 
             '''
             for i in range(len(self.chambers)) :
-                self.chambers[i].initTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i), 
+                self.chambers[i].initTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
                                                 self.scale, self.cvPlayer.frameRate, sampleName)
             
         else:
@@ -304,3 +316,8 @@ class CvProcessor(QtCore.QObject):
     
     def setSampleName(self, sampleName):
         self.sampleName = sampleName    
+    
+    @QtCore.pyqtSlot()
+    def chambersDataUpdated(self):
+        self.processFrame()
+        
