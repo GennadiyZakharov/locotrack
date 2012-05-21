@@ -7,7 +7,6 @@ Created on 19.03.2011
 from __future__ import division
 from __future__ import unicode_literals
 from future_builtins import *
-from ltcore.signals import *
 
 from PyQt4.QtCore import QString,Qt
 from PyQt4.QtGui import (QBoxLayout,
@@ -60,9 +59,10 @@ class LabelledSlider(QWidget):
         
         self.labelText = labelText
         self.slider = QSlider(orientation)
+        self.valueChanged = self.slider.valueChanged
         self.label = QLabel(self.labelText+' '+str(self.slider.value()))
         self.label.setBuddy(self.slider)
-        self.connect(self.slider,signalValueChanged, self.sliderMove)
+        self.slider.valueChanged.connect(self.sliderMove)
         layout = QBoxLayout(QBoxLayout.LeftToRight
                 if leftTopPos == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
@@ -78,7 +78,6 @@ class LabelledSlider(QWidget):
     
     def sliderMove(self,value):
         self.label.setText(self.labelText+' '+str(value))
-        self.emit(signalValueChanged,value)
         
 class LabelledCheckBox(QWidget):
     '''
@@ -101,4 +100,5 @@ class LabelledCheckBox(QWidget):
         self.setCheckState = self.checkBox.setCheckState    
         self.setText = self.label.setText
         self.text = self.label.text
+        self.stateChanged = self.checkBox.stateChanged
     

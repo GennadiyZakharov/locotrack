@@ -24,6 +24,8 @@ class Chamber(QtCore.QObject):
         '''
         super(Chamber, self).__init__(parent)
         self.rect = QtCore.QRect(rect.normalized())
+        self.left = self.rect.left
+        self.top = self.rect.top
         self.width = self.rect.width
         self.height = self.rect.height
         self.topLeft = self.rect.topLeft
@@ -35,10 +37,13 @@ class Chamber(QtCore.QObject):
         self.resetTrajectory()
         self.threshold = 60
         self.fileCaption = "LocoTrack 1.0\n"
+        self.initMatrix()
+        
+    def initMatrix(self):
         # This matrices is used to calculate mass center of object
         x,y = arange(0,self.width(),1),arange(0,self.height(),1)
         self.X,self.Y = meshgrid(x,y)
-      
+    
     def leftTopPos(self) :
         return self.rect.left(), self.rect.top()
     
@@ -92,4 +97,16 @@ class Chamber(QtCore.QObject):
     def setThreshold(self, value):
         self.threshold = value
         self.chamberDataUpdated.emit()
+        
+    def move(self, dirX, dirY):
+        self.rect.moveTo(self.rect.left()+dirX, self.rect.top()+dirY)
 
+    def resize(self, dirX, dirY):
+        self.rect.setWidth(self.rect.width()+dirX) 
+        self.rect.setHeight(self.rect.height()+dirY)
+        self.initMatrix()
+        
+    def setPosition(self, rect):
+        self.rect.setTopLeft(rect.topLeft())
+        self.rect.setBottomRight(rect.bottomRight())
+        self.initMatrix()

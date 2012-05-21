@@ -17,6 +17,8 @@ class CvLabel(QtGui.QLabel):
     '''
     # Initial size of the label
     initialCvLabelSize = (320, 200)
+    chamberMove = QtCore.pyqtSignal(int, int)
+    chamberResize = QtCore.pyqtSignal(int, int)
 
     def __init__(self, parent=None):
         '''
@@ -33,6 +35,8 @@ class CvLabel(QtGui.QLabel):
         self.colorTable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
         # Creating black rectangle
         self.putImage(cv.CreateImage(self.initialCvLabelSize, cv.IPL_DEPTH_8U, 1))
+        self.setFocusPolicy(QtCore.Qt.StrongFocus);
+        #label->installEventFilter(this);
           
     @QtCore.pyqtSlot(object)
     def putImage(self, iplImage) :
@@ -191,4 +195,22 @@ class CvLabel(QtGui.QLabel):
             self.emit(signalRegionSelected, rect)
             event.acceptProposedAction()
             self.selectedRect = None
+    
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == QtCore.Qt.Key_Left:
+            dirX,dirY = -1,0
+        elif key == QtCore.Qt.Key_Right :
+            dirX,dirY = (1,0)
+        elif key == QtCore.Qt.Key_Up :
+            dirX,dirY = (0,-1)
+        elif key == QtCore.Qt.Key_Down :
+            dirX,dirY = (0,1)
+        else :
+            return
+        if (event.modifiers() & QtCore.Qt.ShiftModifier):
+            self.chamberResize.emit(dirX,dirY)
+        else :
+            self.chamberMove.emit(dirX,dirY)
+            
             

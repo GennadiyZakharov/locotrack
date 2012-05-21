@@ -15,6 +15,7 @@ from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
 from ltcore.trajectoryanalysis import RunRestAnalyser
 from numpy import asarray
+from math import pi
 
 class CvProcessor(QtCore.QObject):
     '''
@@ -44,6 +45,7 @@ class CvProcessor(QtCore.QObject):
         self.invertImage = False
         self.showProcessedImage = False
         self.showContour = True
+        self.ellipseCrop = True
         # Reset Trajectory
         self.saveTrajectory = False
         self.videoLength = None
@@ -103,13 +105,14 @@ class CvProcessor(QtCore.QObject):
         if self.invertImage :
             cv.Not(frame, frame)
         # Crop
-        for chamber in self.chambers :
-            cv.SetImageROI(frame, chamber.getRect())
-            center = (int(chamber.width()/2), int(chamber.height()/2))
-            th=int(max(center)/2)
-            axes = (int(chamber.width()/2+th/2), int(chamber.height()/2+th/2))
-            cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0,0,0), thickness=th)
-            cv.ResetImageROI(frame)
+        if self.ellipseCrop :
+            for chamber in self.chambers :
+                cv.SetImageROI(frame, chamber.getRect())
+                center = (int(chamber.width()/2), int(chamber.height()/2))
+                th=int(max(center)/2)
+                axes = (int(chamber.width()/2+th/2), int(chamber.height()/2+th/2))
+                cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0,0,0), thickness=th)
+                cv.ResetImageROI(frame)
             
         # Discarding color information
         grayImage = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
@@ -134,8 +137,13 @@ class CvProcessor(QtCore.QObject):
         # Finding min and max 
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         chamber.ltObject.maxBright = maxBrightPos
+        #
+        averageVal = cv.Avg(frame)[0]
+        if self.ellipseCrop :
+            averageVal *= 4/pi
+       
         # Tresholding image
-        treshold = (maxVal-minVal) * chamber.threshold/100 + minVal 
+        treshold = (maxVal-averageVal) * chamber.threshold/100 + averageVal 
         cv.Threshold(frame, frame, treshold, 255, cv.CV_THRESH_TOZERO)
         
         #cv.AdaptiveThreshold(grayImage, grayImage, 255,blockSize=9)
@@ -183,7 +191,8 @@ class CvProcessor(QtCore.QObject):
             cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + self.scale), self.scaleLabelPosition[1]),
                     self.chamberColor, 2)
         # Drawing chambers
-        for i in range(len(self.chambers)) :   
+        for i in range(len(self.chambers)) :
+            chamber = self.chambers[i]   
             if i == self.selected :
                 color = self.chamberSelectedColor
             else :
@@ -195,6 +204,10 @@ class CvProcessor(QtCore.QObject):
                          self.font, color)
             # Draw contours
             cv.SetImageROI(frame, self.chambers[i].getRect())
+            if self.ellipseCrop :
+                center = (int(chamber.width()/2), int(chamber.height()/2))
+                cv.Ellipse(frame, center, center, 0, 0, 360, color, thickness=1)
+            
             if self.showContour and (self.chambers[i].ltObject.contours is not None) :
                 cv.DrawContours(frame, self.chambers[i].ltObject.contours, 200, 100, -1, 1)
             # Draw mass center and maxBright 
@@ -237,17 +250,16 @@ class CvProcessor(QtCore.QObject):
         Create chamber from rect and insert it 
         into selected frameNumber
         '''
-        chamber = Chamber(rect)
-        chamber.chamberDataUpdated.connect(self.chambersDataUpdated)
-        chamber.setThreshold(self.threshold)
-        if self.selected == -1 :
-            # Append chamber to list
-            self.chambers.append(chamber)
+        if self.selected >=0 :
+            self.chambers[self.selected].setPosition(rect)
         else :
-            # Replace selected chamber 
-            self.chambers[self.selected] = chamber
+            chamber = Chamber(rect)
+            chamber.chamberDataUpdated.connect(self.chambersDataUpdated)
+            chamber.setThreshold(self.threshold)
+            self.chambers.append(chamber)
+            self.emit(signalChambersUpdated, self.chambers, self.selected)
         self.processFrame() # Update current frame
-        self.emit(signalChambersUpdated, self.chambers, self.selected)
+        
         
     def setChamberTreshold(self, number, value):
         self.chambers[number].setTreshold(value)
@@ -277,6 +289,11 @@ class CvProcessor(QtCore.QObject):
             self.selected = -1
             self.processFrame() # Update current frame
             self.emit(signalChambersUpdated, list(self.chambers), self.selected)
+    
+    @QtCore.pyqtSlot(int)
+    def setEllipseCrop(self, value):
+        self.ellipseCrop = (value == QtCore.Qt.Checked)
+        self.processFrame()
     
     @QtCore.pyqtSlot(int)
     def setTreshold(self, value):
@@ -319,5 +336,19 @@ class CvProcessor(QtCore.QObject):
     
     @QtCore.pyqtSlot()
     def chambersDataUpdated(self):
+        self.processFrame()
+    
+    @QtCore.pyqtSlot(int, int)    
+    def moveChamber(self, dirX, dirY):
+        if self.selected < 0 :
+            return
+        self.chambers[self.selected].move(dirX, dirY)
+        self.processFrame()
+        
+    @QtCore.pyqtSlot(int, int)    
+    def resizeChamber(self, dirX, dirY):
+        if self.selected < 0 :
+            return
+        self.chambers[self.selected].resize(dirX, dirY)
         self.processFrame()
         

@@ -36,6 +36,7 @@ class RunRestAnalyser(QtCore.QObject):
     def readPoint(self):
         line = self.trajectoryFile.readline()
         if not line :
+            print line
             return None
         frameNumber, x, y = [float(n) for n in line.split()]
         return (frameNumber / self.frameRate, x / self.scale, y / self.scale)
@@ -64,12 +65,19 @@ class RunRestAnalyser(QtCore.QObject):
         self.intervalDuration = value
     
     def analyseDir(self, dirName):
+        dirList = os.listdir(dirName)
+        dirList.sort()
+        for fileName in dirList :
+            fullName = os.path.join(dirName, fileName)
+            if not os.path.isdir(fullName) and fileName[-3:] == 'lt1' :
+                self.analyseFile(fullName, dirName)
+        '''
         for dir, dirnames, filenames in os.walk(dirName):
             for filename in filenames:
                 print filename
                 if filename[-3:] == 'lt1' :
                     self.analyseFile(os.path.join(dirName, filename), dirName)
-    
+        '''
     def openOutputFile(self, name, captionString):
         if os.path.isfile(name) :
             mode = 'a'
@@ -215,7 +223,7 @@ class RunRestAnalyser(QtCore.QObject):
                     print 'time {0}, int {1} dur {2} ended'.format(secondPoint[0], intervalNumber, intervalDuration)
                     string = self.activityString(intervalNumber,
                             intervalRunDuration / intervalDuration, 100 * intervalRunCount / intervalDuration,
-                            intervalRunLen / intervalRunDuration)
+                            intervalRunLen / intervalRunDuration if intervalRunDuration > 0.1 else 0 )
                     self.activityFile.write(string)
                     intervalNumber += 1 
                     break
@@ -232,9 +240,11 @@ class RunRestAnalyser(QtCore.QObject):
         if errorCount == 0 :
             os.remove(fileName + '.errors.txt')
         
-        
         #self.totalActivityFile = open(totalActivityName,'w')
+        print startTime
+        print firstPoint[0]
         totalTime = firstPoint[0] - startTime
+        print totalTime
         string = self.activityString(-1,
                          totalRunDuration / totalTime, 100 * totalRunCount / totalTime,
                          totalRunLen / totalTime)

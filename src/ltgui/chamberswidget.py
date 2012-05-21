@@ -5,7 +5,9 @@ Created on 18.12.2010
 '''
 
 from PyQt4 import QtCore, QtGui
-#from ltcore.actions import LtActions
+from ltcore.signals import *
+
+from ltgui.labeledwidgets import LabelledSlider
 
 class ChambersWidget(QtGui.QWidget):
     '''
@@ -13,6 +15,7 @@ class ChambersWidget(QtGui.QWidget):
     It displays list of chambers, 
     holds buttons to create, delete chambers and scale label
     '''
+    
 
     def __init__(self, parent=None):
         '''
@@ -112,7 +115,7 @@ class ChambersWidget(QtGui.QWidget):
         for i in range(len(chambersList)) :
             text = 'Chamber '+str(i+1)
             self.chambersList.setCellWidget(i,0,QtGui.QLabel(text))
-            slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+            slider = LabelledSlider(orientation=QtCore.Qt.Horizontal)
             slider.setMaximum(99)
             slider.setValue(chambersList[i].threshold)
             slider.valueChanged.connect(chambersList[i].setThreshold)

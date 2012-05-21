@@ -8,7 +8,7 @@ from __future__ import division
 from PyQt4 import QtCore, QtGui
 #from ltcore.actions import LtActions
 from ltcore.signals import *
-from ltgui.labeledwidgets import *
+from ltgui.labeledwidgets import LabelledSlider,LabelledLineEdit
 
 class TrajectoryWidget(QtGui.QWidget):
     '''
@@ -31,33 +31,31 @@ class TrajectoryWidget(QtGui.QWidget):
         self.recordTrajectoryButton = QtGui.QPushButton('Record trajectory')
         self.recordTrajectoryButton.setCheckable(True)
         self.recordTrajectoryButton.setEnabled(False)
-        self.connect(self.recordTrajectoryButton, signalToggled, self.setTrajectoryRecord)
+        self.recordTrajectoryButton.toggled.connect(self.setTrajectoryRecord)
         layout.addWidget(self.recordTrajectoryButton)
         #
         self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
-        self.connect(self.analyseTrajectoryButton, signalClicked, self.analyseTrajectory)
+        self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
         layout.addWidget(self.analyseTrajectoryButton)
         #
         self.errorTresholdSlider = LabelledSlider('Error Treshold')
         self.errorTresholdSlider.setMaximum(100)
         self.errorTresholdSlider.setValue(50)
-        self.connect(self.errorTresholdSlider,signalValueChanged,self.setErrorTheshold)
+        self.errorTresholdSlider.valueChanged.connect(self.setErrorTheshold)
         layout.addWidget(self.errorTresholdSlider)
         
         self.speedTresholdSlider = LabelledSlider('Speed Treshold')
         self.speedTresholdSlider.setMaximum(100)
         self.speedTresholdSlider.setValue(28)
-        self.connect(self.speedTresholdSlider,signalValueChanged,self.setSpeedTheshold)
+        self.speedTresholdSlider.valueChanged.connect(self.setSpeedTheshold)
         layout.addWidget(self.speedTresholdSlider)
         
         self.intervalDurationSlider = LabelledSlider('Interval Duration')
         self.intervalDurationSlider.setMaximum(500)
         self.intervalDurationSlider.setMinimum(50)
         self.intervalDurationSlider.setValue(300)
-        self.connect(self.intervalDurationSlider,signalValueChanged,self.setIntervalDuration)
+        self.intervalDurationSlider.valueChanged.connect(self.setIntervalDuration)
         layout.addWidget(self.intervalDurationSlider)
-        
-        
         self.setLayout(layout)
         
         

@@ -28,6 +28,9 @@ class CvProcessorWidget(QtGui.QWidget):
         self.showContourChechBox = LabelledCheckBox("Show Contour")
         layout.addWidget(self.showContourChechBox, 3, 0)
         self.showContourChechBox.setCheckState(QtCore.Qt.Checked)
+        self.ellipseCropCheckBox = LabelledCheckBox("Crop Central Ellipse")
+        self.ellipseCropCheckBox.setCheckState(QtCore.Qt.Checked)
+        layout.addWidget(self.ellipseCropCheckBox, 3, 1)
         # Treshold slider
         self.tresholdSlider = LabelledSlider('Treshold')
         self.tresholdSlider.setMaximum(100)

@@ -113,7 +113,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
         self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
-        self.connect(self.videoWidget.videoSlider, signalValueChanged, self.cvProcessor.cvPlayer.seek)
+        self.videoWidget.videoSlider.valueChanged.connect(self.cvProcessor.cvPlayer.seek)
         self.cvProcessor.cvPlayer.videoSourceOpened.connect(self.videoWidget.videoCapturing)
         self.videoWidget.speedChanged.connect(self.cvProcessor.cvPlayer.setSpeed)
 
@@ -137,10 +137,13 @@ class LtMainWindow(QtGui.QMainWindow):
                      self.cvProcessor.setShowProcessed)
         self.connect(self.cvProcessorWidget.showContourChechBox.checkBox, signalStateChanged,
                      self.cvProcessor.setShowContour)
-        self.connect(self.cvProcessorWidget.tresholdSlider, signalValueChanged,
+        self.cvProcessorWidget.tresholdSlider.valueChanged.connect(
                      self.cvProcessor.setTreshold)
+        self.cvProcessorWidget.ellipseCropCheckBox.stateChanged.connect(
+                     self.cvProcessor.setEllipseCrop)
         
-        
+        self.cvLabel.chamberMove.connect(self.cvProcessor.moveChamber)
+        self.cvLabel.chamberResize.connect(self.cvProcessor.resizeChamber)
         # ---- Main menu ----
         # Project menu
         self.connect(self.ltActions.projectQuitAction, signalTriggered, self.close)
