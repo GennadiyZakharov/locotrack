@@ -10,7 +10,7 @@ from __future__ import division
 from math import sqrt
 import os
 
-from PyQt4 import QtCore
+from PyQt4 import QtCore,QtGui
 
 totalActivityName = "0-TotalActivity.csv"
 activityName = "1-Activity.csv"
@@ -39,6 +39,7 @@ class RunRestAnalyser(QtCore.QObject):
             print line
             return None
         frameNumber, x, y = [float(n) for n in line.split()]
+        self.trackImage.setPixel(int(x), int(y), 0)
         return (frameNumber / self.frameRate, x / self.scale, y / self.scale)
     
     def activityString(self, interval, activity, runFreq, runSpeed):
@@ -94,7 +95,9 @@ class RunRestAnalyser(QtCore.QObject):
         '''
         #
         print "Starting analysis of file " + fileName
-        
+        baseName = os.path.splitext(fileName)[0]
+
+        print baseName
         self.totalActivityFile = self.openOutputFile(os.path.join(dirName, totalActivityName),
             '                   Sample;   Int;           Activity;            RunFreq;           RunSpeed;\n')                          
         self.activityFile = self.openOutputFile(os.path.join(dirName, activityName),
@@ -103,21 +106,26 @@ class RunRestAnalyser(QtCore.QObject):
             '                   Sample;   Int;           RestTime;\n')
         self.runFile = self.openOutputFile(os.path.join(dirName, runName),
             '                   Sample;   Int;            RunTime;             RunLen;           RunSpeed;\n')
-        self.graphFile = open(fileName + graphName, 'w')
-        self.errorFile = open(fileName + '.errors.txt', 'w') 
+        #self.graphFile = open(fileName + graphName, 'w')
+        self.errorFile = open(baseName + '.err', 'w') 
         #
         self.trajectoryFile = open(fileName, 'r')
         if self.trajectoryFile is None :
             print "Error opening file"
             return
         self.trajectoryFile.readline()
-        left, top = [int(x) for x in self.trajectoryFile.readline().split()]
+        self.left, self.top = [int(x) for x in self.trajectoryFile.readline().split()]
         width, height = [int(x) for x in self.trajectoryFile.readline().split()]
         self.scale = float(self.trajectoryFile.readline())
         self.frameRate = float(self.trajectoryFile.readline())
         self.sampleName = self.trajectoryFile.readline().rstrip()
         self.trajectoryFile.readline()
         self.trajectoryFile.readline()
+        #
+        self.trackImage = QtGui.QImage(width,height,QtGui.QImage.Format_Indexed8)
+        colorTable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
+        self.trackImage.setColorTable(colorTable)
+        self.trackImage.fill(255)
         # 
         lastState = -1 # стостяние движения личинки
         # //0 - покой, 1 - движение, -1 - не определено
@@ -148,6 +156,7 @@ class RunRestAnalyser(QtCore.QObject):
             # interval cycle
             while True : 
                 firstPoint = secondPoint
+                
                 # Reading Next Point according to quant duration
                 while True :
                     secondPoint = self.readPoint()
@@ -179,10 +188,10 @@ class RunRestAnalyser(QtCore.QObject):
                 # Calculating speed by quant
                 intervalDuration += quantDuration
                 #print 'intduration',intervalDuration
-                
+                '''
                 self.graphFile.write("{0:10.2f} {1:12.4f}\n".format(
                     secondPoint[0], quantLen / quantDuration))
-                 
+                '''
                 if speed > self.speedTreshold :
                     #//личинка двигалась на данном кванте
                     runDuration += quantDuration #//добавляет этот квант к побежке
@@ -235,11 +244,11 @@ class RunRestAnalyser(QtCore.QObject):
         self.activityFile.close()
         self.runFile.close()
         self.restFile.close()
-        self.graphFile.close()
+        #self.graphFile.close()
         self.errorFile.close()
         if errorCount == 0 :
-            os.remove(fileName + '.errors.txt')
-        
+            os.remove(baseName + '.err')
+        self.trackImage.save(baseName + '.png',format='PNG')
         #self.totalActivityFile = open(totalActivityName,'w')
         print startTime
         print firstPoint[0]

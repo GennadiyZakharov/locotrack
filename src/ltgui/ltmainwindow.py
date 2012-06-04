@@ -14,6 +14,7 @@ from ltcore.cvprocessor import CvProcessor
 from ltcore.ltactions import LtActions
 
 from ltgui.cvlabel import CvLabel
+from ltgui.cvgraphics import CvGraphics
 from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
 from ltgui.cvprocessorwidget import CvProcessorWidget
@@ -41,7 +42,7 @@ class LtMainWindow(QtGui.QMainWindow):
                 
         # ==== Creating GUI ====
         # ---- Creating main video widget ----
-        self.cvLabel = CvLabel()
+        self.cvLabel = CvGraphics(self)
         self.cvLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.cvLabel.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.cvLabel.setObjectName("cvLabel")
@@ -113,7 +114,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
         self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
-        self.videoWidget.videoSlider.valueChanged.connect(self.cvProcessor.cvPlayer.seek)
+        self.videoWidget.videoSeeked.connect(self.cvProcessor.cvPlayer.seek)
         self.cvProcessor.cvPlayer.videoSourceOpened.connect(self.videoWidget.videoCapturing)
         self.videoWidget.speedChanged.connect(self.cvProcessor.cvPlayer.setSpeed)
 

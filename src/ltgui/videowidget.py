@@ -15,6 +15,7 @@ class VideoWidget(QtGui.QWidget):
     This class holds GUI for cvPlayer
     '''
     speedChanged = QtCore.pyqtSignal(float)
+    videoSeeked = QtCore.pyqtSignal(int)
     
     def __init__(self, parent=None):
         '''
@@ -23,10 +24,14 @@ class VideoWidget(QtGui.QWidget):
         super(VideoWidget, self).__init__(parent)
         # Video slider and position label
         layout1 = QtGui.QHBoxLayout()
+        self.startFrameSlider = QtGui.QSpinBox()
+        layout1.addWidget(self.startFrameSlider)
+        self.endFrameSlider = QtGui.QSpinBox()
         self.videoSlider = QtGui.QSlider(QtCore.Qt.Horizontal)
         layout1.addWidget(self.videoSlider)
         self.timeLabel = QtGui.QLabel('0')
         layout1.addWidget(self.timeLabel)
+        layout1.addWidget(self.endFrameSlider)
         self.videoSlider.valueChanged.connect(self.videoSliderMove)
         # Play/pause buttons
         layout2 = QtGui.QHBoxLayout()
@@ -73,6 +78,10 @@ class VideoWidget(QtGui.QWidget):
         Calling this method when video opened
         '''
         if videoLength > 0 :
+            self.startFrameSlider.setValue(0)
+            self.startFrameSlider.setMaximum(videoLength-1)
+            self.endFrameSlider.setMaximum(videoLength)
+            self.endFrameSlider.setValue(videoLength)
             self.videoSlider.setMaximum(videoLength)
             self.videoSlider.setValue(0)
         self.setGuiEnabled(videoLength > 0)
@@ -84,7 +93,17 @@ class VideoWidget(QtGui.QWidget):
     
     @QtCore.pyqtSlot(int)
     def videoSliderMove(self, value):
-        self.timeLabel.setText(str(value))
+        startFrame = self.startFrameSlider.value()
+        if value < startFrame :
+            self.videoSlider.setValue(startFrame)
+        else :
+            endFrame = self.endFrameSlider.value()
+            if value > endFrame :
+                self.stopButt.click()
+                self.videoSlider.setValue(endFrame)
+            else :
+                self.timeLabel.setText(str(value))
+                self.videoSeeked.emit(value)
         
     @QtCore.pyqtSlot(int)
     def speedSliderMove(self, value):
