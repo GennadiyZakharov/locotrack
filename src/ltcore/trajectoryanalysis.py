@@ -10,7 +10,7 @@ from __future__ import division
 from math import sqrt
 import os
 
-from PyQt4 import QtCore,QtGui
+from PyQt4 import QtCore, QtGui
 
 totalActivityName = "0-TotalActivity.csv"
 activityName = "1-Activity.csv"
@@ -49,7 +49,7 @@ class RunRestAnalyser(QtCore.QObject):
     
     def restString(self, interval, restDuration):
         return '{0:>25}; {1:5}; {2:18.6f};\n'.format(
-            self.sampleName, 
+            self.sampleName,
             interval, restDuration)
     
     def runString(self, interval, runDuration, runLength):
@@ -99,9 +99,9 @@ class RunRestAnalyser(QtCore.QObject):
 
         print baseName
         self.totalActivityFile = self.openOutputFile(os.path.join(dirName, totalActivityName),
-            '                   Sample;   Int;           Activity;            RunFreq;           RunSpeed;\n')                          
+            '                   Sample;   None;           Activity;            RunFreq(1/min);    RunSpeed;\n')                          
         self.activityFile = self.openOutputFile(os.path.join(dirName, activityName),
-            '                   Sample;   Int;           Activity;            RunFreq;           RunSpeed;\n')
+            '                   Sample;   Int;           Activity;            RunFreq(1/min);    RunSpeed;\n')
         self.restFile = self.openOutputFile(os.path.join(dirName, restName),
             '                   Sample;   Int;           RestTime;\n')
         self.runFile = self.openOutputFile(os.path.join(dirName, runName),
@@ -122,8 +122,8 @@ class RunRestAnalyser(QtCore.QObject):
         self.trajectoryFile.readline()
         self.trajectoryFile.readline()
         #
-        self.trackImage = QtGui.QImage(width,height,QtGui.QImage.Format_Indexed8)
-        colorTable = [QtGui.qRgb(i,i,i) for i in xrange(256)]
+        self.trackImage = QtGui.QImage(width, height, QtGui.QImage.Format_Indexed8)
+        colorTable = [QtGui.qRgb(i, i, i) for i in xrange(256)]
         self.trackImage.setColorTable(colorTable)
         self.trackImage.fill(255)
         # 
@@ -174,6 +174,7 @@ class RunRestAnalyser(QtCore.QObject):
                         continue
                     quantLen = sqrt((secondPoint[1] - firstPoint[1]) ** 2 + 
                             (secondPoint[2] - firstPoint[2]) ** 2)
+                    
                     speed = quantLen / quantDuration
                     if speed > self.errorTreshold :
                         errorCount += 1
@@ -187,6 +188,7 @@ class RunRestAnalyser(QtCore.QObject):
                 #print 'readed quant '+str(quantDuration)
                 # Calculating speed by quant
                 intervalDuration += quantDuration
+                totalRunLen += quantLen
                 #print 'intduration',intervalDuration
                 '''
                 self.graphFile.write("{0:10.2f} {1:12.4f}\n".format(
@@ -199,7 +201,6 @@ class RunRestAnalyser(QtCore.QObject):
                     totalRunDuration += quantDuration
                     runLen += quantLen
                     intervalRunLen += quantLen
-                    totalRunLen += quantLen
                     if lastState == 0 :
                         #//кончился предыдущий период покоя закончился -- записываем
                         #//записываем в выходной файл данные об отдыхе
@@ -231,8 +232,8 @@ class RunRestAnalyser(QtCore.QObject):
                     #; // закончилась обработка интервала
                     print 'time {0}, int {1} dur {2} ended'.format(secondPoint[0], intervalNumber, intervalDuration)
                     string = self.activityString(intervalNumber,
-                            intervalRunDuration / intervalDuration, 100 * intervalRunCount / intervalDuration,
-                            intervalRunLen / intervalRunDuration if intervalRunDuration > 0.1 else 0 )
+                            intervalRunDuration / intervalDuration, 60 * intervalRunCount / intervalDuration,
+                            intervalRunLen / intervalRunDuration if intervalRunDuration > 0.1 else 0)
                     self.activityFile.write(string)
                     intervalNumber += 1 
                     break
@@ -248,16 +249,13 @@ class RunRestAnalyser(QtCore.QObject):
         self.errorFile.close()
         if errorCount == 0 :
             os.remove(baseName + '.err')
-        self.trackImage.save(baseName + '.png',format='PNG')
+        self.trackImage.save(baseName + '.png', format='PNG')
         #self.totalActivityFile = open(totalActivityName,'w')
-        print startTime
-        print firstPoint[0]
         totalTime = firstPoint[0] - startTime
-        print totalTime
         string = self.activityString(-1,
-                         totalRunDuration / totalTime, 100 * totalRunCount / totalTime,
+                         totalRunDuration / totalTime, 60 * totalRunCount / totalTime,
                          totalRunLen / totalTime)
         self.totalActivityFile.write(string)
         self.totalActivityFile.close()
-        print 'file {0}, errors:{1}'.format(fileName, errorCount)
+        print 'file {}, length:{}, errors:{}'.format(fileName, totalTime, errorCount)
         

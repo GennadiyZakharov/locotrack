@@ -14,21 +14,22 @@ class CvGraphics(QtGui.QGraphicsView):
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         '''
         Constructor
         '''
         super(CvGraphics, self).__init__(parent)
-        self.frame = QtGui.QImage(320,200,QtGui.QImage.Format_RGB888)
-        self.pixmap = QtGui.QPixmap(320,200)
+        self.frame = QtGui.QImage(320, 200, QtGui.QImage.Format_RGB888)
+        self.pixmap = QtGui.QPixmap(320, 200)
         self.scene = QtGui.QGraphicsScene()
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setScene(self.scene)
-        self.setMinimumSize(320,200) 
+        self.setMinimumSize(320, 200) 
         self.setAcceptDrops(True)
         self.enableDnD = False
         self.selectedRect = None
         self.gPixmap = self.scene.addPixmap(self.pixmap)
+        self.gChambers = {}
         #self.setFixedSize(self.pixmap.size())
         
     @QtCore.pyqtSlot(object)
@@ -84,7 +85,7 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         Hander is called, when mouse button is pressed
         '''
-        print "mousePressed event ",event.pos()
+        print "mousePressed event ", event.pos()
         # If selection not enabled -- exit
         if not self.enableDnD :
             return
@@ -104,12 +105,13 @@ class CvGraphics(QtGui.QGraphicsView):
         # If left button not pressed -- exit
         if not (event.buttons() & QtCore.Qt.LeftButton) :
             return
+        pos = self.mapToScene(event.pos()).toPoint()
         # If distance between current and start point too small --exit
-        if (self.mapToScene(event.pos()).toPoint() - self.dragStartPosition).manhattanLength() < QtGui.QApplication.startDragDistance() :
+        if (pos - self.dragStartPosition).manhattanLength() < QtGui.QApplication.startDragDistance() :
             return
         # Everything ok
-        # Clear previous rect
-        self.selectedRect = None
+        pen = QtGui.QPen(QtGui.QColor(0, 0, 255))
+        self.selectedRect = self.scene.addRect(QtCore.QRectF(QtCore.QRect(pos, self.dragStartPosition)), pen)
         # Constructing data with start pos 
         mimeData = QtCore.QMimeData();
         data = QtCore.QByteArray()
@@ -147,12 +149,13 @@ class CvGraphics(QtGui.QGraphicsView):
         Hander is called, when drag event processes
         '''
         print "DragMove event"
+        print event.pos()
         # If selection not enabled -- exit
         if not self.enableDnD :
             return
         # Saving currenly selected rectangle
-        #self.selectedRect = QtCore.QRect(self.dragStartPosition, event.pos())
-        #self.updateImage()
+        self.selectedRect.setRect(QtCore.QRectF(QtCore.QRect(self.mapToScene(event.pos()).toPoint(), self.dragStartPosition)))
+        self.scene.update()
     
     def dropEvent(self, event) :
         '''
@@ -169,6 +172,7 @@ class CvGraphics(QtGui.QGraphicsView):
             # And send it via signal
             self.emit(signalRegionSelected, rect)
             event.acceptProposedAction()
+            self.scene.removeItem(self.selectedRect)
             self.selectedRect = None
     '''
     def keyPressEvent(self, event):
