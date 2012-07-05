@@ -17,6 +17,7 @@ class CvPlayer(QtCore.QObject):
     videoSourceOpened = QtCore.pyqtSignal(int, float)
     ''' Signal carry video length and frame rate when video opened,
         or -1, -1 when video closed '''
+    videoEnd = QtCore.pyqtSignal()
     
     def __init__(self, parent=None):
         '''
@@ -149,6 +150,7 @@ class CvPlayer(QtCore.QObject):
         frame = cv.QueryFrame(self.captureDevice)
         if frame is None : # Input file ended
             self.stop()
+            self.videoEnd.emit()
         else :
             self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
             self.nextFrame.emit(frame, self.frameNumber)

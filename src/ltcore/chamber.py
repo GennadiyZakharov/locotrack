@@ -54,7 +54,8 @@ class Chamber(QtCore.QObject):
         self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
     ''' 
    
-    def initTrajectory(self, fileName, scale, frameRate, sampleName):
+    def initTrajectory(self, videoLength):
+        '''
         self.trajectoryFile = open(fileName, 'w')
         self.trajectoryFile.write(self.fileCaption)
         self.trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
@@ -66,30 +67,49 @@ class Chamber(QtCore.QObject):
         self.trajectoryFile.write("=============\n")
         self.trajectoryFile.write("     Frame                  X                  Y\n")
         print "file {0} created".format(fileName)
+        '''
+        if self.ltTrajectory is not None :
+            self.resetTrajectory()
+        # init array to save frames from current number 
+        self.ltTrajectory = LtTrajectory(self.frameNumber, videoLength)
         self.saveToTrajectory()
-        #self.ltTrajectory = LtTrajectory(firstFrame, lastFrame)
     
     def resetTrajectory(self):
-        #self.ltTrajectory = None
+        self.ltTrajectory = None
+        '''
         if self.trajectoryFile is not None :
             self.trajectoryFile.close()
             print "File closed"
         self.trajectoryFile = None
+        '''
         self.errors = 0
         
     def saveToTrajectory(self):
+        if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
+            self.ltTrajectory.setObject(self.frameNumber, self.ltObject)
+        '''
         if (self.trajectoryFile is not None) and (self.frameNumber >= 0):
             # save point to file
             fileString = "{0:10} {1:18.6f} {2:18.6f}\n".format(self.frameNumber,
                                      self.ltObject.massCenter[0], self.ltObject.massCenter[1])
             self.trajectoryFile.write(fileString)
-            
-        '''
-        if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
-            self.ltTrajectory.setObject(self.frameNumber, self.ltObject)
-        '''      
-    def saveTrajectory(self, fileName):
-        pass
+        ''' 
+              
+    def saveTrajectory(self, fileName, scale, frameRate, sampleName):
+        trajectoryFile = open(fileName, 'w')
+        trajectoryFile.write(self.fileCaption)
+        trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
+        trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()) )
+        trajectoryFile.write("{0}\n".format(scale/15))
+        # TODO: implement mm
+        trajectoryFile.write("{0}\n".format(frameRate))
+        trajectoryFile.write(sampleName+"\n")
+        trajectoryFile.write("=============\n")
+        trajectoryFile.write("     Frame                  X                  Y\n")
+        print "file {0} created".format(fileName)
+        self.ltTrajectory.strip()
+        self.ltTrajectory.saveToFile(trajectoryFile)
+        trajectoryFile.close()
     
     def loadTrajectory(self, fileName):
         pass

@@ -88,6 +88,8 @@ class TrajectoryWidget(QtGui.QWidget):
         
         self.emit(signalAnalyseTrajectory, fdir)
     
+    def trajectoryWriting(self, checked):
+        self.recordTrajectoryButton.setChecked(checked)
     
     def descriptionChanged(self):
         #

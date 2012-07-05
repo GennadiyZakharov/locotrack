@@ -38,6 +38,9 @@ class LtTrajectory(object):
                 # TODO: paste exception
                 return
         return frameNumber - self.startFrame
+    
+    def internalToFrameNumber(self, internal):
+        return internal + self.startFrame
         
     def setObject(self, frameNumber, ltObject):
         '''
@@ -46,11 +49,26 @@ class LtTrajectory(object):
         internalNumber = self.frameNumberToInternal(frameNumber)
         self.lastNumber = internalNumber
         self.centralPointX[internalNumber], self.centralPointY[internalNumber] = ltObject.centralPoint()
-        print 'saved trajectory frame', frameNumber
         
     def lastObject(self):
         '''
         Return last stored ltObject 
         '''
         return LtObject(self.CenterPointX[self.lastNumber], self.centralPointY[self.lastNumber])
+    
+    def strip(self):
+        for i in xrange(len(self.centralPointX)-1,-1,-1) :
+            if self.centralPointX[i] >=0 :
+                self.centralPointX = self.centralPointX[:i+1]
+                self.centralPointY = self.centralPointY[:i+1]
+                self.endFrame = self.internalToFrameNumber(i)
+                return
+    
+    def saveToFile(self, trajectoryFile):
+        for i in xrange(self.startFrame, self.endFrame+1) :
+            fileString = "{0:10} {1:18.6f} {2:18.6f}\n".format(i,
+                                     self.centralPointX[self.frameNumberToInternal(i)], 
+                                     self.centralPointY[self.frameNumberToInternal(i)])
+            trajectoryFile.write(fileString)
+        
         

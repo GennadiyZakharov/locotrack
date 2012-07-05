@@ -88,7 +88,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
         self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
         self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)
-        self.connect(self.cvTrajectoryWidget, signalIntervalDuration, self.cvProcessor.runRestAnalyser.setIntervalDuration)             
+        self.connect(self.cvTrajectoryWidget, signalIntervalDuration, self.cvProcessor.runRestAnalyser.setIntervalDuration)
+        self.cvProcessor.trajectoryWriting.connect(self.cvTrajectoryWidget.trajectoryWriting)             
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
         self.ltActions.addActions(projectMenu, self.ltActions.projectActions)

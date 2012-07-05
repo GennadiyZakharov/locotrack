@@ -9,6 +9,7 @@ Created on 07.04.2012
 from __future__ import division
 from math import sqrt
 import os
+import numpy as np
 
 from PyQt4 import QtCore, QtGui
 
@@ -32,6 +33,7 @@ class RunRestAnalyser(QtCore.QObject):
         self.intervalDuration = 300.0
         self.speedTreshold = 0.28
         self.errorTreshold = 5.0
+        self.blackTreshold = 50
         
     def readPoint(self):
         line = self.trajectoryFile.readline()
@@ -39,7 +41,9 @@ class RunRestAnalyser(QtCore.QObject):
             print line
             return None
         frameNumber, x, y = [float(n) for n in line.split()]
-        self.trackImage.setPixel(int(x), int(y), 0)
+        if (x>=0) and (y>=0) :
+            self.trackArray[int(x), int(y)] += 1
+            #self.trackImage.setPixel(int(x), int(y), 0)
         return (frameNumber / self.frameRate, x / self.scale, y / self.scale)
     
     def activityString(self, interval, activity, runFreq, runSpeed):
@@ -122,6 +126,7 @@ class RunRestAnalyser(QtCore.QObject):
         self.trajectoryFile.readline()
         self.trajectoryFile.readline()
         #
+        self.trackArray = np.zeros( (width, height), dtype=int ) 
         self.trackImage = QtGui.QImage(width, height, QtGui.QImage.Format_Indexed8)
         colorTable = [QtGui.qRgb(i, i, i) for i in xrange(256)]
         self.trackImage.setColorTable(colorTable)
@@ -188,7 +193,6 @@ class RunRestAnalyser(QtCore.QObject):
                 #print 'readed quant '+str(quantDuration)
                 # Calculating speed by quant
                 intervalDuration += quantDuration
-                totalRunLen += quantLen
                 #print 'intduration',intervalDuration
                 '''
                 self.graphFile.write("{0:10.2f} {1:12.4f}\n".format(
@@ -200,6 +204,7 @@ class RunRestAnalyser(QtCore.QObject):
                     intervalRunDuration += quantDuration
                     totalRunDuration += quantDuration
                     runLen += quantLen
+                    totalRunLen += quantLen
                     intervalRunLen += quantLen
                     if lastState == 0 :
                         #//кончился предыдущий период покоя закончился -- записываем
@@ -249,13 +254,20 @@ class RunRestAnalyser(QtCore.QObject):
         self.errorFile.close()
         if errorCount == 0 :
             os.remove(baseName + '.err')
+        for i in xrange(width) :
+            for j in xrange(height) :    
+                intensity = 0 if self.trackArray[i,j] > self.blackTreshold  else 255-int((self.trackArray[i,j]/self.blackTreshold)*255)
+                self.trackImage.setPixel(i, j, intensity)
+                
         self.trackImage.save(baseName + '.png', format='PNG')
         #self.totalActivityFile = open(totalActivityName,'w')
         totalTime = firstPoint[0] - startTime
         string = self.activityString(-1,
                          totalRunDuration / totalTime, 60 * totalRunCount / totalTime,
-                         totalRunLen / totalTime)
+                         totalRunLen / totalRunDuration)
         self.totalActivityFile.write(string)
         self.totalActivityFile.close()
         print 'file {}, length:{}, errors:{}'.format(fileName, totalTime, errorCount)
+        
+        
         
