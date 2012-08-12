@@ -20,13 +20,13 @@ class LabelledLineEdit(QWidget):
     This class holds QLineEdit, budded to QLabel
     This is used only to simplify GUI creation 
     '''
-    def __init__(self, labelText=QString(), leftTopPos=LEFT,parent=None):
+    def __init__(self, labelText=QString(), topLeftTuple=LEFT,parent=None):
         super(LabelledLineEdit, self).__init__(parent)
         self.label = QLabel(labelText)
         self.lineEdit = QLineEdit()
         self.label.setBuddy(self.lineEdit)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
+                if topLeftTuple == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.lineEdit)
         self.setLayout(layout)
@@ -37,13 +37,13 @@ class LabelledTextEdit(QWidget):
     This class holds QTextEdit, budded to QLabel
     This is used only to simplify GUI creation 
     '''
-    def __init__(self, labelText=QString(), leftTopPos=LEFT,parent=None):
+    def __init__(self, labelText=QString(), topLeftTuple=LEFT,parent=None):
         super(LabelledTextEdit, self).__init__(parent)
         self.label = QLabel(labelText)
         self.textEdit = QTextEdit()
         self.label.setBuddy(self.textEdit)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
+                if topLeftTuple == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.textEdit)
         self.setLayout(layout)
@@ -54,7 +54,7 @@ class LabelledSlider(QWidget):
     This is used only to simplify GUI creation 
     '''
     def __init__(self, labelText=QString(),orientation=Qt.Horizontal,
-                 leftTopPos=LEFT,parent=None):
+                 topLeftTuple=LEFT,parent=None):
         super(LabelledSlider, self).__init__(parent)
         
         self.labelText = labelText
@@ -64,7 +64,7 @@ class LabelledSlider(QWidget):
         self.label.setBuddy(self.slider)
         self.slider.valueChanged.connect(self.sliderMove)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
+                if topLeftTuple == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.slider)
         self.setLayout(layout)
@@ -84,14 +84,14 @@ class LabelledCheckBox(QWidget):
     This class holds QCheckBox, budded to QLabel
     This is used only to simplify GUI creation 
     '''
-    def __init__(self, labelText=QString(),leftTopPos=LEFT,checked=False,parent=None):
+    def __init__(self, labelText=QString(),topLeftTuple=LEFT,checked=False,parent=None):
         super(LabelledCheckBox, self).__init__(parent)
         
         self.checkBox = QCheckBox()
         self.label = QLabel(labelText)
         self.label.setBuddy(self.checkBox)
         layout = QBoxLayout(QBoxLayout.LeftToRight
-                if leftTopPos == LEFT else QBoxLayout.TopToBottom)
+                if topLeftTuple == LEFT else QBoxLayout.TopToBottom)
         layout.addWidget(self.label)
         layout.addWidget(self.checkBox)
         self.setLayout(layout)

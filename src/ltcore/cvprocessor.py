@@ -64,7 +64,7 @@ class CvProcessor(QtCore.QObject):
         '''
         Get length and frame rate of opened video file
         '''
-        self.writeTrajectory(False, None)
+        self.writeTrajectory(False)
         self.videoLength = length
         self.frameRate = frameRate 
         
@@ -184,7 +184,7 @@ class CvProcessor(QtCore.QObject):
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)   
         # Saving to trajectory if we need it
         if self.saveTrajectory :
-            chamber.saveToTrajectory()
+            chamber.saveLtObjectToTrajectory()
         # Reset area selection
         cv.ResetImageROI(frame)
         
@@ -204,9 +204,9 @@ class CvProcessor(QtCore.QObject):
             else :
                 color = self.chamberColor
             # Draw chamber borders
-            cv.Rectangle(frame, self.chambers[i].leftTopPos(), self.chambers[i].bottomRightPos(),
+            cv.Rectangle(frame, self.chambers[i].topLeftTuple(), self.chambers[i].bottomRightTuple(),
                          color, 2)
-            cv.PutText(frame, str(i+1), self.chambers[i].leftTopPos(),
+            cv.PutText(frame, str(i+1), self.chambers[i].topLeftTuple(),
                          self.font, color)
             # Draw contours
             cv.SetImageROI(frame, self.chambers[i].getRect())
@@ -312,17 +312,11 @@ class CvProcessor(QtCore.QObject):
         self.emit(signalChambersUpdated, list(self.chambers), self.selected)
         #self.processFrame() # Update current frame
     
-    def saveTrajectory(self):
-        # Save wrote Trajectory
-        for i in range(len(self.chambers)) :
-            self.chambers[i].saveTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
-                                            self.scale, self.cvPlayer.frameRate, self.sampleName)
-        
-    
     def writeTrajectory(self, checked):
         '''
         Enable/Disable trajectory saving
         '''
+        print 'WriteTrajectory', checked
         if self.saveTrajectory == checked :
             return
         if self.scale is None :
@@ -335,7 +329,10 @@ class CvProcessor(QtCore.QObject):
                 self.chambers[i].initTrajectory(self.videoLength)
             
         else:
-            self.saveTrajectory
+            print 'saving trajectory'
+            for i in range(len(self.chambers)) :
+                self.chambers[i].saveTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
+                                                self.scale, self.cvPlayer.frameRate, self.sampleName)
     
     def setSampleName(self, sampleName):
         self.sampleName = sampleName    
