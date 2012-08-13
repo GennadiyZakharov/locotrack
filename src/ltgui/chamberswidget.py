@@ -8,6 +8,7 @@ from PyQt4 import QtCore, QtGui
 from ltcore.signals import *
 
 from ltgui.labeledwidgets import LabelledSlider
+from chamberwidget import ChamberWidget
 
 class ChambersWidget(QtGui.QWidget):
     '''
@@ -27,7 +28,7 @@ class ChambersWidget(QtGui.QWidget):
         layout = QtGui.QGridLayout()
         chambersLabel = QtGui.QLabel('Chambers')
         # list of chambers
-        
+        self.chambers = {}
         self.chambersList = QtGui.QTableWidget()
         chambersLabel.setBuddy(self.chambersList)
         self.chambersList.setColumnCount(2)
@@ -110,16 +111,14 @@ class ChambersWidget(QtGui.QWidget):
         chamber list was modified
         Rebuilding table according to the chambersList
         '''
+        self.chambers={}
         self.chambersList.clear()
         self.chambersList.setRowCount(len(chambersList))
         for i in range(len(chambersList)) :
-            text = 'Chamber '+str(i+1)
-            self.chambersList.setCellWidget(i,0,QtGui.QLabel(text))
-            slider = LabelledSlider(orientation=QtCore.Qt.Horizontal)
-            slider.setMaximum(99)
-            slider.setValue(chambersList[i].threshold)
-            slider.valueChanged.connect(chambersList[i].setThreshold)
-            self.chambersList.setCellWidget(i,1,slider)
+            chamber = chambersList[i]
+            chamberWidget = ChamberWidget(chamber)
+            self.chambers[chamber] = chamberWidget
+            self.chambersList.setCellWidget(i,0,chamberWidget)
         # Selecting chamber
         self.selectedChamber = selected
         self.chambersList.setCurrentCell(self.selectedChamber, 0)

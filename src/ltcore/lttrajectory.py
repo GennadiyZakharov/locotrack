@@ -86,21 +86,23 @@ class LtTrajectory(object):
                 self.endFrame = self.internalToFrameNumber(i)
                 return
     
-    def loadFromFile(self, trajectoryFile):
+    @classmethod
+    def loadFromFile(cls, trajectoryFile):
         '''
         Load trajectory from text file
-        '''
-        line = trajectoryFile.readLine()
-        startFrame, endFrame = [float(value) for value in line.split()]
-        self.initArray((startFrame, endFrame))
+        ''' 
+        startFrame, endFrame = [int(value) for value in trajectoryFile.readline().split()]
+        trajectory = cls((startFrame,endFrame))
+        trajectoryFile.readline()
         for line in trajectoryFile :
             values = line.split()
             frameNumber = int(values[0])
             x = float(values[1])
             y = float(values[2])
-            internalNumber = self.frameNumberToInternal(frameNumber)
-            self.centralPointX[internalNumber], self.centralPointY[internalNumber] = x,y
-        self.lastNumber = frameNumber         
+            internalNumber = trajectory.frameNumberToInternal(frameNumber)
+            trajectory.centralPointX[internalNumber], trajectory.centralPointY[internalNumber] = x,y
+        trajectory.lastNumber = frameNumber
+        return trajectory         
     
     def saveToFile(self, trajectoryFile):
         '''
@@ -114,9 +116,15 @@ class LtTrajectory(object):
                                      self.centralPointX[self.frameNumberToInternal(i)], 
                                      self.centralPointY[self.frameNumberToInternal(i)])
             trajectoryFile.write(fileString)
+            
+    def getStartEndFrame(self):
+        return (self.startFrame,self.endFrame)
+    
         
 if __name__ == '__main__':
     '''
-    Selt testing
+    Self testing
     '''
-    pass
+    trajFile = open('/home/gena/eclipse37-workspace/locotrack/video/2012-02-22_agn-F-Ad7-N-02_c.avi.traj')
+    trajectory = LtTrajectory.loadFromFile(trajFile)
+    print trajectory.getStartEndFrame()

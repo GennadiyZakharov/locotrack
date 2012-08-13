@@ -2,19 +2,21 @@
 # -*- coding: utf-8 -*-
 '''
 Created on 13.12.2010
-
 @author: gena
 '''
+
+'''
+This is main run file for locotrack program
+'''
 import sys
-
 from PyQt4.QtGui import QApplication,QIcon
-
 from os.path import join, abspath, pardir
+
+# Add src and resources to python path
 sys.path.append(abspath(join(pardir, 'src')))
 sys.path.append(abspath(join(pardir, 'resources')))
 
 from ltgui.ltmainwindow import LtMainWindow
-
 
 def main():
     app = QApplication(sys.argv)

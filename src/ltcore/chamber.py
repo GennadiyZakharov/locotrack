@@ -49,8 +49,6 @@ class Chamber(QtCore.QObject):
         self.resetTrajectory()
         # Individual threshold
         self.threshold = 60
-        
-        self.trajectoryFile = None
         # Creating matrix for center location
         self.initMatrix()
         
@@ -83,6 +81,11 @@ class Chamber(QtCore.QObject):
         '''
         if value != self.threshold :
             self.threshold = value
+            self.chamberDataUpdated.emit()
+            
+    def setSampleName(self, name):
+        if self.sampleName != name :
+            self.sampleName = name
             self.chamberDataUpdated.emit()
         
     def move(self, dirX, dirY):
@@ -127,13 +130,30 @@ class Chamber(QtCore.QObject):
         self.errors = 0
         self.chamberDataUpdated.emit()
         
-    def loadTrajectory(self, fileName):
+    @classmethod
+    def loadFromFile(cls, fileName):
         '''
         load trajectory from file
         '''
-        pass
+        print 'Load  trajectory from file {}'.format(fileName)
+        trajectoryFile = open(fileName, 'r')
+        if trajectoryFile.readline() != cls.fileCaption :
+            #TODO: excepting
+            return
+        x, y = [int(value) for value in trajectoryFile.readline().split()]
+        width, height = [int(value) for value in trajectoryFile.readline().split()]
+        rect = QtCore.QRect(x,y,width, height)
+        chamber = cls(rect)
+        chamber.initMatrix()
+        # TODO: implement mm
+        chamber.scale = float(trajectoryFile.readline())
+        chamber.frameRate = float(trajectoryFile.readline())
+        chamber.sampleName = trajectoryFile.readline()
+        chamber.ltTrajectory = LtTrajectory.loadFromFile(trajectoryFile)
+        trajectoryFile.close()
+        return chamber
     
-    def saveTrajectory(self, fileName, scale, frameRate, sampleName):
+    def saveToFile(self, fileName, scale, frameRate):
         '''
         save trajectory to file
         '''
@@ -145,7 +165,7 @@ class Chamber(QtCore.QObject):
         # TODO: implement mm
         trajectoryFile.write("{0}\n".format(scale/15))
         trajectoryFile.write("{0}\n".format(frameRate))
-        trajectoryFile.write(sampleName+"\n")
+        trajectoryFile.write(self.sampleName+"\n")
         print "file {0} created".format(fileName)
         self.ltTrajectory.rstrip()
         self.ltTrajectory.saveToFile(trajectoryFile)
@@ -157,4 +177,11 @@ class Chamber(QtCore.QObject):
             self.ltTrajectory.setObject(self.frameNumber, self.ltObject) 
               
     
-    
+if __name__ == '__main__':
+    '''
+    Self testing
+    '''
+    trajName = '/home/gena/eclipse37-workspace/locotrack/video/2012-02-22_agn-F-Ad7-N-02_c.avi.lt1'
+    chamber = Chamber.loadFromFile(trajName)
+    print chamber.getRect()
+    print chamber.ltTrajectory.getStartEndFrame()

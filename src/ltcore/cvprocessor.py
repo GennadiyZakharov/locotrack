@@ -41,7 +41,6 @@ class CvProcessor(QtCore.QObject):
         self.selected = -1
         self.scale = None
         self.frame = None
-        self.sampleName = None
         # Parameters
         self.threshold = 60
         self.invertImage = False
@@ -49,7 +48,7 @@ class CvProcessor(QtCore.QObject):
         self.showContour = True
         self.ellipseCrop = True
         # Reset Trajectory
-        self.saveTrajectory = False
+        self.saveToFile = False
         self.videoLength = None
         
         # Visual Parameters
@@ -183,7 +182,7 @@ class CvProcessor(QtCore.QObject):
         chamber.ltObject.contours = cv.FindContours(subFrame, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)   
         # Saving to trajectory if we need it
-        if self.saveTrajectory :
+        if self.saveToFile :
             chamber.saveLtObjectToTrajectory()
         # Reset area selection
         cv.ResetImageROI(frame)
@@ -317,13 +316,13 @@ class CvProcessor(QtCore.QObject):
         Enable/Disable trajectory saving
         '''
         print 'WriteTrajectory', checked
-        if self.saveTrajectory == checked :
+        if self.saveToFile == checked :
             return
         if self.scale is None :
             return
-        self.saveTrajectory = checked
-        self.trajectoryWriting.emit(self.saveTrajectory)
-        if self.saveTrajectory :
+        self.saveToFile = checked
+        self.trajectoryWriting.emit(self.saveToFile)
+        if self.saveToFile :
             # Init array for trajectory from current 
             for i in range(len(self.chambers)) :
                 self.chambers[i].initTrajectory(self.videoLength)
@@ -331,11 +330,13 @@ class CvProcessor(QtCore.QObject):
         else:
             print 'saving trajectory'
             for i in range(len(self.chambers)) :
-                self.chambers[i].saveTrajectory(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
-                                                self.scale, self.cvPlayer.frameRate, self.sampleName)
+                self.chambers[i].saveToFile(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
+                                                self.scale, self.cvPlayer.frameRate)
     
     def setSampleName(self, sampleName):
-        self.sampleName = sampleName    
+        print 'setting sample name', sampleName
+        for chamber in self.chambers :
+            chamber.setSampleName(sampleName)    
     
     @QtCore.pyqtSlot()
     def chambersDataUpdated(self):
