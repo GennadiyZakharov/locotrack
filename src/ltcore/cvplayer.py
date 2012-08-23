@@ -71,6 +71,7 @@ class CvPlayer(QtCore.QObject):
         print 'Opened file: '+self.fileName
         print 'File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate) 
         self.videoSourceOpened.emit(self.videoFileLength, self.frameRate)
+        self.seekInterval = self.videoFileLength // 50
         self.timerEvent() # Process first frame
     
     @QtCore.pyqtSlot(int)
@@ -111,17 +112,21 @@ class CvPlayer(QtCore.QObject):
     @QtCore.pyqtSlot()       
     def seekRew(self):
         '''
-        Revind by 1 frame. Sometimes video rewinds by 100-200 frames due to
+        Revind. Sometimes video rewinds by 100-200 frames due to
         video encoding algoritm
         '''
-        self.seek(self.frameNumber-1)
+        position = self.frameNumber-self.seekInterval
+        if position >=0 : 
+            self.seek(position)
     
     @QtCore.pyqtSlot()
     def seekFwd(self):
         '''
-        seek forward by 1 frame
+        seek forward
         '''
-        self.timerEvent()
+        position = self.frameNumber+self.seekInterval
+        if position < self.videoFileLength : 
+            self.seek(position)
     
     @QtCore.pyqtSlot(int)
     def seek(self, frameNumber):

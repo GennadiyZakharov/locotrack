@@ -19,6 +19,17 @@ restName = "2-Rest.csv"
 runName = "3-Run.csv"
 graphName = ".graph.txt"
 
+def correctErrors(chamber):
+    '''
+    scan 
+    '''
+    startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
+
+def calculateActivity(chamber):
+    '''
+    '''
+    pass
+
 class RunRestAnalyser(QtCore.QObject):
     '''
     Classic analyser, based on run/rest periods

@@ -15,7 +15,6 @@ class TrajectoryWidget(QtGui.QWidget):
     This widget hols GUI elements for trajectory analysing
     '''
 
-
     def __init__(self, parent=None):
         '''
         Constructor
@@ -33,6 +32,9 @@ class TrajectoryWidget(QtGui.QWidget):
         self.recordTrajectoryButton.setEnabled(False)
         self.recordTrajectoryButton.toggled.connect(self.setTrajectoryRecord)
         layout.addWidget(self.recordTrajectoryButton)
+        #
+        self.saveTrajectoryButton = QtGui.QPushButton('Save Trajectory')
+        layout.addWidget(self.saveTrajectoryButton)
         #
         self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
         self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
@@ -73,19 +75,13 @@ class TrajectoryWidget(QtGui.QWidget):
         
     def analyseTrajectory(self):
         '''
-        dir = os.path.dirname(self.cvProcessor.cvPlayer.fileName) \
-            if self.cvProcessor.cvPlayer.fileName is not None else "."
-         
-        dialog = QtGui.QFileDialog(self,'',dir)  
-        dialog.setFileMode(QtGui.QFileDialog.Di)
         '''
         # Creating formats list
-        formats = ["*.%s" % unicode(format).lower() \
-                   for format in ('avi', 'mpg', 'ogg')]
+        formats = ["*.%s" % unicode(videoFormat).lower() \
+                   for videoFormat in ('avi', 'mpg', 'ogg')]
         # Executing standard open dialog
         fdir = unicode(QtGui.QFileDialog.getExistingDirectory(self,
                         "Open Directory"))
-        
         self.emit(signalAnalyseTrajectory, fdir)
     
     def trajectoryWriting(self, checked):

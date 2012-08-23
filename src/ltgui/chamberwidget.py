@@ -22,11 +22,14 @@ class ChamberWidget(QtGui.QWidget):
         super(ChamberWidget, self).__init__(parent)
         self.chamber = chamber
         layout = QtGui.QHBoxLayout()
-        self.sampleNameEdit = LabelledLineEdit('Sample Name')
+        self.sampleNameEdit = QtGui.QLineEdit()
         self.sampleNameEdit.textChanged.connect(self.chamber.setSampleName)
         layout.addWidget(self.sampleNameEdit)
-        self.thresholdSlider = LabelledSlider(orientation=QtCore.Qt.Horizontal)
+        thresholdLabel = QtGui.QLabel('Threshold')
+        self.thresholdSlider = QtGui.QSpinBox()
         self.thresholdSlider.valueChanged.connect(self.chamber.setThreshold)
+        thresholdLabel.setBuddy(self.thresholdSlider)
+        layout.addWidget(thresholdLabel)
         layout.addWidget(self.thresholdSlider)
         self.setLayout(layout)
         self.chamber.chamberDataUpdated.connect(self.update)
@@ -35,4 +38,5 @@ class ChamberWidget(QtGui.QWidget):
     def update(self):
         self.sampleNameEdit.setText(self.chamber.sampleName)
         self.thresholdSlider.setValue(self.chamber.threshold)
+        
         

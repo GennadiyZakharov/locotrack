@@ -23,7 +23,7 @@ class Chamber(QtCore.QObject):
     chamberDataUpdated = QtCore.pyqtSignal()
     fileCaption = "LocoTrack 1.0\n"
     
-    def __init__(self, rect, parent=None, sampleName='UnknownSample'):
+    def __init__(self, rect, parent=None, sampleName='Unknown'):
         '''
         Constructor
         '''
@@ -43,6 +43,8 @@ class Chamber(QtCore.QObject):
         self.getRect = self.rect.getRect
         # Frame number is unknown
         self.frameNumber = -1
+        self.scale = -1
+        self.frameRate = -1
         # Information about object
         self.ltObject = LtObject()
         # No trajectory is recorded
@@ -148,8 +150,12 @@ class Chamber(QtCore.QObject):
         # TODO: implement mm
         chamber.scale = float(trajectoryFile.readline())
         chamber.frameRate = float(trajectoryFile.readline())
-        chamber.sampleName = trajectoryFile.readline()
-        chamber.ltTrajectory = LtTrajectory.loadFromFile(trajectoryFile)
+        chamber.sampleName = trajectoryFile.readline().strip()
+        chamber.threshold = float(trajectoryFile.readline())
+        if trajectoryFile.readline().strip() == 'Trajectory:' :
+            chamber.ltTrajectory = LtTrajectory.loadFromFile(trajectoryFile)
+        else :
+            chamber.ltTrajectory = None
         trajectoryFile.close()
         return chamber
     
@@ -166,9 +172,14 @@ class Chamber(QtCore.QObject):
         trajectoryFile.write("{0}\n".format(scale/15))
         trajectoryFile.write("{0}\n".format(frameRate))
         trajectoryFile.write(self.sampleName+"\n")
+        trajectoryFile.write('{}\n'.format(self.threshold))
         print "file {0} created".format(fileName)
-        self.ltTrajectory.rstrip()
-        self.ltTrajectory.saveToFile(trajectoryFile)
+        if self.ltTrajectory is not None :
+            trajectoryFile.write('Trajectory:'+"\n")
+            self.ltTrajectory.rstrip()
+            self.ltTrajectory.saveToFile(trajectoryFile)
+        else :
+            trajectoryFile.write('No trajectory recorded'+"\n")
         trajectoryFile.close()
         self.chamberDataUpdated.emit()
         

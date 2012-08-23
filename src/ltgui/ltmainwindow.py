@@ -13,7 +13,7 @@ from ltcore.consts import *
 from ltcore.cvprocessor import CvProcessor
 from ltcore.ltactions import LtActions
 
-from ltgui.cvlabel import CvLabel
+#from ltgui.cvlabel import CvLabel
 from ltgui.cvgraphics import CvGraphics
 from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
@@ -83,13 +83,14 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
         self.cvTrajectoryWidget = TrajectoryWidget() 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
-        self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.writeTrajectory)
-        self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.runRestAnalyser.analyseDir)
+        self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.saveTrajectory)
+        self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
         self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
         self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
         self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)
         self.connect(self.cvTrajectoryWidget, signalIntervalDuration, self.cvProcessor.runRestAnalyser.setIntervalDuration)
-        self.cvProcessor.trajectoryWriting.connect(self.cvTrajectoryWidget.trajectoryWriting)             
+        self.cvProcessor.trajectoryWriting.connect(self.cvTrajectoryWidget.trajectoryWriting)
+        self.cvTrajectoryWidget.saveTrajectoryButton.clicked.connect(self.cvProcessor.saveProject)             
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
         self.ltActions.addActions(projectMenu, self.ltActions.projectActions)
@@ -107,7 +108,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)
         
         # ---- self ----
-        self.connect(self, signalCaptureFromFile, self.cvProcessor.cvPlayer.captureFromFile)
+        self.connect(self, signalCaptureFromFile, self.cvProcessor.loadVideoFile)
         
         # ---- videoWidget ----
         self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
@@ -115,7 +116,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
         self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
-        self.videoWidget.videoSeeked.connect(self.cvProcessor.cvPlayer.seek)
+        #self.videoWidget.videoSeeked.connect(self.cvProcessor.cvPlayer.seek)
         self.cvProcessor.cvPlayer.videoSourceOpened.connect(self.videoWidget.videoCapturing)
         self.videoWidget.speedChanged.connect(self.cvProcessor.cvPlayer.setSpeed)
 
@@ -168,15 +169,15 @@ class LtMainWindow(QtGui.QMainWindow):
         Open video file
         '''
         # Setting last user dir
-        dir = os.path.dirname(self.cvProcessor.cvPlayer.fileName) \
+        directory = os.path.dirname(self.cvProcessor.cvPlayer.fileName) \
             if self.cvProcessor.cvPlayer.fileName is not None else "."
         # Creating formats list
-        formats = ["*.%s" % unicode(format).lower() \
-                   for format in ('avi', 'mpg', 'ogg')]
+        formats = ["*.%s" % unicode(videoFormat).lower() \
+                   for videoFormat in ('avi', 'mpg', 'ogg')]
         # Executing standard open dialog
         fname = unicode(QtGui.QFileDialog.getOpenFileName(self,
                         "Choose Image",
-                        dir, "Image files (%s)" % " ".join(formats)))
+                        directory, "Image files (%s)" % " ".join(formats)))
         
         if fname is not None :
             self.emit(signalCaptureFromFile, fname)

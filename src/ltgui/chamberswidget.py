@@ -7,7 +7,7 @@ Created on 18.12.2010
 from PyQt4 import QtCore, QtGui
 from ltcore.signals import *
 
-from ltgui.labeledwidgets import LabelledSlider
+#from ltgui.labeledwidgets import LabelledSlider
 from chamberwidget import ChamberWidget
 
 class ChambersWidget(QtGui.QWidget):
@@ -31,7 +31,8 @@ class ChambersWidget(QtGui.QWidget):
         self.chambers = {}
         self.chambersList = QtGui.QTableWidget()
         chambersLabel.setBuddy(self.chambersList)
-        self.chambersList.setColumnCount(2)
+        self.chambersList.setColumnCount(1)
+        self.chambersList.setSizePolicy(QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding))
         layout.addWidget(chambersLabel, 0, 0, 1, 2)
         layout.addWidget(self.chambersList, 1, 0, 1, 2)
         self.selectedChamber = -1
