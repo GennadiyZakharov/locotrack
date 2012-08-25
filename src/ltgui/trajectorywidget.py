@@ -76,13 +76,15 @@ class TrajectoryWidget(QtGui.QWidget):
     def analyseTrajectory(self):
         '''
         '''
+        '''
         # Creating formats list
         formats = ["*.%s" % unicode(videoFormat).lower() \
                    for videoFormat in ('avi', 'mpg', 'ogg')]
         # Executing standard open dialog
         fdir = unicode(QtGui.QFileDialog.getExistingDirectory(self,
                         "Open Directory"))
-        self.emit(signalAnalyseTrajectory, fdir)
+        '''
+        self.emit(signalAnalyseTrajectory)
     
     def trajectoryWriting(self, checked):
         self.recordTrajectoryButton.setChecked(checked)

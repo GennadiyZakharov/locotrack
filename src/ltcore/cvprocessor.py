@@ -59,7 +59,7 @@ class CvProcessor(QtCore.QObject):
         self.font = cv.InitFont(3, 1, 1)
         #
         #self.runRestAnalyser = RunRestAnalyser(self)
-        self.errorDetector = ErrorDetector()
+        #self.errorDetector = ErrorDetector()
         
     def openProject(self, fileName):
         pass
@@ -86,7 +86,7 @@ class CvProcessor(QtCore.QObject):
         print 'Saving project'
         for i in range(len(self.chambers)) :
             self.chambers[i].saveToFile(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
-                                        self.scale, self.cvPlayer.frameRate)
+                                         self.cvPlayer.frameRate)
 
     def videoOpened(self, length, frameRate):
         '''
@@ -223,7 +223,8 @@ class CvProcessor(QtCore.QObject):
         '''
         # Draw scale label
         if self.scale is not None :
-            cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + self.scale), self.scaleLabelPosition[1]),
+            # TODO: 15mm
+            cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + self.scale*15), self.scaleLabelPosition[1]),
                     self.chamberColor, 2)
         # Drawing chambers
         for i in range(len(self.chambers)) :
@@ -295,6 +296,7 @@ class CvProcessor(QtCore.QObject):
             chamber = Chamber(rect)
             self.addChamber(chamber)
             chamber.setThreshold(self.threshold)
+            chamber.scale = self.scale
             chamber.setSampleName(self.sampleName)
             self.emit(signalChambersUpdated, self.chambers, self.selected)
         self.processFrame() # Update current frame
@@ -308,7 +310,10 @@ class CvProcessor(QtCore.QObject):
         '''
         set scale according to rect
         '''
-        self.scale = sqrt(rect.width()**2 + rect.height()**2)
+        # TODO: 15mm
+        self.scale = sqrt(rect.width()**2 + rect.height()**2)/15
+        for chamber in self.chambers :
+            chamber.scale = self.scale
         self.processFrame() # Update current frame
     
     def selectChamber(self, number):
@@ -399,13 +404,23 @@ class CvProcessor(QtCore.QObject):
             mode = 'a'
         else :
             mode = 'w'
-        outFile = open(outFileName, mode)
+        #outFile = open(outFileName, mode)
         if mode == 'w' :
             pass
         
         for chamber in self.chambers :
             if chamber.ltTrajectory is not None :
-                correctErrors(chamber)
-                activity = calculateActivity(chamber)
+                #correctErrors(chamber)
+                activity, intervals = calculateSpeed(chamber)
+                print 'Normal',activity
+                print intervals
+                '''
+                chamber.ltTrajectory.smooth()
+                activity, intervals = calculateSpeed(chamber)
+                print 'Smoothed',activity
+                print intervals
+                '''
+                
+        
             
     

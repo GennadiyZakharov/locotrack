@@ -43,7 +43,7 @@ class Chamber(QtCore.QObject):
         self.getRect = self.rect.getRect
         # Frame number is unknown
         self.frameNumber = -1
-        self.scale = -1
+        self.scale = -1 # Pixels in mm
         self.frameRate = -1
         # Information about object
         self.ltObject = LtObject()
@@ -135,9 +135,9 @@ class Chamber(QtCore.QObject):
     @classmethod
     def loadFromFile(cls, fileName):
         '''
-        load trajectory from file
+        load chamber from file
         '''
-        print 'Load  trajectory from file {}'.format(fileName)
+        print 'Load  chamber from file {}'.format(fileName)
         trajectoryFile = open(fileName, 'r')
         if trajectoryFile.readline() != cls.fileCaption :
             #TODO: excepting
@@ -153,23 +153,23 @@ class Chamber(QtCore.QObject):
         chamber.sampleName = trajectoryFile.readline().strip()
         chamber.threshold = float(trajectoryFile.readline())
         if trajectoryFile.readline().strip() == 'Trajectory:' :
+            print 'Load  trajectory from file {}'.format(fileName)
             chamber.ltTrajectory = LtTrajectory.loadFromFile(trajectoryFile)
         else :
             chamber.ltTrajectory = None
         trajectoryFile.close()
         return chamber
     
-    def saveToFile(self, fileName, scale, frameRate):
+    def saveToFile(self, fileName, frameRate):
         '''
         save trajectory to file
         '''
-        print 'Save trajectory for sample {}'.format(self.sampleName)
+        print 'Save chamber for sample {}'.format(self.sampleName)
         trajectoryFile = open(fileName, 'w')
         trajectoryFile.write(self.fileCaption)
         trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
         trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()) )
-        # TODO: implement mm
-        trajectoryFile.write("{0}\n".format(scale/15))
+        trajectoryFile.write("{0}\n".format(self.scale)) 
         trajectoryFile.write("{0}\n".format(frameRate))
         trajectoryFile.write(self.sampleName+"\n")
         trajectoryFile.write('{}\n'.format(self.threshold))

@@ -115,9 +115,12 @@ class CvPlayer(QtCore.QObject):
         Revind. Sometimes video rewinds by 100-200 frames due to
         video encoding algoritm
         '''
-        position = self.frameNumber-self.seekInterval
-        if position >=0 : 
-            self.seek(position)
+        position = self.frameNumber-self.seekInterval 
+        if position < 0 :
+            position = 0 
+            
+        self.seek(position)
+        print 'seek to ', position 
     
     @QtCore.pyqtSlot()
     def seekFwd(self):
@@ -125,8 +128,10 @@ class CvPlayer(QtCore.QObject):
         seek forward
         '''
         position = self.frameNumber+self.seekInterval
-        if position < self.videoFileLength : 
-            self.seek(position)
+        if position >= self.videoFileLength :
+            position = self.videoFileLength -1
+        print 'Seek to ', position
+        self.seek(position)
     
     @QtCore.pyqtSlot(int)
     def seek(self, frameNumber):

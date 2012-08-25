@@ -86,9 +86,9 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.saveTrajectory)
         self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
         self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
-        self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
-        self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)
-        self.connect(self.cvTrajectoryWidget, signalIntervalDuration, self.cvProcessor.runRestAnalyser.setIntervalDuration)
+        #self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
+        #self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)
+        #self.connect(self.cvTrajectoryWidget, signalIntervalDuration, self.cvProcessor.runRestAnalyser.setIntervalDuration)
         self.cvProcessor.trajectoryWriting.connect(self.cvTrajectoryWidget.trajectoryWriting)
         self.cvTrajectoryWidget.saveTrajectoryButton.clicked.connect(self.cvProcessor.saveProject)             
         # ==== Creating menu ====
@@ -115,13 +115,12 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.videoWidget.runTroughButton, signalClicked, self.cvProcessor.cvPlayer.runTrough)
         self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
         self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
-        self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.timerEvent)
-        #self.videoWidget.videoSeeked.connect(self.cvProcessor.cvPlayer.seek)
+        self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.seekFwd)
+        self.videoWidget.videoSeeked.connect(self.cvProcessor.cvPlayer.seek)
         self.cvProcessor.cvPlayer.videoSourceOpened.connect(self.videoWidget.videoCapturing)
         self.videoWidget.speedChanged.connect(self.cvProcessor.cvPlayer.setSpeed)
 
         # ---- chambersWidget ----
-       
         self.connect(self.chambersWidget, signalSetChamber,
                      self.cvProcessor.setChamber)
         self.connect(self.chambersWidget, signalClearChamber,

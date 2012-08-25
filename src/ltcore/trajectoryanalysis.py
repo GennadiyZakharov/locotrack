@@ -25,10 +25,39 @@ def correctErrors(chamber):
     '''
     startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
 
-def calculateActivity(chamber):
+def calculateSpeed(chamber, intervalDuration=300):
     '''
     '''
-    pass
+    startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
+    currentFrame = startFrame
+    x0, y0 = chamber.ltTrajectory.getXY(startFrame)
+    totalLength = 0
+    intervalNumber = 1
+    intervalLength = 0
+    intervals = []
+    # total time in seconds
+    totalTime = (endFrame-startFrame+1)/chamber.frameRate
+    while True : # Cycle for all points
+        currentFrame += 1
+        if (currentFrame - startFrame)/chamber.frameRate > intervalDuration*intervalNumber :
+            intervals.append((intervalNumber, intervalLength/intervalDuration))
+            intervalNumber += 1
+            intervalLength = 0
+        if currentFrame > endFrame :
+            break
+        x1,y1 = chamber.ltTrajectory.getXY(currentFrame)
+        if x1 < 0 :
+            continue
+        length = sqrt((x1 - x0)**2 + (y1 - y0)**2)/chamber.scale
+        totalLength += length
+        intervalLength += length
+        x0,y0 = x1,y1
+    lastTime = (currentFrame - startFrame)/chamber.frameRate - (intervalDuration-1)*intervalNumber
+    print 'Last interval', lastTime
+    if lastTime >= intervalDuration / 2 :
+        intervals.append((intervalNumber, intervalLength/lastTime))
+    return totalLength/totalTime, intervals
+        
 
 class RunRestAnalyser(QtCore.QObject):
     '''
