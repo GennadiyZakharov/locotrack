@@ -21,6 +21,7 @@ class Chamber(QtCore.QObject):
     detected object on current step
     '''
     chamberDataUpdated = QtCore.pyqtSignal()
+    chamberPositionUpdated = QtCore.pyqtSignal()
     fileCaption = "LocoTrack 1.0\n"
     
     def __init__(self, rect, parent=None, sampleName='Unknown'):
@@ -41,6 +42,7 @@ class Chamber(QtCore.QObject):
         self.topLeft = self.rect.topLeft
         self.bottomRight = self.rect.bottomRight
         self.getRect = self.rect.getRect
+        self.size = self.rect.size
         # Frame number is unknown
         self.frameNumber = -1
         self.scale = -1 # Pixels in mm
@@ -89,12 +91,14 @@ class Chamber(QtCore.QObject):
         if self.sampleName != name :
             self.sampleName = name
             self.chamberDataUpdated.emit()
-        
+     
     def move(self, dirX, dirY):
         '''
         Move chamber for dirX, dirY
         '''
         self.rect.moveTo(self.rect.left()+dirX, self.rect.top()+dirY)
+        self.chamberDataUpdated.emit()
+        self.chamberPositionUpdated.emit(self.getRect())
 
     def resize(self, dirX, dirY):
         '''
@@ -104,6 +108,8 @@ class Chamber(QtCore.QObject):
         self.rect.setHeight(self.rect.height()+dirY)
         # Init matrix for new size
         self.initMatrix()
+        self.chamberDataUpdated.emit()
+        self.chamberPositionUpdated.emit()
         
     def setPosition(self, rect):
         '''
@@ -112,7 +118,13 @@ class Chamber(QtCore.QObject):
         self.rect.setTopLeft(rect.topLeft())
         self.rect.setBottomRight(rect.bottomRight())
         self.initMatrix()
-        
+        self.chamberPositionUpdated.emit()
+    
+    def moveTo(self, point):
+        self.rect.moveTo(point)
+        self.chamberDataUpdated.emit()
+        self.chamberPositionUpdated.emit()
+    
     def initTrajectory(self, videoLength):
         '''
         Init array to store trajectory starting from curent frame and to videoLength
@@ -120,7 +132,7 @@ class Chamber(QtCore.QObject):
         if self.ltTrajectory is not None :
             self.resetTrajectory()
         # init array to save frames from current 
-        self.ltTrajectory = LtTrajectory((self.frameNumber, videoLength))
+        self.ltTrajectory = LtTrajectory(self.frameNumber, videoLength)
         self.saveLtObjectToTrajectory()
         self.chamberDataUpdated.emit()
     
@@ -185,7 +197,7 @@ class Chamber(QtCore.QObject):
         
     def saveLtObjectToTrajectory(self):
         if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
-            self.ltTrajectory.setObject(self.frameNumber, self.ltObject) 
+            self.ltTrajectory[self.frameNumber] = self.ltObject 
               
     
 if __name__ == '__main__':

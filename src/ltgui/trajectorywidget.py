@@ -76,15 +76,17 @@ class TrajectoryWidget(QtGui.QWidget):
     def analyseTrajectory(self):
         '''
         '''
-        '''
         # Creating formats list
         formats = ["*.%s" % unicode(videoFormat).lower() \
-                   for videoFormat in ('avi', 'mpg', 'ogg')]
+                   for videoFormat in ('txt', 'csv')]
+        # Setting last user dir
+        directory =  "."
         # Executing standard open dialog
-        fdir = unicode(QtGui.QFileDialog.getExistingDirectory(self,
-                        "Open Directory"))
-        '''
-        self.emit(signalAnalyseTrajectory)
+        fname = unicode(QtGui.QFileDialog.getSaveFileName(self,
+                        "Choose output file",
+                        directory, "Data files (%s)" % " ".join(formats)))
+        
+        self.emit(signalAnalyseTrajectory, fname)
     
     def trajectoryWriting(self, checked):
         self.recordTrajectoryButton.setChecked(checked)

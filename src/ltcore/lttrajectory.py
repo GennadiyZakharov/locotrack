@@ -21,41 +21,56 @@ class LtTrajectory(object):
     # String to format data when save to file
     formatString = "{0:10} {1:18.6f} {2:18.6f}\n"
 
-    def __init__(self, startEndFrames):
+    def __init__(self, startFrame, endFrame):
         '''
         Constructor
         Creates array to store ltObjects
-        in frame range, given by tuple startEndFrames
-        or empty trajectory if startEndFrames in None
-        '''
-        # Last recorded frame number
-        self.lastNumber = None
-        self.saved  = True
-        self.initArray(startEndFrames)    
-    
-    def initArray(self, startEndFrames):
-        '''
-        Cteate array to store objects in frame range, given by tuple startEndFrames
-        '''
-        self.startFrame, self.endFrame = startEndFrames
-        # Creating arrays for X and Y Coordinates
-        arrayLength = self.len()
-        self.cpX = np.linspace(-1.0, -1.0, arrayLength)
-        self.cpY = np.linspace(-1.0, -1.0, arrayLength)
-    
-    def len(self):
-        return self.endFrame-self.startFrame+1
-      
-    def expand(self, startFrame, endFrame):
-        start = min(startFrame, self.startFrame)
-        end = max(endFrame, self.endFrame)
-        newX, newY = self.initArray(start, end)
-        internalS = self.frameNumberToInternal(self.startFrame)
-        internalE = self.frameNumberToInternal(self.endFrame)
-        newX[:] = self.cpX[:]
-        newY[:] = self.cpY[:]
+        in frame range, given by startFrame and EndFrame
         
-    def frameNumberToInternal(self, frameNumber):
+        Trajectory cannot be empty
+        '''
+        self.saved  = True
+        self.startFrame, self.endFrame = startFrame, endFrame
+        # Creating arrays for X and Y Coordinates
+        arrayLength = self.endFrame-self.startFrame+1
+        self.cpX = np.linspace(-1.0, -1.0, arrayLength)
+        self.cpY = np.linspace(-1.0, -1.0, arrayLength) 
+    
+    def __len__(self):
+        return len(self.cpX)
+     
+    def __iter__(self) :
+        self.current = 0
+        return self    
+    
+    def next(self):
+        if self.current >= self.arrayLength :
+            raise StopIteration
+        else:
+            x,y = self.cpX[self.current], self.cpY[self.current]
+            self.current += 1
+            return LtObject((x,y)) if x>=0 else None
+    
+    def length(self):
+        return self.__len__()
+    
+    def __setitem__(self, index, value):
+        '''
+        Store ltObject on frame number
+        '''
+        internalNumber = self.frameToInternal(index)
+        x,y = value.massCenter if value is not None else (-1,-1)
+        self.cpX[internalNumber], self.cpY[internalNumber] = x,y
+        
+    
+    def __getitem__(self, index):
+        '''
+        Get ltObject stored on frame number
+        '''
+        x,y = self.getXY(index) 
+        return LtObject((x,y)) if x >= 0 else None
+         
+    def frameToInternal(self, frameNumber):
         '''
         Convert frame number to internal number (numpy array)
         '''
@@ -65,38 +80,15 @@ class LtTrajectory(object):
                 return
         return frameNumber - self.startFrame
     
-    def internalToFrameNumber(self, internal):
+    def internalToFrame(self, internal):
         '''
         Convert internal number to frame number
         '''
         return internal + self.startFrame
     
     def getXY(self, frameNumber):
-        internalNumber = self.frameNumberToInternal(frameNumber)
+        internalNumber = self.frameToInternal(frameNumber)
         return self.cpX[internalNumber], self.cpY[internalNumber]
-    
-    def getObject(self, frameNumber):
-        '''
-        Store ltObject on frame number
-        '''
-        x,y = self.getXY(frameNumber) 
-        if x < 0 :
-            return None
-        return LtObject((x,y))
-    
-    def setObject(self, frameNumber, ltObject):
-        '''
-        Store ltObject on frame number
-        '''
-        internalNumber = self.frameNumberToInternal(frameNumber)
-        self.lastNumber = internalNumber
-        self.cpX[internalNumber], self.cpY[internalNumber] = ltObject.massCenter
-        
-    def lastObject(self):
-        '''
-        Return last stored ltObject 
-        '''
-        return LtObject(self.CenterPointX[self.lastNumber], self.cpY[self.lastNumber])
     
     def rstrip(self):
         '''
@@ -106,25 +98,38 @@ class LtTrajectory(object):
             if self.cpX[i] >=0 :
                 self.cpX = self.cpX[:i+1]
                 self.cpY = self.cpY[:i+1]
-                self.endFrame = self.internalToFrameNumber(i)
+                self.endFrame = self.internalToFrame(i)
                 return
+            
+    def lstrip(self):
+        '''
+        Strip all useless points from beginning of trajectory 
+        '''
+        for i in xrange(len(self.cpX)) :
+            if self.cpX[i] >=0 :
+                self.cpX = self.cpX[i:]
+                self.cpY = self.cpY[i:]
+                self.startFrame = self.internalToFrame(i)
+                return
+    def strip(self):
+        self.lstrip()
+        self.rstrip()
     
     @classmethod
     def loadFromFile(cls, trajectoryFile):
         '''
-        Load trajectory from text file
+        Load trajectory from text file, opened for reading
         ''' 
         startFrame, endFrame = [int(value) for value in trajectoryFile.readline().split()]
-        trajectory = cls((startFrame,endFrame))
+        trajectory = cls(startFrame,endFrame)
         trajectoryFile.readline()
         for line in trajectoryFile :
             values = line.split()
             frameNumber = int(values[0])
             x = float(values[1])
             y = float(values[2])
-            internalNumber = trajectory.frameNumberToInternal(frameNumber)
+            internalNumber = trajectory.frameToInternal(frameNumber)
             trajectory.cpX[internalNumber], trajectory.cpY[internalNumber] = x,y
-        trajectory.lastNumber = frameNumber
         return trajectory         
     
     def saveToFile(self, trajectoryFile):
@@ -136,17 +141,17 @@ class LtTrajectory(object):
         
         for i in xrange(self.startFrame, self.endFrame+1) :
             fileString = self.formatString.format(i,
-                                     self.cpX[self.frameNumberToInternal(i)], 
-                                     self.cpY[self.frameNumberToInternal(i)])
+                                     self.cpX[self.frameToInternal(i)], 
+                                     self.cpY[self.frameToInternal(i)])
             trajectoryFile.write(fileString)
             
     def getStartEndFrame(self):
-        return (self.startFrame,self.endFrame)
+        return (self.startFrame, self.endFrame)
     
-    def smooth(self):
+    def smoothLinear(self):
         '''
         '''
-        length = self.len()
+        length = self.length()
         X = np.zeros(length)
         Y = np.zeros(length)
         for n in xrange(1,length-1) :

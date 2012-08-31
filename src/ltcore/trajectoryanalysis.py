@@ -28,6 +28,7 @@ def correctErrors(chamber):
 def calculateSpeed(chamber, intervalDuration=300):
     '''
     '''
+    chamber.ltTrajectory.rstrip()
     startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
     currentFrame = startFrame
     x0, y0 = chamber.ltTrajectory.getXY(startFrame)
@@ -53,7 +54,6 @@ def calculateSpeed(chamber, intervalDuration=300):
         intervalLength += length
         x0,y0 = x1,y1
     lastTime = (currentFrame - startFrame)/chamber.frameRate - (intervalDuration-1)*intervalNumber
-    print 'Last interval', lastTime
     if lastTime >= intervalDuration / 2 :
         intervals.append((intervalNumber, intervalLength/lastTime))
     return totalLength/totalTime, intervals

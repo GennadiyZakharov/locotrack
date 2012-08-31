@@ -5,10 +5,15 @@ Created on 26.05.2012
 from PyQt4 import QtCore, QtGui
 import cv
 from ltcore.signals import *
+from ltgui.chambergui import ChamberGui
 
 class CvGraphics(QtGui.QGraphicsView):
     '''
-    classdocs
+    This is main class for all video GUI:
+    -video frame
+    -chamber objects
+    -scale objects
+
     '''
     initialSize = (320, 200)
     chamberMove = QtCore.pyqtSignal(int, int)
@@ -28,9 +33,11 @@ class CvGraphics(QtGui.QGraphicsView):
         self.setAcceptDrops(True)
         self.enableDnD = False
         self.selectedRect = None
-        self.gPixmap = self.scene.addPixmap(self.pixmap)
-        self.gChambers = {}
-        #self.setFixedSize(self.pixmap.size())
+        #insert pixmap into (0,0)
+        self.pixmapObject = self.scene.addPixmap(self.pixmap)
+        #self.pixmapObject.setScale(1.0)
+        self.scene.setSceneRect(self.pixmapObject.boundingRect())
+        self.chambers = {}
         
     @QtCore.pyqtSlot(object)
     def putImage(self, iplImage) :
@@ -61,17 +68,17 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         Display frame and draw selected region
         '''
-        # Display image on pixmap
-        #self.scene.removeItem(self.label)
-        #self.label.setPixmap(QtGui.QPixmap.fromImage(self.frame))
         if self.frame.size() != self.pixmap.size() :
-            self.scene.removeItem(self.gPixmap)
+            self.scene.removeItem(self.pixmapObject)
             self.pixmap.convertFromImage(self.frame)
-            self.gPixmap = self.scene.addPixmap(self.pixmap)
+            self.pixmapObject = self.scene.addPixmap(self.pixmap)
+            self.scene.setSceneRect(self.pixmapObject.boundingRect())
         else :
             self.pixmap.convertFromImage(self.frame)
             self.scene.update()
         
+    def updatePixpamSize(self):
+        self.setSizePolicy(QtCore.Qt.QSizePolicy)
         
     @QtCore.pyqtSlot(bool)
     def enableSelection(self, enable):
@@ -79,16 +86,18 @@ class CvGraphics(QtGui.QGraphicsView):
         Enable region selection
         '''
         self.enableDnD = enable
-
+    
+    
     # TODO: deal with drag. it seems, that it is something wrong
     def mousePressEvent(self, event) :
         '''
         Hander is called, when mouse button is pressed
         '''
-        print "mousePressed event ", event.pos()
         # If selection not enabled -- exit
         if not self.enableDnD :
+            super(CvGraphics, self).mousePressEvent(event)
             return
+        print "mousePressed event ", event.pos()
         # If it is left button -- store position
         if (event.button() == QtCore.Qt.LeftButton) :
             self.dragStartPosition = self.mapToScene(event.pos()).toPoint()
@@ -98,10 +107,11 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         Hander is called, when mouse moves
         '''
-        print "MouseMove Event"
         # If selection not enabled -- exit
         if not self.enableDnD :
+            super(CvGraphics, self).mouseMoveEvent(event)
             return
+        print "MouseMove Event"
         # If left button not pressed -- exit
         if not (event.buttons() & QtCore.Qt.LeftButton) :
             return
@@ -137,10 +147,11 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         Starting drag
         '''
-        print "dragEnter Event"
         # If selection not enabled -- exit
         if not self.enableDnD :
+            super(CvGraphics, self).dragEnterEvent(event)
             return
+        print "dragEnter Event"
         if event.mimeData().hasFormat("cvlabel/pos") :
             event.acceptProposedAction()
             
@@ -148,11 +159,12 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         Hander is called, when drag event processes
         '''
-        print "DragMove event"
-        print event.pos()
         # If selection not enabled -- exit
         if not self.enableDnD :
+            super(CvGraphics, self).dragMoveEvent(event)
             return
+        print "DragMove event"
+        print event.pos()
         # Saving currenly selected rectangle
         self.selectedRect.setRect(QtCore.QRectF(QtCore.QRect(self.mapToScene(event.pos()).toPoint(), self.dragStartPosition)))
         self.scene.update()
@@ -161,10 +173,12 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         Hander is called, when drag finished
         '''
-        print "dropEvent"
+        
         # If selection not enabled -- exit
         if not self.enableDnD :
+            super(CvGraphics, self).dropEvent(event)
             return
+        print "dropEvent"
         # Check if we receive drag event with coordinates
         if event.mimeData().hasFormat("cvlabel/pos") :
             # Put selection area into QRect 
@@ -174,21 +188,23 @@ class CvGraphics(QtGui.QGraphicsView):
             event.acceptProposedAction()
             self.scene.removeItem(self.selectedRect)
             self.selectedRect = None
-    '''
-    def keyPressEvent(self, event):
-        key = event.key()
-        if key == QtCore.Qt.Key_Left:
-            dirX,dirY = -1,0
-        elif key == QtCore.Qt.Key_Right :
-            dirX,dirY = (1,0)
-        elif key == QtCore.Qt.Key_Up :
-            dirX,dirY = (0,-1)
-        elif key == QtCore.Qt.Key_Down :
-            dirX,dirY = (0,1)
-        else :
-            return
-        if (event.modifiers() & QtCore.Qt.ShiftModifier):
-            self.chamberResize.emit(dirX,dirY)
-        else :
-            self.chamberMove.emit(dirX,dirY)
-    '''
+    
+    def updateChambers(self, chambers, selected):
+        print 'updating gui chambers'
+        for i in range(len(chambers)) :
+            if not chambers[i] in self.chambers.keys() :
+                chamberGui = ChamberGui(chambers[i])
+                self.scene.addItem(chamberGui)
+                print 'cgambergui', chamberGui.pos()
+                #chamberGui.update()
+                self.chambers[chambers[i]]=chamberGui
+                #chamberGui.setFocus()
+            self.chambers[chambers[i]].setSelected(i==selected)
+        dels = []
+        for chamber in self.chambers.keys() :
+            if not chamber in chambers :
+                dels.append(chamber)
+        print 'deleting', dels
+        for chamber in dels :
+            self.scene.removeItem(self.chambers[chamber])
+            del self.chambers[chamber]

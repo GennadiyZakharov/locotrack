@@ -132,6 +132,9 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.cvProcessor, signalChambersUpdated,
                      self.chambersWidget.chamberListUpdated)
         
+        self.connect(self.cvProcessor, signalChambersUpdated,
+                     self.cvLabel.updateChambers)
+        
         # ---- cvProcessorWidget ----
         self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,
                      self.cvProcessor.setNegative)
@@ -171,12 +174,12 @@ class LtMainWindow(QtGui.QMainWindow):
         directory = os.path.dirname(self.cvProcessor.cvPlayer.fileName) \
             if self.cvProcessor.cvPlayer.fileName is not None else "."
         # Creating formats list
-        formats = ["*.%s" % unicode(videoFormat).lower() \
+        formats = ["*.{}".format(unicode(videoFormat).lower()) \
                    for videoFormat in ('avi', 'mpg', 'ogg')]
         # Executing standard open dialog
         fname = unicode(QtGui.QFileDialog.getOpenFileName(self,
-                        "Choose Image",
-                        directory, "Image files (%s)" % " ".join(formats)))
+                        "Choose video file",
+                        directory, "Video files (%s)" % " ".join(formats)))
         
         if fname is not None :
             self.emit(signalCaptureFromFile, fname)

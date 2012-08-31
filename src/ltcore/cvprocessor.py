@@ -226,24 +226,30 @@ class CvProcessor(QtCore.QObject):
             # TODO: 15mm
             cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + self.scale*15), self.scaleLabelPosition[1]),
                     self.chamberColor, 2)
+        
         # Drawing chambers
         for i in range(len(self.chambers)) :
             chamber = self.chambers[i]   
+            
             if i == self.selected :
                 color = self.chamberSelectedColor
             else :
                 color = self.chamberColor
+            '''
             # Draw chamber borders
             cv.Rectangle(frame, self.chambers[i].topLeftTuple(), self.chambers[i].bottomRightTuple(),
                          color, 2)
+            '''
             cv.PutText(frame, str(i+1), self.chambers[i].topLeftTuple(),
                          self.font, color)
+            
             # Draw contours
             cv.SetImageROI(frame, self.chambers[i].getRect())
+            '''
             if self.ellipseCrop :
                 center = (int(chamber.width()/2), int(chamber.height()/2))
                 cv.Ellipse(frame, center, center, 0, 0, 360, color, thickness=1)
-            
+            '''
             if self.showContour and (self.chambers[i].ltObject.contours is not None) :
                 cv.DrawContours(frame, self.chambers[i].ltObject.contours, 200, 100, -1, 1)
             # Draw mass center and maxBright 
@@ -257,7 +263,7 @@ class CvProcessor(QtCore.QObject):
             """
             if self.chambers[i].ltTrajectory is not None :
                 trajend = self.chambers[i].ltTrajectory.end(self.maxTraj)
-                if len(trajend) >= 2 :
+                if length(trajend) >= 2 :
                     cv.PolyLine(frame, [trajend,], 0, self.chamberColor)
             """  
             # Reset to full image
@@ -323,6 +329,7 @@ class CvProcessor(QtCore.QObject):
         if - 1 <= number < len(self.chambers) :
             self.selected = number
             self.processFrame() # Update current frame
+            self.emit(signalChambersUpdated, list(self.chambers), self.selected)
                 
     def clearChamber(self):
         '''
@@ -391,36 +398,38 @@ class CvProcessor(QtCore.QObject):
         self.chambers[self.selected].resize(dirX, dirY)
         self.processFrame()
         
-    def analyseChambers(self):
+    def analyseChambers(self, fileName):
         '''
         Analyse all chambers and print data about it in output file
         '''
+        formatString = '{:>25}; {:5}; {:18.6f};\n'
         if self.chambers == [] :
             return
         print "Starting analysis"
-        outFileName = '0 - Total activity'
-        captionString = 'Sample;           Activity;            RunFreq(1/min);    RunSpeed;\n'
-        if os.path.isfile(outFileName) :
+        if os.path.isfile(fileName) :
             mode = 'a'
         else :
             mode = 'w'
-        #outFile = open(outFileName, mode)
+        outFile = open(fileName, mode)
         if mode == 'w' :
-            pass
+            captionString = 'Sample;     Interval;      Speed(mm/s);\n'
+            outFile.write(captionString)
         
         for chamber in self.chambers :
             if chamber.ltTrajectory is not None :
                 #correctErrors(chamber)
-                activity, intervals = calculateSpeed(chamber)
-                print 'Normal',activity
-                print intervals
+                totalActivity, intervals = calculateSpeed(chamber)
+                for number, activity in intervals :
+                    outFile.write(formatString.format(chamber.sampleName, number, activity))
+                outFile.write(formatString.format(chamber.sampleName, 'Total', totalActivity))
+                
                 '''
                 chamber.ltTrajectory.smooth()
                 activity, intervals = calculateSpeed(chamber)
                 print 'Smoothed',activity
                 print intervals
                 '''
-                
+        outFile.close()
         
             
     
