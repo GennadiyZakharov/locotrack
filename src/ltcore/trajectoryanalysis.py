@@ -23,7 +23,8 @@ def correctErrors(chamber):
     '''
     scan 
     '''
-    startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
+    chamber.ltTrajectory.strip()
+    #startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
 
 def calculateSpeed(chamber, intervalDuration=300):
     '''
@@ -37,27 +38,113 @@ def calculateSpeed(chamber, intervalDuration=300):
     intervalLength = 0
     intervals = []
     # total time in seconds
-    totalTime = (endFrame-startFrame+1)/chamber.frameRate
+    totalTime = (endFrame - startFrame + 1) / chamber.frameRate
     while True : # Cycle for all points
         currentFrame += 1
-        if (currentFrame - startFrame)/chamber.frameRate > intervalDuration*intervalNumber :
-            intervals.append((intervalNumber, intervalLength/intervalDuration))
+        if (currentFrame - startFrame) / chamber.frameRate > intervalDuration * intervalNumber :
+            intervals.append((intervalNumber, intervalLength / intervalDuration))
             intervalNumber += 1
             intervalLength = 0
         if currentFrame > endFrame :
             break
-        x1,y1 = chamber.ltTrajectory.getXY(currentFrame)
+        x1, y1 = chamber.ltTrajectory.getXY(currentFrame)
         if x1 < 0 :
             continue
-        length = sqrt((x1 - x0)**2 + (y1 - y0)**2)/chamber.scale
+        length = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2) / chamber.scale
         totalLength += length
         intervalLength += length
-        x0,y0 = x1,y1
-    lastTime = (currentFrame - startFrame)/chamber.frameRate - (intervalDuration-1)*intervalNumber
+        x0, y0 = x1, y1
+    lastTime = (currentFrame - startFrame) / chamber.frameRate - (intervalDuration - 1) * intervalNumber
     if lastTime >= intervalDuration / 2 :
-        intervals.append((intervalNumber, intervalLength/lastTime))
-    return totalLength/totalTime, intervals
+        intervals.append((intervalNumber, intervalLength / lastTime))
+    return totalLength / totalTime, intervals
         
+
+class NewRunRestAnalyser(QtCore.QObject):
+    
+    outString = '{:>25}; {:5}; {:18.6f}; {:18.6f};\n'
+    #sample, interval, activity, speed
+    
+    def __init__(self, parent=None):
+        '''
+        Constructor
+        '''
+        super(NewRunRestAnalyser, self).__init__(parent)
+        self.intervalDuration = 300.0
+        self.speedTreshold = 0.4
+        '''
+        Speed run/rest threshold 
+            0.4 mm/s for imago (smoothed trajectory)
+            0.5 mm/s for imago (raw trajectory)
+        '''
+    def analyseChamber(self, chamber, logFile):
+        '''
+        Analysing chamber
+        
+        We analyse every frame in sequence
+        '''
+        if chamber.smoothedTrajectory is None:
+            chamber.smoothedTrajectory = chamber.ltTrajectory.smoothed() 
+        chamber.smoothedTrajectory.strip()
+        startFrame, endFrame = chamber.smoothedTrajectory.getStartEndFrame()
+        # Total values
+        totalRunLength = 0 # Summary length
+        totalTime = (endFrame - startFrame + 1) / chamber.frameRate # total time in seconds
+        totalActivityCount = 0
+        # Interval values
+        intervalNumber = 1 # Current interval number
+        intervalRunLength = 0 # Run Length on current interval
+        intervalActivityCount = 0 # Activity count on this frame
+
+        '''
+        # Manually get first frame
+        frame1 = startFrame
+        x1, y1 = chamber.smoothedTrajectory.getXY(frame1)
+        '''
+        x1 = -1
+        for frame2 in xrange(startFrame, endFrame + 1): # Cycle for all points
+            # trying to find positive coordinates
+            x2, y2 = chamber.smoothedTrajectory.getXY(frame2)
+            if (frame2 - startFrame) / chamber.frameRate > self.intervalDuration * intervalNumber :
+                #next interval started
+                logFile.write(self.outString.format(chamber.sampleName, intervalNumber,
+                                                    ((intervalActivityCount/chamber.frameRate) / self.intervalDuration),
+                                                    intervalRunLength / self.intervalDuration))
+                intervalNumber += 1
+                intervalRunLength = 0
+                intervalActivityCount = 0
+                if x2 < 0: # Interval ended on error -- we need to reinit next point
+                    x1 = -1
+                    continue
+            if x2 < 0 : # need next point without errors
+                continue
+            if x1 < 0 : # no previous point -- store and continue
+                x1, y1 = x2, y2
+                frame1 = frame2
+                continue
+            length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / chamber.scale
+            totalRunLength += length
+            intervalRunLength += length
+            time = (frame2 - frame1) / chamber.frameRate
+            speed = length / time
+            if speed >= self.speedTreshold :
+                intervalActivityCount += frame2 - frame1 # 1 if no errors
+                totalActivityCount += frame2 - frame1
+            x1, y1 = x2, y2
+            frame1 = frame2
+            QtGui.QApplication.processEvents()
+        '''
+        # Last interval may be smaller - dispatching it
+        lastTime = (frame2 - startFrame) / chamber.frameRate - (self.intervalDuration - 1) * intervalNumber
+        if lastTime >= self.intervalDuration * (1/2) :
+            logFile.write(self.outString.format(chamber.sampleName, intervalNumber,
+                                                ((intervalActivityCount/chamber.frameRate) / lastTime),
+                                                intervalRunLength / lastTime))
+        '''
+        # total output
+        logFile.write(self.outString.format(chamber.sampleName, -1,
+                                            ((totalActivityCount/chamber.frameRate) / totalTime),
+                                            totalRunLength / totalTime))
 
 class RunRestAnalyser(QtCore.QObject):
     '''
@@ -81,7 +168,7 @@ class RunRestAnalyser(QtCore.QObject):
             print line
             return None
         frameNumber, x, y = [float(n) for n in line.split()]
-        if (x>=0) and (y>=0) :
+        if (x >= 0) and (y >= 0) :
             self.trackArray[int(x), int(y)] += 1
             #self.trackImage.setPixel(int(x), int(y), 0)
         return (frameNumber / self.frameRate, x / self.scale, y / self.scale)
@@ -166,7 +253,7 @@ class RunRestAnalyser(QtCore.QObject):
         self.trajectoryFile.readline()
         self.trajectoryFile.readline()
         #
-        self.trackArray = np.zeros( (width, height), dtype=int ) 
+        self.trackArray = np.zeros((width, height), dtype=int) 
         self.trackImage = QtGui.QImage(width, height, QtGui.QImage.Format_Indexed8)
         colorTable = [QtGui.qRgb(i, i, i) for i in xrange(256)]
         self.trackImage.setColorTable(colorTable)
@@ -296,7 +383,7 @@ class RunRestAnalyser(QtCore.QObject):
             os.remove(baseName + '.err')
         for i in xrange(width) :
             for j in xrange(height) :    
-                intensity = 0 if self.trackArray[i,j] > self.blackTreshold  else 255-int((self.trackArray[i,j]/self.blackTreshold)*255)
+                intensity = 0 if self.trackArray[i, j] > self.blackTreshold  else 255 - int((self.trackArray[i, j] / self.blackTreshold) * 255)
                 self.trackImage.setPixel(i, j, intensity)
                 
         self.trackImage.save(baseName + '.png', format='PNG')

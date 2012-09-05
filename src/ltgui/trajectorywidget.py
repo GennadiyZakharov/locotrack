@@ -5,7 +5,7 @@ Created on 04.02.2012
 '''
 from __future__ import division
 
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore,QtGui
 #from ltcore.actions import LtActions
 from ltcore.signals import *
 from ltgui.labeledwidgets import LabelledSlider,LabelledLineEdit
@@ -14,6 +14,7 @@ class TrajectoryWidget(QtGui.QWidget):
     '''
     This widget hols GUI elements for trajectory analysing
     '''
+    signalCreateTrajectoryImages = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         '''
@@ -39,6 +40,10 @@ class TrajectoryWidget(QtGui.QWidget):
         self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
         self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
         layout.addWidget(self.analyseTrajectoryButton)
+        
+        self.createImageButton = QtGui.QPushButton('Create Trajectory Images')
+        self.createImageButton.clicked.connect(self.createTrajectoryImages)
+        layout.addWidget(self.createImageButton)
         #
         self.errorTresholdSlider = LabelledSlider('Error Treshold')
         self.errorTresholdSlider.setMaximum(100)
@@ -60,6 +65,8 @@ class TrajectoryWidget(QtGui.QWidget):
         layout.addWidget(self.intervalDurationSlider)
         self.setLayout(layout)
         
+    def createTrajectoryImages(self):
+        self.signalCreateTrajectoryImages.emit()
         
     def setTrajectoryRecord(self, checked):
         self.emit(signalWriteTrajectory, checked, self.sampleEdit.text())

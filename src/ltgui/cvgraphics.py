@@ -79,7 +79,15 @@ class CvGraphics(QtGui.QGraphicsView):
         
     def updatePixpamSize(self):
         self.setSizePolicy(QtCore.Qt.QSizePolicy)
-        
+    
+    @QtCore.pyqtSlot(bool)
+    def selectScale(self, checked):
+        self.enableDnD = checked
+    
+    @QtCore.pyqtSlot(bool)
+    def selectChamber(self, checked):
+        self.enableDnD = checked
+    
     @QtCore.pyqtSlot(bool)
     def enableSelection(self, enable):
         '''

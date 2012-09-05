@@ -5,15 +5,14 @@ Created on 18.03.2011
 
 from __future__ import division
 
-from math import sqrt
-
 import cv
+import os
+from math import sqrt
 from PyQt4 import QtCore
 from ltcore.signals import *
-from ltcore.ltactions import LtActions
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
-from ltcore.trajectoryanalysis import *
+from ltcore.trajectoryanalysis import calculateSpeed,NewRunRestAnalyser
 from glob import glob
 from numpy import asarray
 from math import pi
@@ -58,7 +57,7 @@ class CvProcessor(QtCore.QObject):
         self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
         self.font = cv.InitFont(3, 1, 1)
         #
-        #self.runRestAnalyser = RunRestAnalyser(self)
+        self.runRestAnalyser = NewRunRestAnalyser(self)
         #self.errorDetector = ErrorDetector()
         
     def openProject(self, fileName):
@@ -235,27 +234,23 @@ class CvProcessor(QtCore.QObject):
                 color = self.chamberSelectedColor
             else :
                 color = self.chamberColor
-            '''
-            # Draw chamber borders
-            cv.Rectangle(frame, self.chambers[i].topLeftTuple(), self.chambers[i].bottomRightTuple(),
-                         color, 2)
-            '''
-            cv.PutText(frame, str(i+1), self.chambers[i].topLeftTuple(),
+
+            cv.PutText(frame, str(i+1), chamber.topLeftTuple(),
                          self.font, color)
             
             # Draw contours
-            cv.SetImageROI(frame, self.chambers[i].getRect())
+            cv.SetImageROI(frame, chamber.getRect())
             '''
             if self.ellipseCrop :
                 center = (int(chamber.width()/2), int(chamber.height()/2))
                 cv.Ellipse(frame, center, center, 0, 0, 360, color, thickness=1)
             '''
-            if self.showContour and (self.chambers[i].ltObject.contours is not None) :
-                cv.DrawContours(frame, self.chambers[i].ltObject.contours, 200, 100, -1, 1)
+            if self.showContour and (chamber.ltObject.contours is not None) :
+                cv.DrawContours(frame, chamber.ltObject.contours, 200, 100, -1, 1)
             # Draw mass center and maxBright 
             if self.chambers[i].ltObject.massCenter is not None :
-                point = (int(self.chambers[i].ltObject.massCenter[0]),
-                         int(self.chambers[i].ltObject.massCenter[1]) )
+                point = (int(chamber.ltObject.massCenter[0]),
+                         int(chamber.ltObject.massCenter[1]) )
                 cv.Circle(frame, point, 2, self.chamberSelectedColor, cv.CV_FILLED)
             if self.chambers[i].ltObject.maxBright is not None :
                 cv.Circle(frame, self.chambers[i].ltObject.maxBright, 2, self.chamberColor, cv.CV_FILLED)
@@ -398,11 +393,14 @@ class CvProcessor(QtCore.QObject):
         self.chambers[self.selected].resize(dirX, dirY)
         self.processFrame()
         
+    def createTrajectoryImages(self):
+        for chamber in self.chambers:
+            chamber.createTrajectoryImage()
+        
     def analyseChambers(self, fileName):
         '''
         Analyse all chambers and print data about it in output file
         '''
-        formatString = '{:>25}; {:5}; {:18.6f};\n'
         if self.chambers == [] :
             return
         print "Starting analysis"
@@ -412,24 +410,21 @@ class CvProcessor(QtCore.QObject):
             mode = 'w'
         outFile = open(fileName, mode)
         if mode == 'w' :
-            captionString = 'Sample;     Interval;      Speed(mm/s);\n'
+            captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
             outFile.write(captionString)
         
         for chamber in self.chambers :
             if chamber.ltTrajectory is not None :
+                self.runRestAnalyser.analyseChamber(chamber, outFile)
+                '''
                 #correctErrors(chamber)
                 totalActivity, intervals = calculateSpeed(chamber)
                 for number, activity in intervals :
                     outFile.write(formatString.format(chamber.sampleName, number, activity))
                 outFile.write(formatString.format(chamber.sampleName, 'Total', totalActivity))
-                
-                '''
-                chamber.ltTrajectory.smooth()
-                activity, intervals = calculateSpeed(chamber)
-                print 'Smoothed',activity
-                print intervals
                 '''
         outFile.close()
+        print 'Analysis finished'
         
             
     

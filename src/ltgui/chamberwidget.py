@@ -5,10 +5,7 @@ Created on 12.08.2012
 '''
 from __future__ import division
 
-from PyQt4 import QtCore, QtGui
-
-from labeledwidgets import LabelledSlider
-from ltgui.labeledwidgets import LabelledLineEdit
+from PyQt4 import QtGui
 
 class ChamberWidget(QtGui.QWidget):
     '''
@@ -31,6 +28,11 @@ class ChamberWidget(QtGui.QWidget):
         thresholdLabel.setBuddy(self.thresholdSlider)
         layout.addWidget(thresholdLabel)
         layout.addWidget(self.thresholdSlider)
+        self.showTrajectoryCheckBox = QtGui.QCheckBox()
+        self.showTrajectoryCheckBox.setText('Show Trajectory')
+        self.showTrajectoryCheckBox.setChecked(chamber.showTrajectory)
+        self.showTrajectoryCheckBox.toggled.connect(self.chamber.setTrajectoryShow)
+        layout.addWidget(self.showTrajectoryCheckBox)
         self.setLayout(layout)
         self.chamber.chamberDataUpdated.connect(self.update)
         self.update()

@@ -7,9 +7,10 @@ from __future__ import division
 from hashlib import sha512
 from time import time
 from random import randint
+from math import sqrt
 
 from numpy import meshgrid,arange
-from PyQt4 import QtCore
+from PyQt4 import QtCore,QtGui
 from ltcore.ltobject import LtObject
 from ltcore.lttrajectory import LtTrajectory
 
@@ -45,7 +46,8 @@ class Chamber(QtCore.QObject):
         self.size = self.rect.size
         # Frame number is unknown
         self.frameNumber = -1
-        self.scale = -1 # Pixels in mm
+        self.scale = -1 # Pixels in 1 mm
+        self.trajectoryImage = None
         self.frameRate = -1
         # Information about object
         self.ltObject = LtObject()
@@ -53,6 +55,8 @@ class Chamber(QtCore.QObject):
         self.resetTrajectory()
         # Individual threshold
         self.threshold = 60
+        #
+        self.showTrajectory = False
         # Creating matrix for center location
         self.initMatrix()
         
@@ -91,6 +95,14 @@ class Chamber(QtCore.QObject):
         if self.sampleName != name :
             self.sampleName = name
             self.chamberDataUpdated.emit()
+            
+    def setTrajectoryShow(self, checked):
+        if self.showTrajectory == checked:
+            return
+        self.showTrajectory = checked
+        if self.showTrajectory:
+            self.createTrajectoryImage()
+        self.chamberDataUpdated.emit()
      
     def move(self, dirX, dirY):
         '''
@@ -141,6 +153,7 @@ class Chamber(QtCore.QObject):
         Remove stored in array trajectory
         '''
         self.ltTrajectory = None
+        self.smoothedTrajectory = None
         self.errors = 0
         self.chamberDataUpdated.emit()
         
@@ -167,6 +180,7 @@ class Chamber(QtCore.QObject):
         if trajectoryFile.readline().strip() == 'Trajectory:' :
             print 'Load  trajectory from file {}'.format(fileName)
             chamber.ltTrajectory = LtTrajectory.loadFromFile(trajectoryFile)
+            chamber.createTrajectoryImage()
         else :
             chamber.ltTrajectory = None
         trajectoryFile.close()
@@ -193,12 +207,55 @@ class Chamber(QtCore.QObject):
         else :
             trajectoryFile.write('No trajectory recorded'+"\n")
         trajectoryFile.close()
+        if self.trajectoryImage is not None :
+            self.trajectoryImage.save(fileName+'.png')
+        # Calculate speed
+        speedFile = open(fileName+'.spd', 'w')
+        if self.ltTrajectory is not None :
+            x2,y2 = self.ltTrajectory[self.ltTrajectory.startFrame].massCenter
+            for i in xrange(self.ltTrajectory.startFrame+1,self.ltTrajectory.endFrame) :
+                point2 = self.ltTrajectory[i]
+                if point2 is None :
+                    continue
+                x1,y1 = x2,y2
+                x2,y2 = point2.massCenter
+                runlen = sqrt((x2-x1)**2+(y2-y1)**2)/self.scale
+                if runlen < 0 :
+                    print i,point2,runlen
+                speedFile.write('{:5} {:18.6f}\n'.format(i,runlen*self.frameRate))
+        
         self.chamberDataUpdated.emit()
         
     def saveLtObjectToTrajectory(self):
         if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
-            self.ltTrajectory[self.frameNumber] = self.ltObject 
+            self.ltTrajectory[self.frameNumber] = self.ltObject
+            if self.trajectoryImage is not None:
+                point1 = self.ltTrajectory[self.frameNumber-1]
+                if point1 is not None and self.ltObject is not None :
+                    x1,y1 = point1.massCenter
+                    x2,y2 = self.ltObject.massCenter
+                    self.trajectoryPainter.drawLine(x1,y1,x2,y2)
               
+    def createTrajectoryImage(self):
+        if self.ltTrajectory is None :
+            return
+        black = QtGui.QColor(0,0,0)
+        if self.trajectoryImage is None:
+            self.trajectoryImage = QtGui.QImage(self.rect.size(),QtGui.QImage.Format_ARGB32_Premultiplied)
+            self.trajectoryPainter = QtGui.QPainter(self.trajectoryImage)
+            self.trajectoryPainter.setPen(black)
+        self.trajectoryImage.fill(QtCore.Qt.transparent)
+        x,y = self.ltTrajectory[self.ltTrajectory.startFrame].massCenter
+        point2 = QtCore.QPoint(x,y)
+        for ltObject in self.ltTrajectory :
+            if ltObject is None:
+                continue
+            point1 = point2
+            x,y = ltObject.massCenter
+            point2 = QtCore.QPoint(x,y)
+            self.trajectoryPainter.drawLine(point1,point2)
+            QtGui.QApplication.processEvents()  
+        
     
 if __name__ == '__main__':
     '''

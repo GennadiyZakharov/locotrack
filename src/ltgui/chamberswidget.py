@@ -16,7 +16,8 @@ class ChambersWidget(QtGui.QWidget):
     It displays list of chambers, 
     holds buttons to create, delete chambers and scale label
     '''
-    
+    signalScaleSelect = QtCore.pyqtSignal(bool)
+    signalChamberSelect = QtCore.pyqtSignal(bool)
 
     def __init__(self, parent=None):
         '''
@@ -41,17 +42,19 @@ class ChambersWidget(QtGui.QWidget):
         # Add chamber button    
         self.setChamberButton = QtGui.QPushButton('Set chamber')
         self.setChamberButton.setCheckable(True)
-        layout.addWidget(self.setChamberButton,2,0)
+        layout.addWidget(self.setChamberButton, 2, 0)
         self.setChamberButton.toggled.connect(self.setScaleOrChamber)
+        self.setChamberButton.toggled.connect(self.selectChamber)
         # Clear chamber button
         self.clearChamberButton = QtGui.QPushButton('Clear chamber')
-        layout.addWidget(self.clearChamberButton,2,1)
+        layout.addWidget(self.clearChamberButton, 2, 1)
         self.clearChamberButton.clicked.connect(self.chamberClear)
         # Set scale button
         self.scaleButton = QtGui.QPushButton('Set Scale')
         self.scaleButton.setCheckable(True)
         layout.addWidget(self.scaleButton)      
-        self.scaleButton.toggled.connect(self.setScaleOrChamber) 
+        self.scaleButton.toggled.connect(self.setScaleOrChamber)
+        self.scaleButton.toggled.connect(self.selectScale) 
         # Set Layout
         self.setLayout(layout)
         
@@ -70,7 +73,7 @@ class ChambersWidget(QtGui.QWidget):
             #self.chambersList.setCurrentCell(currentRow, 0)
         print self.selectedChamber
         # Emit signal with new chamber number       
-        self.emit(signalChangeSelection,self.selectedChamber)
+        self.emit(signalChangeSelection, self.selectedChamber)
   
     def regionSelected(self, rect):
         '''
@@ -84,6 +87,12 @@ class ChambersWidget(QtGui.QWidget):
         elif self.setChamberButton.isChecked() :
             # This rect was chamber selection
             self.emit(signalSetChamber, rect)
+
+    def selectScale(self, checked):
+        self.signalScaleSelect.emit(checked)
+    
+    def selectChamber(self, checked):
+        self.signalChamberSelect.emit(checked)
 
     def setScaleOrChamber(self, checked):
         '''
@@ -103,7 +112,7 @@ class ChambersWidget(QtGui.QWidget):
         '''
         reply = QtGui.QMessageBox.question(self, "Chamber manager",
                                          "Clear selected chamber with all recorded data?",
-                                         QtGui.QMessageBox.Yes | QtGui.QMessageBox.No )
+                                         QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             self.emit(signalClearChamber)
         
@@ -112,14 +121,14 @@ class ChambersWidget(QtGui.QWidget):
         chamber list was modified
         Rebuilding table according to the chambersList
         '''
-        self.chambers={}
+        self.chambers = {}
         self.chambersList.clear()
         self.chambersList.setRowCount(len(chambersList))
         for i in range(len(chambersList)) :
             chamber = chambersList[i]
             chamberWidget = ChamberWidget(chamber)
             self.chambers[chamber] = chamberWidget
-            self.chambersList.setCellWidget(i,0,chamberWidget)
+            self.chambersList.setCellWidget(i, 0, chamberWidget)
         # Selecting chamber
         self.selectedChamber = selected
         self.chambersList.setCurrentCell(self.selectedChamber, 0)

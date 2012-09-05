@@ -1,73 +1,25 @@
 '''
-Created on 26.05.2012
+Created on 31.08.2012
 
 @author: gena
 '''
 from PyQt4 import QtCore, QtGui
 
-class ChamberGui(QtGui.QGraphicsObject):
+class ScaleGui(QtGui.QGraphicsObject):
     '''
-    This is graphic for chamber representation on qgraphicsscene
+    classdocs
     '''
-    normalColor = QtGui.QColor(0,255,0)
-    selectedColor = QtGui.QColor(255,0,0)
-    chamberMove = QtCore.pyqtSignal(int, int)
-    chamberResize = QtCore.pyqtSignal(int, int)
+    color = QtGui.QColor(0,255,0)
+    signalScaleChanged = QtCore.pyqtSignal(float)
 
-    def __init__(self,chamber,parent=None):
+    def __init__(self, parent=None):
         '''
         Constructor
         '''
-        super(ChamberGui, self).__init__(parent)
-        self.chamber = chamber
-        print 'add chamber', self.chamber.topLeft()
-        pos = self.mapFromScene(QtCore.QPointF(self.chamber.topLeft()))
-        print 'set pos to ',pos
-        self.setPos(pos)
-        self.size = QtCore.QSizeF(self.chamber.size())
-        self.chamber.chamberPositionUpdated.connect(self.update)
-        self.chamberMove.connect(self.chamber.move)
-        self.chamberResize.connect(self.chamber.resize)
-        self.color = self.normalColor
-        #self.acceptDrops()
-        self.setFlags(QtGui.QGraphicsItem.ItemIsSelectable | 
-        QtGui.QGraphicsItem.ItemIsMovable | QtGui.QGraphicsItem.ItemIsFocusable)
-        self.xChanged.connect(self.onMove)
-        self.yChanged.connect(self.onMove)
-    
-    # Event handling
-    
-    def keyPressEvent(self, event):
-        key = event.key()
-        if key == QtCore.Qt.Key_Left:
-            dirX,dirY = (-1,0)
-        elif key == QtCore.Qt.Key_Right :
-            dirX,dirY = (1,0)
-        elif key == QtCore.Qt.Key_Up :
-            dirX,dirY = (0,-1)
-        elif key == QtCore.Qt.Key_Down :
-            dirX,dirY = (0,1)
-        else :
-            return
-        if (event.modifiers() & QtCore.Qt.ShiftModifier):
-            self.chamber.resize(dirX,dirY)
-            self.update()
-        else :
-            self.moveBy(dirX,dirY)
-            self.onMove()
-    
-    def setSelected(self, flag):
-        print 'selecting', flag
-        if flag :
-            self.color = self.selectedColor
-        else :
-            self.color = self.normalColor
-    
-    def onMove(self):
-        # graph widget was moved to new pos()
-        pos = self.pos()
-        self.chamber.moveTo(QtCore.QPoint(pos.x(),pos.y()))
-        #self.chamber.update()
+        super(ScaleGui, self).__init__(parent)
+        self.lengthInMM = 15
+        self.lengthInPixels = 100
+        self.signalScaleChanged.emit(-1)
         
     # Painting procedures
     def boundingRect(self):
@@ -84,10 +36,6 @@ class ChamberGui(QtGui.QGraphicsObject):
         painter.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
         painter.drawRect(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
         painter.drawEllipse(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
-        
-        if self.chamber.showTrajectory and (self.chamber.trajectoryImage is not None):
-            painter.drawImage(QtCore.QPointF(0,0),self.chamber.trajectoryImage)
-        
         '''
         painter.setFont(QtGui.QFont('Arial', pointSize=16))
         painter.drawText(self.NameRect, QtCore.Qt.AlignCenter, self.node.name) 

@@ -6,7 +6,7 @@ from __future__ import division
 
 import numpy as np
 from ltcore.ltobject import LtObject
-
+from PyQt4 import QtCore
 
 class LtTrajectory(object):
     '''
@@ -19,9 +19,9 @@ class LtTrajectory(object):
     '''
     
     # String to format data when save to file
-    formatString = "{0:10} {1:18.6f} {2:18.6f}\n"
+    formatString = "{:10} {:18.6f} {:18.6f}\n"
 
-    def __init__(self, startFrame, endFrame):
+    def __init__(self, startFrame, endFrame, cpX=None,cpY=None):
         '''
         Constructor
         Creates array to store ltObjects
@@ -33,8 +33,15 @@ class LtTrajectory(object):
         self.startFrame, self.endFrame = startFrame, endFrame
         # Creating arrays for X and Y Coordinates
         arrayLength = self.endFrame-self.startFrame+1
-        self.cpX = np.linspace(-1.0, -1.0, arrayLength)
-        self.cpY = np.linspace(-1.0, -1.0, arrayLength) 
+        if cpX is None :
+            self.cpX = np.linspace(-1.0, -1.0, arrayLength)
+            self.cpY = np.linspace(-1.0, -1.0, arrayLength)
+        else:
+            if len(cpX)!=arrayLength :
+                #TODO: raise exception
+                return
+            self.cpX = cpX[:]
+            self.cpY = cpY[:] 
     
     def __len__(self):
         return len(self.cpX)
@@ -44,7 +51,7 @@ class LtTrajectory(object):
         return self    
     
     def next(self):
-        if self.current >= self.arrayLength :
+        if self.current >= len(self.cpX) :
             raise StopIteration
         else:
             x,y = self.cpX[self.current], self.cpY[self.current]
@@ -67,6 +74,10 @@ class LtTrajectory(object):
         '''
         Get ltObject stored on frame number
         '''
+        if index < self.startFrame :
+            return None
+        elif index > self.endFrame:
+            return None
         x,y = self.getXY(index) 
         return LtObject((x,y)) if x >= 0 else None
          
@@ -86,9 +97,12 @@ class LtTrajectory(object):
         '''
         return internal + self.startFrame
     
+    def lastLine(self):
+        pass
+    
     def getXY(self, frameNumber):
         internalNumber = self.frameToInternal(frameNumber)
-        return self.cpX[internalNumber], self.cpY[internalNumber]
+        return (self.cpX[internalNumber], self.cpY[internalNumber])
     
     def rstrip(self):
         '''
@@ -131,6 +145,11 @@ class LtTrajectory(object):
             internalNumber = trajectory.frameToInternal(frameNumber)
             trajectory.cpX[internalNumber], trajectory.cpY[internalNumber] = x,y
         return trajectory         
+    
+    def smoothed(self):
+        trajectory = LtTrajectory(self.startFrame,self.endFrame,self.cpX,self.cpY)
+        trajectory.smoothLinear()
+        return trajectory
     
     def saveToFile(self, trajectoryFile):
         '''
