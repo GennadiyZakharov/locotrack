@@ -15,6 +15,7 @@ class TrajectoryWidget(QtGui.QWidget):
     This widget hols GUI elements for trajectory analysing
     '''
     signalCreateTrajectoryImages = QtCore.pyqtSignal()
+    signalAnalyseFromFile = QtCore.pyqtSignal(QtCore.QString, object)
 
     def __init__(self, parent=None):
         '''
@@ -40,6 +41,10 @@ class TrajectoryWidget(QtGui.QWidget):
         self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
         self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
         layout.addWidget(self.analyseTrajectoryButton)
+        
+        self.analyseFromFileButton = QtGui.QPushButton('Analyse from files')
+        self.analyseFromFileButton.clicked.connect(self.analyseFromFile)
+        layout.addWidget(self.analyseFromFileButton)
         
         self.createImageButton = QtGui.QPushButton('Create Trajectory Images')
         self.createImageButton.clicked.connect(self.createTrajectoryImages)
@@ -94,6 +99,20 @@ class TrajectoryWidget(QtGui.QWidget):
                         directory, "Data files (%s)" % " ".join(formats)))
         
         self.emit(signalAnalyseTrajectory, fname)
+    
+    def analyseFromFile(self):
+        '''
+        '''
+        formats = ["*.%s" % unicode(videoFormat).lower() \
+                   for videoFormat in ('txt', 'csv')]
+        # Setting last user dir
+        directory =  "."
+        # Executing standard open dialog
+        fname = unicode(QtGui.QFileDialog.getSaveFileName(self,
+                        "Choose output file",
+                        directory, "Data files (%s)" % " ".join(formats)))
+        
+        
     
     def trajectoryWriting(self, checked):
         self.recordTrajectoryButton.setChecked(checked)

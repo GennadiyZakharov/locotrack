@@ -11,9 +11,13 @@ class CvPlayer(QtCore.QObject):
     '''
     This class implements video player using openCV interface
     '''
+    
+    objectCaption = '[cvPlayer]\n'
+    
     # Player signals
     nextFrame         = QtCore.pyqtSignal(object, int)
     ''' Signal carry frame and frame number  '''
+    
     videoSourceOpened = QtCore.pyqtSignal(int, float)
     ''' Signal carry video length and frame rate when video opened,
         or -1, -1 when video closed '''
@@ -23,23 +27,35 @@ class CvPlayer(QtCore.QObject):
         '''
         Constructor
         '''
+        
         super(CvPlayer, self).__init__(parent)
         self.playSpeed = 1.0 
         self.timer = None   # Timer to extract frames from 
         self.frameRate = 5.0  
         self.captureClose() # Reset capture values
+    @classmethod
+    def loadFromFile(cls, inputFile):
+        pass
     
+    def saveTFile(self, outputFile):
+        if self.fileName is None :
+            return
+        outputFile.write(self.objectCaption)
+        outputFile.write(self.fileName+'\n')    
+        outputFile.write(str(self.playSpeed)+'\n')
+        outputFile.write(str(self.frameNumber)+'\n')
+        
     @QtCore.pyqtSlot()
     def captureClose(self):
         '''
         Close video source
         '''
         self.stop()                   # Reset timer and runTroughFlag
-        self.fileName = None          # No File opened
+        self.fileName = ''          # No File opened
         self.captureDevice = None     # No device for capturing
-        self.videoFileLength = None   # Length of video file
-        self.frameNumber = None       # No number for current frame
-        self.videoSourceOpened.emit(-1,-1)
+        self.videoFileLength = -1   # Length of video file
+        self.frameNumber = -1       # No number for current frame
+        self.videoSourceOpened.emit(self.videoFileLength,self.frameRate)
     
     @QtCore.pyqtSlot()    
     def stop(self):

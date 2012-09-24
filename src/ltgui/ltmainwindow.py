@@ -87,6 +87,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
         self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
         self.cvTrajectoryWidget.signalCreateTrajectoryImages.connect(self.cvProcessor.createTrajectoryImages)
+        self.cvTrajectoryWidget.signalAnalyseFromFile.connect()
         self.cvTrajectoryWidget.speedTresholdSlider.setValue(self.cvProcessor.runRestAnalyser.speedTreshold)
         #self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
         #self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)

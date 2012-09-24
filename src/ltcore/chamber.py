@@ -191,12 +191,13 @@ class Chamber(QtCore.QObject):
         save trajectory to file
         '''
         print 'Save chamber for sample {}'.format(self.sampleName)
+        self.frameRate = frameRate
         trajectoryFile = open(fileName, 'w')
         trajectoryFile.write(self.fileCaption)
         trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
         trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()) )
         trajectoryFile.write("{0}\n".format(self.scale)) 
-        trajectoryFile.write("{0}\n".format(frameRate))
+        trajectoryFile.write("{0}\n".format(self.frameRate))
         trajectoryFile.write(self.sampleName+"\n")
         trajectoryFile.write('{}\n'.format(self.threshold))
         print "file {0} created".format(fileName)
@@ -204,11 +205,13 @@ class Chamber(QtCore.QObject):
             trajectoryFile.write('Trajectory:'+"\n")
             self.ltTrajectory.rstrip()
             self.ltTrajectory.saveToFile(trajectoryFile)
+            if self.trajectoryImage is None :
+                self.createTrajectoryImage()
+            self.trajectoryImage.save(fileName+'.png')
         else :
             trajectoryFile.write('No trajectory recorded'+"\n")
         trajectoryFile.close()
-        if self.trajectoryImage is not None :
-            self.trajectoryImage.save(fileName+'.png')
+        
         # Calculate speed
         speedFile = open(fileName+'.spd', 'w')
         if self.ltTrajectory is not None :
@@ -220,8 +223,6 @@ class Chamber(QtCore.QObject):
                 x1,y1 = x2,y2
                 x2,y2 = point2.massCenter
                 runlen = sqrt((x2-x1)**2+(y2-y1)**2)/self.scale
-                if runlen < 0 :
-                    print i,point2,runlen
                 speedFile.write('{:5} {:18.6f}\n'.format(i,runlen*self.frameRate))
         
         self.chamberDataUpdated.emit()

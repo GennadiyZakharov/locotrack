@@ -126,7 +126,7 @@ class LtTrajectory(object):
                 self.startFrame = self.internalToFrame(i)
                 return
     def strip(self):
-        self.lstrip()
+        #self.lstrip()
         self.rstrip()
     
     @classmethod
