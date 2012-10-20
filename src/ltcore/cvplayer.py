@@ -10,38 +10,51 @@ from PyQt4 import QtCore
 class CvPlayer(QtCore.QObject):
     '''
     This class implements video player using openCV interface
+    with play, stop, and seek functions
+    
+    player can be in three states
+     playing : self.timer is not None
+     run   : runTroughFlag == True
+     stop  : none of this
+     
     '''
-    
+    # == Constants
     objectCaption = '[cvPlayer]\n'
-    
-    # Player signals
+    # == Player signals
+    # Controls
+    playing = QtCore.pyqtSignal(bool)
+    running = QtCore.pyqtSignal(bool)
+    # Video
+    ''' Signal carry video length and frame rate'''
+    videoSourceOpened = QtCore.pyqtSignal(int, float)
+    videoSourceClosed = QtCore.pyqtSignal()
+    videoSourceEnded = QtCore.pyqtSignal()
+    # Frame process
     nextFrame         = QtCore.pyqtSignal(object, int)
     ''' Signal carry frame and frame number  '''
-    
-    videoSourceOpened = QtCore.pyqtSignal(int, float)
-    ''' Signal carry video length and frame rate when video opened,
-        or -1, -1 when video closed '''
-    videoEnd = QtCore.pyqtSignal()
     
     def __init__(self, parent=None):
         '''
         Constructor
         '''
-        
         super(CvPlayer, self).__init__(parent)
         self.playSpeed = 1.0 
         self.timer = None   # Timer to extract frames from 
         self.frameRate = 5.0  
         self.captureClose() # Reset capture values
+    
     @classmethod
     def loadFromFile(cls, inputFile):
-        pass
+        #TODO:
+        player = cls()
+        return player
     
-    def saveTFile(self, outputFile):
-        if self.fileName is None :
+    def saveToFile(self, outputFile):
+        #TODO:
+        if self.videoFileName is None :
             return
         outputFile.write(self.objectCaption)
-        outputFile.write(self.fileName+'\n')    
+        outputFile.write(self.videoFileName+'\n')    
         outputFile.write(str(self.playSpeed)+'\n')
         outputFile.write(str(self.frameNumber)+'\n')
         
@@ -49,23 +62,17 @@ class CvPlayer(QtCore.QObject):
     def captureClose(self):
         '''
         Close video source
-        '''
-        self.stop()                   # Reset timer and runTroughFlag
-        self.fileName = ''          # No File opened
-        self.captureDevice = None     # No device for capturing
-        self.videoFileLength = -1   # Length of video file
-        self.frameNumber = -1       # No number for current frame
-        self.videoSourceOpened.emit(self.videoFileLength,self.frameRate)
-    
-    @QtCore.pyqtSlot()    
-    def stop(self):
-        '''
-        Stop playing
-        '''
+        '''               
+        # Reset timer and runTroughFlag
         self.runTroughFlag = False     # This flag is used to process frames at maximum speed
         if self.timer is not None :    # We have active timer
             self.killTimer(self.timer) # Stop timer
             self.timer = None          # And now we have no timer
+        self.videoFileName = ''          # No File opened
+        self.captureDevice = None     # No device for capturing
+        self.videoFileLength = -1   # Length of video file
+        self.frameNumber = -1       # No number for current frame
+        #self.videoSourceClosed.emit()
         
     @QtCore.pyqtSlot(str)
     def captureFromFile(self, fileName):
@@ -78,13 +85,13 @@ class CvPlayer(QtCore.QObject):
         if self.captureDevice is None : # Error opening file
             #TODO: error report 
             return 
-        self.fileName = fileName # Store file name
+        self.videoFileName = fileName # Store file name
         # Get video parameters
         self.videoFileLength = cv.GetCaptureProperty(self.captureDevice,
                                                      cv.CV_CAP_PROP_FRAME_COUNT)
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
-        print 'Opened file: '+self.fileName
+        print 'Opened file: '+self.videoFileName
         print 'File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate) 
         self.videoSourceOpened.emit(self.videoFileLength, self.frameRate)
         self.seekInterval = self.videoFileLength // 50
@@ -99,28 +106,42 @@ class CvPlayer(QtCore.QObject):
             self.captureClose()
         #TODO: implement capture from cam
     
-    @QtCore.pyqtSlot()   
-    def play(self):
+    @QtCore.pyqtSlot(bool)   
+    def play(self, checked):
         '''
         Start playing with fixed speed by timer
         '''
+        if (self.timer is not None) == checked :
+            return # Nothing to do
         if self.captureDevice is None : 
+            self.playing.emit(False)
             return
-        # Stop runTrough, if it was active
-        self.runTroughFlag = False
-        if self.timer is None :
+        if checked :
+            # Stop runTrough, if it was active
+            if self.runTroughFlag :
+                self.runTrough(False)
             # Creating timer
-            self.timer = self.startTimer(1000 / (self.frameRate* self.playSpeed))
+            self.startPlayTimer()
+        else :
+            self.killTimer(self.timer)
+            self.timer = None
+        self.playing.emit(self.timer is not None)
          
-    @QtCore.pyqtSlot()       
-    def runTrough(self):
+    @QtCore.pyqtSlot(bool)      
+    def runTrough(self, checked=True):
         '''
-        Play file at maximum speed
+        Play video at maximum speed
         '''
-        if self.captureDevice is None : 
+        if self.runTroughFlag == checked :
+            return # Nothing to do
+        if self.captureDevice is None :
+            self.running.emit(False) # Reset button
             return
-        self.stop() # Stop playing timer, if it was active
-        self.runTroughFlag = True
+        self.runTroughFlag = checked
+        if self.runTroughFlag and (self.timer is not None) :
+            self.play(False) # Stop playing timer, if it was active
+        self.running.emit(self.runTroughFlag)
+        
         while self.runTroughFlag :
             self.timerEvent() # Capture next frame
             QtCore.QCoreApplication.processEvents() # Allow system to process signals
@@ -134,9 +155,7 @@ class CvPlayer(QtCore.QObject):
         position = self.frameNumber-self.seekInterval 
         if position < 0 :
             position = 0 
-            
-        self.seek(position)
-        print 'seek to ', position 
+        self.seek(position) 
     
     @QtCore.pyqtSlot()
     def seekFwd(self):
@@ -146,7 +165,6 @@ class CvPlayer(QtCore.QObject):
         position = self.frameNumber+self.seekInterval
         if position >= self.videoFileLength :
             position = self.videoFileLength -1
-        print 'Seek to ', position
         self.seek(position)
     
     @QtCore.pyqtSlot(int)
@@ -165,19 +183,24 @@ class CvPlayer(QtCore.QObject):
     def setSpeed(self, speed):
         self.playSpeed = speed
         if self.timer is not None :
-            self.stop()
-            self.play()
-            
+            # restarting play to set timer to different speed
+            self.startPlayTimer()
+    
+    def startPlayTimer(self):
+        if self.timer is not None :
+            self.killTimer()
+        self.timer = self.startTimer(1000 / (self.frameRate* self.playSpeed))
+         
     def timerEvent(self, event=None) :
         '''
-        Event from timer
-        It is called to capture next frame from video device
+        This procedure is called to capture next frame from video device
         '''    
         frame = cv.QueryFrame(self.captureDevice)
-        if frame is None : # Input file ended
-            self.stop()
-            self.videoEnd.emit()
-        else :
+        if frame is not None : 
             self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
             self.nextFrame.emit(frame, self.frameNumber)
+        else: # Input file ended
+            self.play(False)
+            self.runTrough(False)
+            self.videoSourceEnded.emit()
     

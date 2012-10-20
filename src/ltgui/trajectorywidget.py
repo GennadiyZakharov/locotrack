@@ -15,7 +15,7 @@ class TrajectoryWidget(QtGui.QWidget):
     This widget hols GUI elements for trajectory analysing
     '''
     signalCreateTrajectoryImages = QtCore.pyqtSignal()
-    signalAnalyseFromFile = QtCore.pyqtSignal(QtCore.QString, object)
+    signalAnalyseFromFile = QtCore.pyqtSignal(QtCore.QString, QtCore.QStringList)
 
     def __init__(self, parent=None):
         '''
@@ -94,11 +94,12 @@ class TrajectoryWidget(QtGui.QWidget):
         # Setting last user dir
         directory =  "."
         # Executing standard open dialog
+        
         fname = unicode(QtGui.QFileDialog.getSaveFileName(self,
                         "Choose output file",
                         directory, "Data files (%s)" % " ".join(formats)))
-        
         self.emit(signalAnalyseTrajectory, fname)
+        
     
     def analyseFromFile(self):
         '''
@@ -111,8 +112,17 @@ class TrajectoryWidget(QtGui.QWidget):
         fname = unicode(QtGui.QFileDialog.getSaveFileName(self,
                         "Choose output file",
                         directory, "Data files (%s)" % " ".join(formats)))
-        
-        
+        if fname == '' :
+            return
+        dialog = QtGui.QFileDialog(self)
+        dialog.setWindowTitle('Open input Files')
+        dialog.setFileMode(QtGui.QFileDialog.ExistingFiles);
+        #dialog.setNameFilter("Chambers (*.lt1)"));
+        if dialog.exec_() :
+            fileNames = dialog.selectedFiles()
+        else :
+            return
+        self.signalAnalyseFromFile.emit(fname, fileNames)
     
     def trajectoryWriting(self, checked):
         self.recordTrajectoryButton.setChecked(checked)

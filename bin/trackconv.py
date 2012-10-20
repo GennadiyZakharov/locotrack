@@ -22,6 +22,8 @@ class MyWindow(QtGui.QDialog):
         
     def convertDir(self):
         dirName = str(QtGui.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        if dirName == '' :
+            return
         dirList = os.listdir(dirName)
         dirList.sort()
         for fileName in dirList :

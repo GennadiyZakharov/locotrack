@@ -11,6 +11,8 @@ This is main run file for locotrack program
 import sys
 from PyQt4.QtGui import QApplication,QIcon
 from os.path import join, abspath, pardir
+from ltcore.consts import applicationName, applicationVersion, \
+    organizationName, organizationDomain
 
 # Add src and resources to python path
 sys.path.append(abspath(join(pardir, 'src')))
@@ -20,9 +22,9 @@ from ltgui.ltmainwindow import LtMainWindow
 
 def main():
     app = QApplication(sys.argv)
-    app.setOrganizationName("I.P. Pavlov Physiology Institute")
-    app.setOrganizationDomain("infran.ru")
-    app.setApplicationName("LocoTrack")
+    app.setOrganizationName(organizationName)
+    app.setOrganizationDomain(organizationDomain)
+    app.setApplicationName(applicationName + applicationVersion)
     app.setWindowIcon(QIcon(":/icon.png"))
     mainWindow = LtMainWindow()
     mainWindow.show()

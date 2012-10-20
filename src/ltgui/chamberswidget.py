@@ -54,7 +54,10 @@ class ChambersWidget(QtGui.QWidget):
         self.scaleButton.setCheckable(True)
         layout.addWidget(self.scaleButton)      
         self.scaleButton.toggled.connect(self.setScaleOrChamber)
-        self.scaleButton.toggled.connect(self.selectScale) 
+        self.scaleButton.toggled.connect(self.selectScale)
+        # Analysis Method 
+        self.analysisMethod = QtGui.QCheckBox('MaxBright')
+        layout.addWidget(self.analysisMethod)
         # Set Layout
         self.setLayout(layout)
         

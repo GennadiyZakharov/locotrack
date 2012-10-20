@@ -55,10 +55,12 @@ class CvProcessor(QtCore.QObject):
         self.scaleLabelPosition = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
         self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
+        self.maxBrightColor = cv.CV_RGB(255, 255, 0)
         self.font = cv.InitFont(3, 1, 1)
         #
         self.runRestAnalyser = NewRunRestAnalyser(self)
         #self.errorDetector = ErrorDetector()
+        self.analysisMethodMaxBright = False
         
     def openProject(self, fileName):
         pass
@@ -84,7 +86,7 @@ class CvProcessor(QtCore.QObject):
         '''
         print 'Saving project'
         for i in range(len(self.chambers)) :
-            self.chambers[i].saveToFile(self.cvPlayer.fileName+".ch{0}.lt1".format(i+1), 
+            self.chambers[i].saveToFile(self.cvPlayer.videoFileName+".ch{0}.lt1".format(i+1), 
                                          self.cvPlayer.frameRate)
 
     def videoOpened(self, length, frameRate):
@@ -172,6 +174,7 @@ class CvProcessor(QtCore.QObject):
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         chamber.ltObject.maxBright = maxBrightPos
         #
+        
         averageVal = cv.Avg(frame)[0]
         if self.ellipseCrop :
             averageVal *= 4/pi
@@ -193,7 +196,10 @@ class CvProcessor(QtCore.QObject):
         if m00 != 0 :
             m10 = (mat*chamber.X).sum()
             m01 = (mat*chamber.Y).sum()           
-            chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
+            if self.analysisMethodMaxBright :
+                chamber.ltObject.massCenter = maxBrightPos
+            else :
+                chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
         
         #mat = cv.GetMat(subFrame)
         '''
@@ -245,14 +251,20 @@ class CvProcessor(QtCore.QObject):
                 center = (int(chamber.width()/2), int(chamber.height()/2))
                 cv.Ellipse(frame, center, center, 0, 0, 360, color, thickness=1)
             '''
+            if self.analysisMethodMaxBright :
+                color = self.maxBrightColor
+            else :
+                color = self.chamberSelectedColor
+            
             if self.showContour and (chamber.ltObject.contours is not None) :
                 cv.DrawContours(frame, chamber.ltObject.contours, 200, 100, -1, 1)
             # Draw mass center and maxBright 
             if self.chambers[i].ltObject.massCenter is not None :
                 point = (int(chamber.ltObject.massCenter[0]),
                          int(chamber.ltObject.massCenter[1]) )
-                cv.Circle(frame, point, 2, self.chamberSelectedColor, cv.CV_FILLED)
-            if self.chambers[i].ltObject.maxBright is not None :
+                cv.Circle(frame, point, 2, color, cv.CV_FILLED)
+            
+            if not self.analysisMethodMaxBright and self.chambers[i].ltObject.maxBright is not None :
                 cv.Circle(frame, self.chambers[i].ltObject.maxBright, 2, self.chamberColor, cv.CV_FILLED)
             # Draw last part of trajectory
             """
@@ -392,11 +404,31 @@ class CvProcessor(QtCore.QObject):
             return
         self.chambers[self.selected].resize(dirX, dirY)
         self.processFrame()
-        
+    
+    def setAnalysisMethod(self, checked):
+        self.analysisMethodMaxBright = True
+        self.processFrame()
+    
     def createTrajectoryImages(self):
         for chamber in self.chambers:
             chamber.createTrajectoryImage()
-        
+    
+    def analyseFromFiles(self, fileName, inputFileNames):
+        print "Starting analysis"
+        if os.path.isfile(fileName) :
+            mode = 'a'
+        else :
+            mode = 'w'
+        outFile = open(fileName, mode)
+        if mode == 'w' :
+            captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
+            outFile.write(captionString)
+        for name in inputFileNames :
+            chamber = Chamber.loadFromFile(name)
+            if chamber.ltTrajectory is not None :
+                self.runRestAnalyser.analyseChamber(chamber, outFile)
+            
+    
     def analyseChambers(self, fileName):
         '''
         Analyse all chambers and print data about it in output file

@@ -17,11 +17,17 @@ class VideoWidget(QtGui.QWidget):
     speedChanged = QtCore.pyqtSignal(float)
     videoSeeked = QtCore.pyqtSignal(int)
     
-    def __init__(self, parent=None):
+    def __init__(self, player, parent=None):
         '''
         Constructor
+        player is an cvPlayer object to construct all signals
         '''
         super(VideoWidget, self).__init__(parent)
+        self.player = player
+        player.videoSourceOpened.connect(self.videoCapturing)
+        player.nextFrame.connect(self.nextFrame)
+        self.videoSeeked.connect(player.seek)
+        self.speedChanged.connect(player.setSpeed)
         # Video slider and position label
         layout1 = QtGui.QHBoxLayout()
         self.startFrameSlider = QtGui.QSpinBox()
@@ -32,18 +38,23 @@ class VideoWidget(QtGui.QWidget):
         self.timeLabel = QtGui.QLabel('0')
         layout1.addWidget(self.timeLabel)
         layout1.addWidget(self.endFrameSlider)
-        self.videoSlider.valueChanged.connect(self.videoSliderMove)
-        # Play/pause buttons
+        self.videoSlider.valueChanged.connect(self.videoSliderMove)       
         layout2 = QtGui.QHBoxLayout()
         self.rewButt = QtGui.QPushButton("<<")
+        self.rewButt.clicked.connect(player.seekRew)
         layout2.addWidget(self.rewButt)
         self.playButt = QtGui.QPushButton("Play")
+        self.playButt.setCheckable(True)
+        self.playButt.toggled.connect(player.play)
+        player.playing.connect(self.playButt.setChecked)
         layout2.addWidget(self.playButt)
-        self.stopButt = QtGui.QPushButton("Stop")
-        layout2.addWidget(self.stopButt)
         self.fwdButt = QtGui.QPushButton(">>")
+        self.fwdButt.clicked.connect(player.seekFwd)
         layout2.addWidget(self.fwdButt)
         self.runTroughButton = QtGui.QPushButton('Run')
+        self.runTroughButton.setCheckable(True)
+        self.runTroughButton.toggled.connect(player.runTrough)
+        player.running.connect(self.runTroughButton.setChecked)
         layout2.addWidget(self.runTroughButton)
         # Speed
         layout3 = QtGui.QVBoxLayout()
@@ -63,7 +74,7 @@ class VideoWidget(QtGui.QWidget):
         layout.addLayout(layout2)
         self.setLayout(layout)
         # Creating sets to enable/disable GUI elements
-        self.playSet = set([self.videoSlider, self.playButt, self.stopButt,
+        self.playSet = set([self.videoSlider, self.playButt,
                            self.rewButt, self.fwdButt, self.runTroughButton])
         self.setGuiEnabled(False)
     
@@ -86,6 +97,7 @@ class VideoWidget(QtGui.QWidget):
             self.videoSlider.setValue(0)
         self.setGuiEnabled(videoLength > 0)
             
+    
     
     @QtCore.pyqtSlot(object, int)
     def nextFrame(self, frame, frameNumber):

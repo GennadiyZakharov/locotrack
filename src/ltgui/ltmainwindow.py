@@ -31,7 +31,7 @@ class LtMainWindow(QtGui.QMainWindow):
         Constructor
         '''
         super(LtMainWindow, self).__init__(parent)
-        self.setWindowTitle(appName + ' ' + appVersion)
+        self.setWindowTitle(applicationName + ' ' + applicationVersion)
         self.setObjectName("ltMainWindow")
                 
         self.dirty = False
@@ -54,7 +54,7 @@ class LtMainWindow(QtGui.QMainWindow):
         videoDockPanel.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         videoDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, videoDockPanel)
-        self.videoWidget = VideoWidget() 
+        self.videoWidget = VideoWidget(self.cvProcessor.cvPlayer) 
         videoDockPanel.setWidget(self.videoWidget)
         
         # ---- Creating dock panel for chambers ---- 
@@ -64,6 +64,7 @@ class LtMainWindow(QtGui.QMainWindow):
         chambersDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
         self.chambersWidget = ChambersWidget() 
+        self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
         
         # ---- Creating dock panel for image processing ---- 
@@ -87,7 +88,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
         self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
         self.cvTrajectoryWidget.signalCreateTrajectoryImages.connect(self.cvProcessor.createTrajectoryImages)
-        self.cvTrajectoryWidget.signalAnalyseFromFile.connect()
+        self.cvTrajectoryWidget.signalAnalyseFromFile.connect(self.cvProcessor.analyseFromFiles)
         self.cvTrajectoryWidget.speedTresholdSlider.setValue(self.cvProcessor.runRestAnalyser.speedTreshold)
         #self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
         #self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)
@@ -103,25 +104,13 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ==== Making Connections actions ====
         # ---- Core video processing ----
-        
-        self.cvProcessor.cvPlayer.nextFrame.connect(self.videoWidget.nextFrame)
-        self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)
-        
+
+        self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)        
         self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)
         
         # ---- self ----
         self.connect(self, signalCaptureFromFile, self.cvProcessor.loadVideoFile)
-        
-        # ---- videoWidget ----
-        self.connect(self.videoWidget.playButt, signalClicked, self.ltActions.videoPlayAction.trigger)
-        self.connect(self.videoWidget.runTroughButton, signalClicked, self.cvProcessor.cvPlayer.runTrough)
-        self.connect(self.videoWidget.stopButt, signalClicked, self.ltActions.videoStopAction.trigger)
-        self.connect(self.videoWidget.rewButt, signalClicked, self.ltActions.videoRewAction.trigger)
-        self.connect(self.videoWidget.fwdButt, signalClicked, self.cvProcessor.cvPlayer.seekFwd)
-        self.videoWidget.videoSeeked.connect(self.cvProcessor.cvPlayer.seek)
-        self.cvProcessor.cvPlayer.videoSourceOpened.connect(self.videoWidget.videoCapturing)
-        self.videoWidget.speedChanged.connect(self.cvProcessor.cvPlayer.setSpeed)
 
         # ---- chambersWidget ----
         self.connect(self.chambersWidget, signalSetChamber,
@@ -160,7 +149,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.connect(self.ltActions.videoOpenAction, signalTriggered, self.on_videoOpen)
         self.connect(self.ltActions.videoCaptureAction, signalTriggered, self.cvProcessor.cvPlayer.captureFromCam)
         self.connect(self.ltActions.videoPlayAction, signalTriggered, self.cvProcessor.cvPlayer.play)
-        self.connect(self.ltActions.videoStopAction, signalTriggered, self.cvProcessor.cvPlayer.stop)
+        #self.connect(self.ltActions.videoStopAction, signalTriggered, self.cvProcessor.cvPlayer.stop)
         self.connect(self.ltActions.videoRewAction, signalTriggered, self.cvProcessor.cvPlayer.seekRew)
         self.connect(self.ltActions.videoFwdAction, signalTriggered, self.cvProcessor.cvPlayer.seekFwd)
         
@@ -174,8 +163,8 @@ class LtMainWindow(QtGui.QMainWindow):
         Open video file
         '''
         # Setting last user dir
-        directory = os.path.dirname(self.cvProcessor.cvPlayer.fileName) \
-            if self.cvProcessor.cvPlayer.fileName is not None else "."
+        directory = os.path.dirname(self.cvProcessor.cvPlayer.videoFileName) \
+            if self.cvProcessor.cvPlayer.videoFileName is not None else "."
         # Creating formats list
         formats = ["*.{}".format(unicode(videoFormat).lower()) \
                    for videoFormat in ('avi', 'mpg', 'ogg')]
@@ -200,7 +189,7 @@ class LtMainWindow(QtGui.QMainWindow):
     def okToContinue(self):
         if self.dirty:
             reply = QtGui.QMessageBox.question(self,
-                                         appName + " - Unsaved Changes",
+                                         " Unsaved Changes",
                                          "Save unsaved changes?",
                                          QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | 
                                          QtGui.QMessageBox.Cancel)
