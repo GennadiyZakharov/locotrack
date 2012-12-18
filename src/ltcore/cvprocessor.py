@@ -12,7 +12,7 @@ from PyQt4 import QtCore
 from ltcore.signals import *
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
-from ltcore.trajectoryanalysis import calculateSpeed,NewRunRestAnalyser
+from ltcore.trajectoryanalysis import NewRunRestAnalyser
 from glob import glob
 from numpy import asarray
 from math import pi
@@ -174,7 +174,18 @@ class CvProcessor(QtCore.QObject):
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         chamber.ltObject.maxBright = maxBrightPos
         #
-        
+        if self.analysisMethodMaxBright :
+            if minVal == maxVal :
+                chamber.ltObject.massCenter = None
+            else:
+                chamber.ltObject.massCenter = maxBrightPos
+                
+            if self.saveToFile :
+                chamber.saveLtObjectToTrajectory()
+            # Reset area selection
+            cv.ResetImageROI(frame)
+            return
+            
         averageVal = cv.Avg(frame)[0]
         if self.ellipseCrop :
             averageVal *= 4/pi
@@ -196,10 +207,7 @@ class CvProcessor(QtCore.QObject):
         if m00 != 0 :
             m10 = (mat*chamber.X).sum()
             m01 = (mat*chamber.Y).sum()           
-            if self.analysisMethodMaxBright :
-                chamber.ltObject.massCenter = maxBrightPos
-            else :
-                chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
+            chamber.ltObject.massCenter = ( m10/m00, m01/m00 )
         
         #mat = cv.GetMat(subFrame)
         '''
@@ -214,9 +222,12 @@ class CvProcessor(QtCore.QObject):
         # create the storage area for contour
         storage = cv.CreateMemStorage(0)
         # Find object contours
+        '''
         chamber.ltObject.contours = cv.FindContours(subFrame, storage,
                                            cv.CV_RETR_TREE, cv.CV_CHAIN_APPROX_SIMPLE)   
+        '''
         # Saving to trajectory if we need it
+        
         if self.saveToFile :
             chamber.saveLtObjectToTrajectory()
         # Reset area selection
@@ -406,7 +417,7 @@ class CvProcessor(QtCore.QObject):
         self.processFrame()
     
     def setAnalysisMethod(self, checked):
-        self.analysisMethodMaxBright = True
+        self.analysisMethodMaxBright = checked
         self.processFrame()
     
     def createTrajectoryImages(self):
@@ -424,10 +435,18 @@ class CvProcessor(QtCore.QObject):
             captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
             outFile.write(captionString)
         for name in inputFileNames :
+            if not str(name).endswith('.lt1') :
+                continue
             chamber = Chamber.loadFromFile(name)
             if chamber.ltTrajectory is not None :
-                self.runRestAnalyser.analyseChamber(chamber, outFile)
-            
+                chamber.createTrajectoryImage()
+                chamber.trajectoryImage.save(name+'.png')
+                baseName = os.path.basename(str(name))
+                pos = baseName.find('.ch',-10,-1)
+                print baseName,pos
+                if pos >=1 :
+                    if self.runRestAnalyser.checkErrors(chamber) :
+                        self.runRestAnalyser.analyseChamber(chamber, baseName[:pos], outFile)            
     
     def analyseChambers(self, fileName):
         '''
@@ -447,7 +466,10 @@ class CvProcessor(QtCore.QObject):
         
         for chamber in self.chambers :
             if chamber.ltTrajectory is not None :
-                self.runRestAnalyser.analyseChamber(chamber, outFile)
+                print 'Analysing chamber'
+                name = os.path.basename(self.cvPlayer.videoFileName)
+                if self.runRestAnalyser.checkErrors(chamber) :
+                    self.runRestAnalyser.analyseChamber(chamber, name, outFile)
                 '''
                 #correctErrors(chamber)
                 totalActivity, intervals = calculateSpeed(chamber)
@@ -458,5 +480,3 @@ class CvProcessor(QtCore.QObject):
         outFile.close()
         print 'Analysis finished'
         
-            
-    

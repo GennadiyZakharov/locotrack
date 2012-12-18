@@ -137,7 +137,8 @@ class LtTrajectory(object):
         startFrame, endFrame = [int(value) for value in trajectoryFile.readline().split()]
         trajectory = cls(startFrame,endFrame)
         trajectoryFile.readline()
-        for line in trajectoryFile :
+        for i in xrange(startFrame,endFrame+1) :
+            line = trajectoryFile.readline()
             values = line.split()
             frameNumber = int(values[0])
             x = float(values[1])

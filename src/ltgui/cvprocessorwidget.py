@@ -36,6 +36,8 @@ class CvProcessorWidget(QtGui.QWidget):
         self.tresholdSlider.setMaximum(100)
         self.tresholdSlider.setValue(60)
         layout.addWidget(self.tresholdSlider, 4, 0, 1, 2)
+        self.detectionMethodComboBox = QtGui.QComboBox()
+        
         # Layout
         self.setLayout(layout)
         

@@ -12,6 +12,7 @@ import os
 import numpy as np
 
 from PyQt4 import QtCore, QtGui
+from ltcore.ltobject import LtObject
 
 totalActivityName = "0-TotalActivity.csv"
 activityName = "1-Activity.csv"
@@ -62,7 +63,7 @@ def calculateSpeed(chamber, intervalDuration=300):
 
 class NewRunRestAnalyser(QtCore.QObject):
     
-    outString = '{:>25}; {:5}; {:18.6f}; {:18.6f};\n'
+    outString = '{:>25}; {:5}; {:18.6f}; {:18.6f};   {};\n'
     #sample, interval, activity, speed
     
     def __init__(self, parent=None):
@@ -72,12 +73,32 @@ class NewRunRestAnalyser(QtCore.QObject):
         super(NewRunRestAnalyser, self).__init__(parent)
         self.intervalDuration = 300.0
         self.speedTreshold = 0.4
+        self.errorTreshold = 6.0
         '''
         Speed run/rest threshold 
             0.4 mm/s for imago (smoothed trajectory)
             0.5 mm/s for imago (raw trajectory)
         '''
-    def analyseChamber(self, chamber, logFile):
+        
+    def checkErrors(self, chamber):
+        if chamber.ltTrajectory is None :
+            return
+        chamber.ltTrajectory.strip()
+        start,end = chamber.ltTrajectory.getStartEndFrame()
+        x,y = chamber.ltTrajectory.getXY(start)
+        for i in xrange(start+1,end+1):
+            x1,y1 = x,y
+            x,y = chamber.ltTrajectory.getXY(i)
+            if x < 0 :
+                print 'Lost object at frame {}'.format(i)
+                return False
+            length = sqrt((x - x1) ** 2 + (y - y1) ** 2) / chamber.scale
+            spd = length*chamber.frameRate
+            if spd > self.errorTreshold :
+                print 'speed to much at frame {} - {}'.format(i,spd)
+                return False
+        return True
+    def analyseChamber(self, chamber, name, logFile):
         '''
         Analysing chamber
         
@@ -109,15 +130,10 @@ class NewRunRestAnalyser(QtCore.QObject):
                 #next interval started
                 logFile.write(self.outString.format(chamber.sampleName, intervalNumber,
                                                     ((intervalActivityCount/chamber.frameRate) / self.intervalDuration),
-                                                    intervalRunLength / self.intervalDuration))
+                                                    intervalRunLength / self.intervalDuration, name))
                 intervalNumber += 1
                 intervalRunLength = 0
                 intervalActivityCount = 0
-                if x2 < 0: # Interval ended on error -- we need to reinit next point
-                    x1 = -1
-                    continue
-            if x2 < 0 : # need next point without errors
-                continue
             if x1 < 0 : # no previous point -- store and continue
                 x1, y1 = x2, y2
                 frame1 = frame2
@@ -144,7 +160,7 @@ class NewRunRestAnalyser(QtCore.QObject):
         # total output
         logFile.write(self.outString.format(chamber.sampleName, -1,
                                             ((totalActivityCount/chamber.frameRate) / totalTime),
-                                            totalRunLength / totalTime))
+                                            totalRunLength / totalTime, name))
 
 class RunRestAnalyser(QtCore.QObject):
     '''
