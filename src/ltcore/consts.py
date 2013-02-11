@@ -12,5 +12,7 @@ used by range of modules
 applicationName = 'LocoTrack'
 organizationName = "I.P. Pavlov Institute of Physiology "
 organizationDomain = "infran.ru"
-applicationVersion = '0.2'
+applicationVersion = '0.3'
+
+trackExtension = 'lt1'
 

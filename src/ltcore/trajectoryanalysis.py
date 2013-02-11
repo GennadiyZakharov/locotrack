@@ -5,7 +5,6 @@ Created on 07.04.2012
 @author: gena
 '''
 
-
 from __future__ import division
 from math import sqrt
 import os
@@ -25,13 +24,13 @@ def correctErrors(chamber):
     scan 
     '''
     chamber.ltTrajectory.strip()
-    #startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
+    #startFrame, endFrame = chamber.ltTrajectory.bounds()
 
 def calculateSpeed(chamber, intervalDuration=300):
     '''
     '''
     chamber.ltTrajectory.rstrip()
-    startFrame, endFrame = chamber.ltTrajectory.getStartEndFrame()
+    startFrame, endFrame = chamber.ltTrajectory.bounds()
     currentFrame = startFrame
     x0, y0 = chamber.ltTrajectory.getXY(startFrame)
     totalLength = 0
@@ -72,8 +71,10 @@ class NewRunRestAnalyser(QtCore.QObject):
         '''
         super(NewRunRestAnalyser, self).__init__(parent)
         self.intervalDuration = 300.0
-        self.speedTreshold = 0.4
-        self.errorTreshold = 6.0
+        self.quantDuration = 1.0
+        self.speedTreshold = 5.0 # For imago
+        #self.speedTreshold = 0.4 # For larva
+        self.errorTreshold = 50.0
         '''
         Speed run/rest threshold 
             0.4 mm/s for imago (smoothed trajectory)
@@ -84,7 +85,7 @@ class NewRunRestAnalyser(QtCore.QObject):
         if chamber.ltTrajectory is None :
             return
         chamber.ltTrajectory.strip()
-        start,end = chamber.ltTrajectory.getStartEndFrame()
+        start,end = chamber.ltTrajectory.bounds()
         x,y = chamber.ltTrajectory.getXY(start)
         for i in xrange(start+1,end+1):
             x1,y1 = x,y
@@ -107,7 +108,7 @@ class NewRunRestAnalyser(QtCore.QObject):
         if chamber.smoothedTrajectory is None:
             chamber.smoothedTrajectory = chamber.ltTrajectory.smoothed() 
         chamber.smoothedTrajectory.strip()
-        startFrame, endFrame = chamber.smoothedTrajectory.getStartEndFrame()
+        startFrame, endFrame = chamber.smoothedTrajectory.bounds()
         # Total values
         totalRunLength = 0 # Summary length
         totalTime = (endFrame - startFrame + 1) / chamber.frameRate # total time in seconds
@@ -138,14 +139,16 @@ class NewRunRestAnalyser(QtCore.QObject):
                 x1, y1 = x2, y2
                 frame1 = frame2
                 continue
+            if (frame2 - frame1) / chamber.frameRate < self.quantDuration :
+                continue
             length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / chamber.scale
             totalRunLength += length
             intervalRunLength += length
             time = (frame2 - frame1) / chamber.frameRate
             speed = length / time
             if speed >= self.speedTreshold :
-                intervalActivityCount += frame2 - frame1 # 1 if no errors
-                totalActivityCount += frame2 - frame1
+                intervalActivityCount += (frame2 - frame1) # 1 if no errors
+                totalActivityCount += (frame2 - frame1)
             x1, y1 = x2, y2
             frame1 = frame2
             QtGui.QApplication.processEvents()

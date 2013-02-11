@@ -47,6 +47,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvLabel.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.cvLabel.setObjectName("cvLabel")
         self.setCentralWidget(self.cvLabel)
+        self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)
+        
         
         # ---- Creating dock panel for videoplayer ----
         videoDockPanel = QtGui.QDockWidget("Video Control", self)
@@ -66,6 +68,31 @@ class LtMainWindow(QtGui.QMainWindow):
         self.chambersWidget = ChambersWidget() 
         self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
+        # ---- chambersWidget ----
+        self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)        
+        self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
+        self.connect(self.chambersWidget, signalSetChamber,
+                     self.cvProcessor.addChamber)
+        self.chambersWidget.signalClearChamber.connect(
+                     self.cvProcessor.clearChamber)
+        self.chambersWidget.signalChamberSelected.connect(
+            self.cvLabel.selectChamberGui)
+        
+        self.cvLabel.signalChamberSelected.connect(
+            self.chambersWidget.selectChamber)
+        
+        self.connect(self.chambersWidget, signalSetScale,
+                     self.cvProcessor.setScale)
+        
+        self.cvProcessor.chambers.signalChamberAdded.connect(
+            self.chambersWidget.addChamber)
+        self.cvProcessor.chambers.signalChamberAdded.connect(
+            self.cvLabel.addChamberGui)
+        self.cvProcessor.chambers.signalChamberDeleted.connect(
+            self.chambersWidget.removeChamber)
+        self.cvProcessor.chambers.signalChamberDeleted.connect(
+            self.cvLabel.delChamberGui)
+
         
         # ---- Creating dock panel for image processing ---- 
         cvProcessorDockPanel = QtGui.QDockWidget("Image processor", self) # Created and set caption
@@ -75,7 +102,6 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, cvProcessorDockPanel)
         self.cvProcessorWidget = CvProcessorWidget() 
         cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
-        
         # ---- Creating dock panel for trajectory Widget
         cvTrajectoryDockPanel = QtGui.QDockWidget("Trajectory", self) # Created and set caption
         cvTrajectoryDockPanel.setObjectName("TrajectoryDockWidget")
@@ -84,17 +110,15 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
         self.cvTrajectoryWidget = TrajectoryWidget() 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
-        self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.saveTrajectory)
+        self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.saveObjectToTrajectory)
         self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
         self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
         self.cvTrajectoryWidget.signalCreateTrajectoryImages.connect(self.cvProcessor.createTrajectoryImages)
         self.cvTrajectoryWidget.signalAnalyseFromFile.connect(self.cvProcessor.analyseFromFiles)
         self.cvTrajectoryWidget.speedTresholdSlider.setValue(self.cvProcessor.runRestAnalyser.speedTreshold)
-        #self.connect(self.cvTrajectoryWidget, signalSpeedTheshold, self.cvProcessor.runRestAnalyser.setRunRestTreshold)
-        #self.connect(self.cvTrajectoryWidget, signalErrorTheshold, self.cvProcessor.runRestAnalyser.setErrorTreshold)
-        #self.connect(self.cvTrajectoryWidget, signalIntervalDuration, self.cvProcessor.runRestAnalyser.setIntervalDuration)
         self.cvProcessor.trajectoryWriting.connect(self.cvTrajectoryWidget.trajectoryWriting)
         self.cvTrajectoryWidget.saveTrajectoryButton.clicked.connect(self.cvProcessor.saveProject)             
+        
         # ==== Creating menu ====
         projectMenu = self.menuBar().addMenu("&Project")
         self.ltActions.addActions(projectMenu, self.ltActions.projectActions)
@@ -103,29 +127,11 @@ class LtMainWindow(QtGui.QMainWindow):
         self.ltActions.addActions(videoMenu, self.ltActions.videoActions)
         
         # ==== Making Connections actions ====
-        # ---- Core video processing ----
 
-        self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)        
-        self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
-        self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)
-        
         # ---- self ----
         self.connect(self, signalCaptureFromFile, self.cvProcessor.loadVideoFile)
 
-        # ---- chambersWidget ----
-        self.connect(self.chambersWidget, signalSetChamber,
-                     self.cvProcessor.setChamber)
-        self.connect(self.chambersWidget, signalClearChamber,
-                     self.cvProcessor.clearChamber)
-        self.connect(self.chambersWidget, signalSetScale,
-                     self.cvProcessor.setScale)
-        self.connect(self.chambersWidget, signalChangeSelection,
-                     self.cvProcessor.selectChamber)
-        self.connect(self.cvProcessor, signalChambersUpdated,
-                     self.chambersWidget.chamberListUpdated)
         
-        self.connect(self.cvProcessor, signalChambersUpdated,
-                     self.cvLabel.updateChambers)
         
         # ---- cvProcessorWidget ----
         self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,
@@ -139,8 +145,6 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvProcessorWidget.ellipseCropCheckBox.stateChanged.connect(
                      self.cvProcessor.setEllipseCrop)
         
-        self.cvLabel.chamberMove.connect(self.cvProcessor.moveChamber)
-        self.cvLabel.chamberResize.connect(self.cvProcessor.resizeChamber)
         # ---- Main menu ----
         # Project menu
         self.connect(self.ltActions.projectQuitAction, signalTriggered, self.close)

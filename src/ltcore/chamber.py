@@ -7,11 +7,9 @@ from __future__ import division
 from hashlib import sha512
 from time import time
 from random import randint
-from math import sqrt
 
-from numpy import meshgrid,arange
-from PyQt4 import QtCore,QtGui
-from ltcore.ltobject import LtObject
+from numpy import meshgrid, arange
+from PyQt4 import QtCore, QtGui
 from ltcore.lttrajectory import LtTrajectory
 
 class Chamber(QtCore.QObject):
@@ -19,22 +17,23 @@ class Chamber(QtCore.QObject):
     This is class for one chamber
     It holds all chamber attributes: position, size, etc
     also it holds property ltObject -- all data for 
-    detected object on current step
+    detected object on current step,
+    and recorded trajectory
     '''
-    chamberDataUpdated = QtCore.pyqtSignal()
-    chamberPositionUpdated = QtCore.pyqtSignal()
+    signalGuiDataUpdated = QtCore.pyqtSignal() # Updated data, showing on GUI
+    signalPositionUpdated = QtCore.pyqtSignal() # Update chamber position and size
+    signalRecalculateChamber = QtCore.pyqtSignal() # Need to redraw chamber and recalculate object position 
     fileCaption = "LocoTrack 1.0\n"
     
-    def __init__(self, rect, parent=None, sampleName='Unknown'):
+    def __init__(self, rect, sampleName='UnknownSample', number=0, parent=None):
         '''
         Constructor
         '''
         super(Chamber, self).__init__(parent)
+        # Create hash number
         self.hashValue = int(sha512(str(time() + randint(0, 100))).hexdigest(), 16)
         # Creating QRect to store chamber position
         self.rect = QtCore.QRect(rect.normalized())
-        # Sample Name
-        self.sampleName = sampleName
         # Creating links to QRect Methods
         self.left = self.rect.left
         self.top = self.rect.top
@@ -44,84 +43,123 @@ class Chamber(QtCore.QObject):
         self.bottomRight = self.rect.bottomRight
         self.getRect = self.rect.getRect
         self.size = self.rect.size
-        # Frame number is unknown
-        self.frameNumber = -1
-        self.scale = -1 # Pixels in 1 mm
-        self.trajectoryImage = None
-        self.frameRate = -1
         # Information about object
-        self.ltObject = LtObject()
+        # Sample Name
+        self.sampleName = sampleName
+        self.number = number
+        self.ltObject = None
         # No trajectory is recorded
-        self.resetTrajectory()
+        self.trajectory = None
+        self.smoothedTrajectory = None
+        self.trajectoryImage = None 
+        self.saveObjectToTrajectory = False
         # Individual threshold
         self.threshold = 60
-        #
+        # Do not show trajectory
         self.showTrajectory = False
         # Creating matrix for center location
-        self.initMatrix()
+        self.initMatrices()
         
     def __hash__(self):
+        '''
+        Return hash value to store chambers in dictionary or set
+        '''
         return self.hashValue
         
-    def initMatrix(self):
+    def initMatrices(self):
         '''
-        Calculate matrices, is used to calculate mass center of object using numPy
+        Calculate matrices, which is used to calculate mass center of object using numPy
+        matrices recalculated when chamber resizes, so it is stored here
         '''
-        x,y = arange(0,self.width(),1),arange(0,self.height(),1)
-        self.X,self.Y = meshgrid(x,y)
+        x, y = arange(0, self.width(), 1), arange(0, self.height(), 1)
+        self.Xmatrix, self.Ymatrix = meshgrid(x, y)
     
-    # For OpenCV tuple are better, the QPoint
-    def topLeftTuple(self) :
+    def matrices(self):
         '''
-        Return topLeft position as a tuple
+        Return matrices for massCenterDetector
         '''
-        return self.rect.left(), self.rect.top()
+        return (self.Xmatrix, self.Ymatrix)
     
-    def bottomRightTuple(self):
+    def setNumber(self, number):
         '''
-        Return bottomRight position as a tuple
+        set number of chamber
         '''
-        return self.rect.right(), self.rect.bottom()
+        self.number = number
+        self.signalGuiDataUpdated.emit()
     
     def setThreshold(self, value):
         '''    
-        Set threshold value for this chamber    
+        Set threshold value   
         '''
         if value != self.threshold :
             self.threshold = value
-            self.chamberDataUpdated.emit()
+            self.signalGuiDataUpdated.emit()
+            self.signalRecalculateChamber.emit()
             
-    def setSampleName(self, name):
-        if self.sampleName != name :
-            self.sampleName = name
-            self.chamberDataUpdated.emit()
+    def setSampleName(self, sampleName):
+        '''    
+        Set set sample name  
+        '''
+        if self.sampleName != sampleName :
+            self.sampleName = sampleName
+            self.signalGuiDataUpdated.emit()
+    
+    def setRecordTrajectory(self, checked):
+        '''
+        Set, if we showing trajectory or not
+        '''  
+        if self.saveObjectToTrajectory == checked:
+            return
+        self.saveObjectToTrajectory = checked
+        self.signalGuiDataUpdated.emit() 
             
     def setTrajectoryShow(self, checked):
+        '''
+        Set, if we showing trajectory or not
+        '''
         if self.showTrajectory == checked:
             return
         self.showTrajectory = checked
         if self.showTrajectory:
             self.createTrajectoryImage()
-        self.chamberDataUpdated.emit()
-     
+        self.signalGuiDataUpdated.emit()
+    
+    def setLtObject(self, ltObject, frameNumber):
+        '''
+        Set object for chamber and save it to trajectory, if saveObjectToTrajectory enabled
+        '''
+        self.ltObject = ltObject
+        if (self.trajectory is not None) and self.saveObjectToTrajectory :
+            self.trajectory[frameNumber] = ltObject
+    
+    '''
+    Methods handling chamber moving and resizing
+    '''   
+    def moveTo(self, point):
+        '''
+        Move top left corner of chamber to point
+        '''
+        self.rect.moveTo(point)
+        self.signalPositionUpdated.emit()
+        self.signalRecalculateChamber.emit()
+            
     def move(self, dirX, dirY):
         '''
         Move chamber for dirX, dirY
         '''
-        self.rect.moveTo(self.rect.left()+dirX, self.rect.top()+dirY)
-        self.chamberDataUpdated.emit()
-        self.chamberPositionUpdated.emit(self.getRect())
+        self.rect.moveTo(self.rect.left() + dirX, self.rect.top() + dirY)
+        self.signalPositionUpdated.emit()
+        self.signalRecalculateChamber.emit()
 
     def resize(self, dirX, dirY):
         '''
         Resize chamber by dirX, dirY
         '''
-        self.rect.setWidth(self.rect.width()+dirX) 
-        self.rect.setHeight(self.rect.height()+dirY)
-        # Init matrix for new size
-        self.initMatrix()
-        self.chamberDataUpdated.emit()
-        self.chamberPositionUpdated.emit()
+        self.rect.setWidth(self.rect.width() + dirX) 
+        self.rect.setHeight(self.rect.height() + dirY)
+        self.initMatrices() # Init matrix for new size
+        self.signalPositionUpdated.emit()
+        self.signalRecalculateChamber.emit()
         
     def setPosition(self, rect):
         '''
@@ -129,135 +167,136 @@ class Chamber(QtCore.QObject):
         '''
         self.rect.setTopLeft(rect.topLeft())
         self.rect.setBottomRight(rect.bottomRight())
-        self.initMatrix()
-        self.chamberPositionUpdated.emit()
-    
-    def moveTo(self, point):
-        self.rect.moveTo(point)
-        self.chamberDataUpdated.emit()
-        self.chamberPositionUpdated.emit()
-    
-    def initTrajectory(self, videoLength):
+        self.initMatrices()
+        self.signalPositionUpdated.emit()
+        self.signalRecalculateChamber.emit()
+
+    '''
+    Methods to trajectory manipulation
+    '''
+    def initTrajectory(self, startFrame, endFrame):
         '''
-        Init array to store trajectory starting from curent frame and to videoLength
+        Init array to store trajectory from startFrame to EndFrame
         '''
-        if self.ltTrajectory is not None :
+        if self.trajectory is not None : # Delete old trajectory
             self.resetTrajectory()
-        # init array to save frames from current 
-        self.ltTrajectory = LtTrajectory(self.frameNumber, videoLength)
-        self.saveLtObjectToTrajectory()
-        self.chamberDataUpdated.emit()
+        # Init trajectory to save frames from current to end of file
+        self.trajectory = LtTrajectory(startFrame, endFrame)
+        self.trajectory[startFrame] = self.ltObject
+        self.signalGuiDataUpdated.emit()
     
     def resetTrajectory(self):
         '''
-        Remove stored in array trajectory
+        Remove stored trajectory
         '''
-        self.ltTrajectory = None
+        self.trajectory = None
         self.smoothedTrajectory = None
-        self.errors = 0
-        self.chamberDataUpdated.emit()
+        self.trajectoryImage = None
+        self.signalGuiDataUpdated.emit()
+    
+    def createTrajectoryImage(self):
+        '''
+        Create track image from stored trajectory
+        '''
+        if self.trajectory is None : # No trajectory to create image
+            return 
         
+        black = QtGui.QColor(0, 0, 0)
+        if self.trajectoryImage is None: # Create new white image with black pen
+            self.trajectoryImage = QtGui.QImage(self.rect.size(), QtGui.QImage.Format_ARGB32_Premultiplied)
+            self.trajectoryPainter = QtGui.QPainter(self.trajectoryImage)
+            self.trajectoryPainter.setPen(black)
+        # Delete old image
+        self.trajectoryImage.fill(QtCore.Qt.transparent)
+        point1 = None
+        point2 = None
+        for ltObject in self.trajectory :
+            if ltObject is None :
+                continue
+            x, y = ltObject.center
+            point2 = QtCore.QPointF(x, y) # Reading first point
+            if point1 is None :
+                point1 = point2
+                continue
+            self.trajectoryPainter.drawLine(point2, point1)
+            point1 = point2
+        self.trajectoryPainter.end()
+    
     @classmethod
     def loadFromFile(cls, fileName):
         '''
-        load chamber from file
+        Load chamber from file
         '''
         print 'Load  chamber from file {}'.format(fileName)
         trajectoryFile = open(fileName, 'r')
         if trajectoryFile.readline() != cls.fileCaption :
             #TODO: excepting
-            return
+            return None
         x, y = [int(value) for value in trajectoryFile.readline().split()]
         width, height = [int(value) for value in trajectoryFile.readline().split()]
-        rect = QtCore.QRect(x,y,width, height)
+        rect = QtCore.QRect(x, y, width, height)
         chamber = cls(rect)
-        chamber.initMatrix()
         # TODO: implement mm
-        chamber.scale = float(trajectoryFile.readline())
-        chamber.frameRate = float(trajectoryFile.readline())
+        scale = float(trajectoryFile.readline())
+        frameRate = float(trajectoryFile.readline())
         chamber.sampleName = trajectoryFile.readline().strip()
         chamber.threshold = float(trajectoryFile.readline())
         if trajectoryFile.readline().strip() == 'Trajectory:' :
             print 'Load  trajectory from file {}'.format(fileName)
-            chamber.ltTrajectory = LtTrajectory.loadFromFile(trajectoryFile)
+            chamber.trajectory = LtTrajectory.loadFromFile(trajectoryFile)
             chamber.createTrajectoryImage()
         else :
-            chamber.ltTrajectory = None
+            chamber.trajectory = None
         trajectoryFile.close()
-        return chamber
+        return chamber, scale, frameRate
     
-    def saveToFile(self, fileName, frameRate):
+    def saveToFile(self, fileNameTemplate, scale, frameRate):
         '''
-        save trajectory to file
+        Save trajectory to file
+        scale and Frame Rate must be written in file
+        It is used to analyse chambers individually
         '''
-        print 'Save chamber for sample {}'.format(self.sampleName)
-        self.frameRate = frameRate
+        fileName = fileNameTemplate.format(self.number)
+        print 'Save chamber for sample {} to file {}'.format(self.sampleName, fileName)
         trajectoryFile = open(fileName, 'w')
         trajectoryFile.write(self.fileCaption)
         trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
-        trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()) )
-        trajectoryFile.write("{0}\n".format(self.scale)) 
-        trajectoryFile.write("{0}\n".format(self.frameRate))
-        trajectoryFile.write(self.sampleName+"\n")
+        trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()))
+        trajectoryFile.write("{0}\n".format(scale)) 
+        trajectoryFile.write("{0}\n".format(frameRate))
+        trajectoryFile.write(self.sampleName + "\n")
         trajectoryFile.write('{}\n'.format(self.threshold))
         print "file {0} created".format(fileName)
-        if self.ltTrajectory is not None :
-            trajectoryFile.write('Trajectory:'+"\n")
-            self.ltTrajectory.rstrip()
-            self.ltTrajectory.saveToFile(trajectoryFile)
+        if self.trajectory is not None :
+            trajectoryFile.write('Trajectory:' + "\n")
+            self.trajectory.rstrip()
+            self.trajectory.saveToFile(trajectoryFile)
             if self.trajectoryImage is None :
                 self.createTrajectoryImage()
-            self.trajectoryImage.save(fileName+'.png')
+            self.trajectoryImage.save(fileName + '.png')
+            # Calculate fractal dimersion
+            #self.calculateFractalDimersion()
+            
         else :
-            trajectoryFile.write('No trajectory recorded'+"\n")
+            trajectoryFile.write('No trajectory recorded' + "\n")
         trajectoryFile.close()
-        
+        '''
         # Calculate speed
-        speedFile = open(fileName+'.spd', 'w')
-        if self.ltTrajectory is not None :
-            x2,y2 = self.ltTrajectory[self.ltTrajectory.startFrame].massCenter
-            for i in xrange(self.ltTrajectory.startFrame+1,self.ltTrajectory.endFrame) :
-                point2 = self.ltTrajectory[i]
+        speedFile = open(fileName + '.spd', 'w')
+        if self.trajectory is not None :
+            x2, y2 = self.trajectory[self.trajectory.startFrame].center
+            for i in xrange(self.trajectory.startFrame + 1, self.trajectory.endFrame) :
+                point2 = self.trajectory[i]
                 if point2 is None :
                     continue
-                x1,y1 = x2,y2
-                x2,y2 = point2.massCenter
-                runlen = sqrt((x2-x1)**2+(y2-y1)**2)/self.scale
-                speedFile.write('{:5} {:18.6f}\n'.format(i,runlen*self.frameRate))
-        
-        self.chamberDataUpdated.emit()
-        
-    def saveLtObjectToTrajectory(self):
-        if (self.ltTrajectory is not None) and (self.frameNumber >= 0):
-            self.ltTrajectory[self.frameNumber] = self.ltObject
-            if self.trajectoryImage is not None:
-                point1 = self.ltTrajectory[self.frameNumber-1]
-                if point1 is not None and self.ltObject is not None :
-                    x1,y1 = point1.massCenter
-                    x2,y2 = self.ltObject.massCenter
-                    self.trajectoryPainter.drawLine(x1,y1,x2,y2)
-              
-    def createTrajectoryImage(self):
-        if self.ltTrajectory is None :
-            return
-        black = QtGui.QColor(0,0,0)
-        if self.trajectoryImage is None:
-            self.trajectoryImage = QtGui.QImage(self.rect.size(),QtGui.QImage.Format_ARGB32_Premultiplied)
-            self.trajectoryPainter = QtGui.QPainter(self.trajectoryImage)
-            self.trajectoryPainter.setPen(black)
-        self.trajectoryImage.fill(QtCore.Qt.transparent)
-        x,y = self.ltTrajectory[self.ltTrajectory.startFrame].massCenter
-        point2 = QtCore.QPoint(x,y)
-        for ltObject in self.ltTrajectory :
-            if ltObject is None:
-                continue
-            point1 = point2
-            x,y = ltObject.massCenter
-            point2 = QtCore.QPoint(x,y)
-            self.trajectoryPainter.drawLine(point1,point2)
-            QtGui.QApplication.processEvents()  
-        
-    
+                x1, y1 = x2, y2
+                x2, y2 = point2.center
+                runlen = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / self.scale
+                speedFile.write('{:5} {:18.6f}\n'.format(i, runlen * self.frameRate))
+        '''
+'''
+Small test
+'''          
 if __name__ == '__main__':
     '''
     Self testing
@@ -265,4 +304,4 @@ if __name__ == '__main__':
     trajName = '/home/gena/eclipse37-workspace/locotrack/video/2012-02-22_agn-F-Ad7-N-02_c.avi.lt1'
     chamber = Chamber.loadFromFile(trajName)
     print chamber.getRect()
-    print chamber.ltTrajectory.getStartEndFrame()
+    print chamber.trajectory.bounds()

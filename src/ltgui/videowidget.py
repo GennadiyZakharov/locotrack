@@ -6,9 +6,7 @@ Created on 13.12.2010
 
 from __future__ import division
 from PyQt4 import QtCore, QtGui
-#from ltcore.actions import LtActions
-#from ltcore.signals import *
-from ltgui.labeledwidgets import *
+from ltgui.labeledwidgets import LabelledSlider
 
 class VideoWidget(QtGui.QWidget):
     '''
@@ -25,6 +23,7 @@ class VideoWidget(QtGui.QWidget):
         super(VideoWidget, self).__init__(parent)
         self.player = player
         player.videoSourceOpened.connect(self.videoCapturing)
+        player.videoSourceClosed.connect(self.videoClosed)
         player.nextFrame.connect(self.nextFrame)
         self.videoSeeked.connect(player.seek)
         self.speedChanged.connect(player.setSpeed)
@@ -97,7 +96,8 @@ class VideoWidget(QtGui.QWidget):
             self.videoSlider.setValue(0)
         self.setGuiEnabled(videoLength > 0)
             
-    
+    def videoClosed(self):
+        self.setGuiEnabled(False)
     
     @QtCore.pyqtSlot(object, int)
     def nextFrame(self, frame, frameNumber):

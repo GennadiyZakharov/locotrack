@@ -18,6 +18,7 @@ class CvGraphics(QtGui.QGraphicsView):
     initialSize = (320, 200)
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
+    signalChamberSelected = QtCore.pyqtSignal(object)
 
     def __init__(self, parent=None):
         '''
@@ -37,7 +38,8 @@ class CvGraphics(QtGui.QGraphicsView):
         self.pixmapObject = self.scene.addPixmap(self.pixmap)
         #self.pixmapObject.setScale(1.0)
         self.scene.setSceneRect(self.pixmapObject.boundingRect())
-        self.chambers = {}
+        self.chambersGui = {} # dict to store gui for cahmbers
+        self.selectedChamber = None
         
     @QtCore.pyqtSlot(object)
     def putImage(self, iplImage) :
@@ -76,7 +78,35 @@ class CvGraphics(QtGui.QGraphicsView):
         else :
             self.pixmap.convertFromImage(self.frame)
             self.scene.update()
+    
+    @QtCore.pyqtSlot(object)
+    def selectChamberGui(self, chamber):
+        if chamber is self.selectedChamber :
+            return
+        if self.selectedChamber is not None :
+            self.chambersGui[self.selectedChamber].setSelected(False)
+        self.selectedChamber = chamber
+        if chamber is not None : 
+            self.chambersGui[chamber].setSelected(True)
+        self.signalChamberSelected.emit(chamber)
+    
+    def addChamberGui(self, chamber):
+        '''
+        new chamber was created
+        '''
+        chamberGui = ChamberGui(chamber)
+        self.scene.addItem(chamberGui)
+        self.chambersGui[chamber]=chamberGui 
+        chamberGui.signalSelected.connect(self.selectChamberGui)
         
+    def delChamberGui(self, chamber):
+        '''
+        chamber is schelded for remove -- must remove gui for it
+        '''
+        self.selectChamberGui(None)
+        self.scene.removeItem(self.chambersGui[chamber])
+        del self.chambersGui[chamber]
+     
     def updatePixpamSize(self):
         self.setSizePolicy(QtCore.Qt.QSizePolicy)
     
@@ -196,23 +226,4 @@ class CvGraphics(QtGui.QGraphicsView):
             event.acceptProposedAction()
             self.scene.removeItem(self.selectedRect)
             self.selectedRect = None
-    
-    def updateChambers(self, chambers, selected):
-        print 'updating gui chambers'
-        for i in range(len(chambers)) :
-            if not chambers[i] in self.chambers.keys() :
-                chamberGui = ChamberGui(chambers[i])
-                self.scene.addItem(chamberGui)
-                print 'cgambergui', chamberGui.pos()
-                #chamberGui.update()
-                self.chambers[chambers[i]]=chamberGui
-                #chamberGui.setFocus()
-            self.chambers[chambers[i]].setSelected(i==selected)
-        dels = []
-        for chamber in self.chambers.keys() :
-            if not chamber in chambers :
-                dels.append(chamber)
-        print 'deleting', dels
-        for chamber in dels :
-            self.scene.removeItem(self.chambers[chamber])
-            del self.chambers[chamber]
+            

@@ -13,6 +13,7 @@ class ChamberGui(QtGui.QGraphicsObject):
     selectedColor = QtGui.QColor(255,0,0)
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
+    signalSelected = QtCore.pyqtSignal(object)
 
     def __init__(self,chamber,parent=None):
         '''
@@ -20,12 +21,10 @@ class ChamberGui(QtGui.QGraphicsObject):
         '''
         super(ChamberGui, self).__init__(parent)
         self.chamber = chamber
-        print 'add chamber', self.chamber.topLeft()
         pos = self.mapFromScene(QtCore.QPointF(self.chamber.topLeft()))
-        print 'set pos to ',pos
         self.setPos(pos)
         self.size = QtCore.QSizeF(self.chamber.size())
-        self.chamber.chamberPositionUpdated.connect(self.update)
+        self.chamber.signalPositionUpdated.connect(self.update)
         self.chamberMove.connect(self.chamber.move)
         self.chamberResize.connect(self.chamber.resize)
         self.color = self.normalColor
@@ -62,13 +61,16 @@ class ChamberGui(QtGui.QGraphicsObject):
             self.color = self.selectedColor
         else :
             self.color = self.normalColor
+        self.update()
     
     def onMove(self):
         # graph widget was moved to new pos()
         pos = self.pos()
         self.chamber.moveTo(QtCore.QPoint(pos.x(),pos.y()))
-        #self.chamber.update()
-        
+    
+    def focusInEvent(self, event):
+        self.signalSelected.emit(self.chamber)
+        return QtGui.QGraphicsObject.focusInEvent(self, event)  
     # Painting procedures
     def boundingRect(self):
         return QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size()))
@@ -83,6 +85,7 @@ class ChamberGui(QtGui.QGraphicsObject):
         painter.setPen(pen)
         painter.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
         painter.drawRect(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
+        painter.drawText(QtCore.QPointF(0,0), str(self.chamber.number))
         painter.drawEllipse(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
         
         if self.chamber.showTrajectory and (self.chamber.trajectoryImage is not None):

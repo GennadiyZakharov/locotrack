@@ -6,7 +6,6 @@ from __future__ import division
 
 import numpy as np
 from ltcore.ltobject import LtObject
-from PyQt4 import QtCore
 
 class LtTrajectory(object):
     '''
@@ -21,27 +20,28 @@ class LtTrajectory(object):
     # String to format data when save to file
     formatString = "{:10} {:18.6f} {:18.6f}\n"
 
-    def __init__(self, startFrame, endFrame, cpX=None,cpY=None):
+    def __init__(self, startFrame, endFrame):
         '''
         Constructor
-        Creates array to store ltObjects
+        Create arrays to store ltObjects
         in frame range, given by startFrame and EndFrame
         
         Trajectory cannot be empty
-        '''
+        '''   
         self.saved  = True
         self.startFrame, self.endFrame = startFrame, endFrame
-        # Creating arrays for X and Y Coordinates
         arrayLength = self.endFrame-self.startFrame+1
-        if cpX is None :
-            self.cpX = np.linspace(-1.0, -1.0, arrayLength)
-            self.cpY = np.linspace(-1.0, -1.0, arrayLength)
-        else:
-            if len(cpX)!=arrayLength :
-                #TODO: raise exception
-                return
-            self.cpX = cpX[:]
-            self.cpY = cpY[:] 
+        # Creating arrays for X and Y Coordinates of ltObject center
+        # Arrays are always equal length and 
+        self.cpX = np.linspace(-1.0, -1.0, arrayLength)
+        self.cpY = np.linspace(-1.0, -1.0, arrayLength)
+        # None object is represented by (-1, -1) in arrays 
+    
+    def bounds(self):
+        '''
+        Return start and end frames
+        '''
+        return self.startFrame, self.endFrame
     
     def __len__(self):
         return len(self.cpX)
@@ -49,6 +49,15 @@ class LtTrajectory(object):
     def __iter__(self) :
         self.current = 0
         return self    
+    
+    @classmethod
+    def cloneTrajectory(cls, ltTrajectory):
+        '''
+        '''
+        startFrame,endFrame= ltTrajectory.bounds
+        trajectory = cls(startFrame, endFrame)
+        trajectory.cpX = ltTrajectory.cpX[:]
+        trajectory.cpY = ltTrajectory.cpY[:]
     
     def next(self):
         if self.current >= len(self.cpX) :
@@ -61,22 +70,19 @@ class LtTrajectory(object):
     def length(self):
         return self.__len__()
     
-    def __setitem__(self, index, value):
+    def __setitem__(self, index, ltObject):
         '''
         Store ltObject on frame number
         '''
         internalNumber = self.frameToInternal(index)
-        x,y = value.massCenter if value is not None else (-1,-1)
+        x,y = ltObject.center if ltObject is not None else (-1,-1)
         self.cpX[internalNumber], self.cpY[internalNumber] = x,y
-        
     
     def __getitem__(self, index):
         '''
         Get ltObject stored on frame number
         '''
-        if index < self.startFrame :
-            return None
-        elif index > self.endFrame:
+        if (index < self.startFrame) or (index > self.endFrame) :
             return None
         x,y = self.getXY(index) 
         return LtObject((x,y)) if x >= 0 else None
@@ -148,7 +154,10 @@ class LtTrajectory(object):
         return trajectory         
     
     def smoothed(self):
-        trajectory = LtTrajectory(self.startFrame,self.endFrame,self.cpX,self.cpY)
+        '''
+        Return smoothed trajectory
+        '''
+        trajectory = self.cloneTrajectory(self)
         trajectory.smoothLinear()
         return trajectory
     
@@ -164,12 +173,10 @@ class LtTrajectory(object):
                                      self.cpX[self.frameToInternal(i)], 
                                      self.cpY[self.frameToInternal(i)])
             trajectoryFile.write(fileString)
-            
-    def getStartEndFrame(self):
-        return (self.startFrame, self.endFrame)
     
     def smoothLinear(self):
         '''
+        Make the linear smooth for trajectory
         '''
         length = self.length()
         X = np.zeros(length)
@@ -188,4 +195,4 @@ if __name__ == '__main__':
     '''
     trajFile = open('/home/gena/eclipse37-workspace/locotrack/video/2012-02-22_agn-F-Ad7-N-02_c.avi.traj')
     trajectory = LtTrajectory.loadFromFile(trajFile)
-    print trajectory.getStartEndFrame()
+    print trajectory.bounds()
