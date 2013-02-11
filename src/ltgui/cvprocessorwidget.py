@@ -13,12 +13,12 @@ class CvProcessorWidget(QtGui.QWidget):
     This widget is connected to cvProcessor and has GUI to
     manipulate processing properties
     '''
-    def __init__(self, parent=None):
+    def __init__(self, cvProcessor, parent=None):
         '''
         Constructor
         '''
         super(CvProcessorWidget, self).__init__(parent)
-        
+        self.cvProcessor = cvProcessor
         layout = QtGui.QGridLayout()
         # Some checkboxes
         self.showProcessedChechBox = LabelledCheckBox("Show processed image")
@@ -36,8 +36,15 @@ class CvProcessorWidget(QtGui.QWidget):
         self.tresholdSlider.setMaximum(100)
         self.tresholdSlider.setValue(60)
         layout.addWidget(self.tresholdSlider, 4, 0, 1, 2)
-        self.detectionMethodComboBox = QtGui.QComboBox()
-        
+        objectDetectorLabel = QtGui.QLabel('Detection method: ')
+        self.ObjectDetectorsComboBox = QtGui.QComboBox()
+        objectDetectorLabel.setBuddy(self.ObjectDetectorsComboBox)
+        self.ObjectDetectorsComboBox.addItems(
+            [detector.name for detector in self.cvProcessor.objectDetectors])
+        self.ObjectDetectorsComboBox.currentIndexChanged.connect(
+            self.cvProcessor.setObjectDetector)
+        layout.addWidget(objectDetectorLabel,5,0)
+        layout.addWidget(self.ObjectDetectorsComboBox,5,1)       
         # Layout
         self.setLayout(layout)
         

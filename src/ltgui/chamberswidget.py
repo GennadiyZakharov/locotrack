@@ -58,10 +58,6 @@ class ChambersWidget(QtGui.QWidget):
         layout.addWidget(self.scaleButton)      
         self.scaleButton.toggled.connect(self.setScaleOrChamber)
         #self.scaleButton.toggled.connect(self.setScale)
-        # Analysis Method 
-        self.analysisMethod = QtGui.QCheckBox('MaxBright')
-        layout.addWidget(self.analysisMethod)
-        # Set Layout
         self.setLayout(layout)
     
     def getChamberByNumber(self, number):

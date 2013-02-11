@@ -66,7 +66,7 @@ class LtMainWindow(QtGui.QMainWindow):
         chambersDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
         self.chambersWidget = ChambersWidget() 
-        self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
+        #self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
         # ---- chambersWidget ----
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)        
@@ -100,7 +100,7 @@ class LtMainWindow(QtGui.QMainWindow):
         cvProcessorDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         cvProcessorDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, cvProcessorDockPanel)
-        self.cvProcessorWidget = CvProcessorWidget() 
+        self.cvProcessorWidget = CvProcessorWidget(self.cvProcessor) 
         cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
         # ---- Creating dock panel for trajectory Widget
         cvTrajectoryDockPanel = QtGui.QDockWidget("Trajectory", self) # Created and set caption

@@ -57,9 +57,13 @@ class CvProcessor(QtCore.QObject):
         self.maxBrightColor = cv.CV_RGB(255, 255, 0)
         self.font = cv.InitFont(3, 1, 1)
         #
+        self.maxBrightDetector = maxBrightDetector()
+        self.massCenterDetector = massCenterDetector()
+        self.objectDetectors = [self.maxBrightDetector, self.massCenterDetector]
+        self.objectDetectorIndex = 0
         self.runRestAnalyser = NewRunRestAnalyser(self)
         #self.errorDetector = ErrorDetector()
-        self.analysisMethodMaxBright = False
+        #self.analysisMethodMaxBright = False
         
     def openProject(self, fileName):
         pass
@@ -160,12 +164,13 @@ class CvProcessor(QtCore.QObject):
         chamber.frameNumber = self.frameNumber
         # Set ROI according to chamber size
         cv.SetImageROI(frame, chamber.getRect())       
-
-        if self.analysisMethodMaxBright :
-            ltObject = maxBrightDetector(frame)
-        else :
-            ltObject = massCenterDetector(frame, (chamber.width(), chamber.height()),
+        if self.objectDetectorIndex == 0 :
+            ltObject = self.maxBrightDetector.detectObject(frame)
+        elif  self.objectDetectorIndex == 1 :
+            ltObject = self.massCenterDetector.detectObject(frame, (chamber.width(), chamber.height()),
                                                   chamber.matrices(), chamber.threshold, self.ellipseCrop)
+        else:
+            raise
         chamber.setLtObject(ltObject, self.frameNumber)
         # Reset area selection
         cv.ResetImageROI(frame)
@@ -186,13 +191,9 @@ class CvProcessor(QtCore.QObject):
                 return
             # Draw object
             cv.SetImageROI(frame, chamber.getRect())
-            if self.analysisMethodMaxBright :
-                color = self.maxBrightColor
-            else :
-                color = self.chamberSelectedColor
+            color = self.chamberSelectedColor
             # Draw mass center
-            point = (int(chamber.ltObject.center[0]),
-                     int(chamber.ltObject.center[1]))
+            point = tuple(int(coor) for coor in chamber.ltObject.center)
             cv.Circle(frame, point, 2, color, cv.CV_FILLED)
             # Draw contours
             if self.showContour and (chamber.ltObject.contours is not None) :
@@ -216,6 +217,10 @@ class CvProcessor(QtCore.QObject):
         
     def setShowContour(self, value):
         self.showContour = value
+        self.processFrame()
+        
+    def setObjectDetector(self, index):
+        self.objectDetectorIndex = index
         self.processFrame()
     
     def addChamber(self, rect):
@@ -270,11 +275,7 @@ class CvProcessor(QtCore.QObject):
     
     @QtCore.pyqtSlot()
     def chambersDataUpdated(self):
-        self.processFrame()
-    
-    def setAnalysisMethod(self, checked):
-        self.analysisMethodMaxBright = checked
-        self.processFrame()
+        self.processFrame()      
     
     def createTrajectoryImages(self):
         for chamber in self.chambers:

@@ -5,6 +5,11 @@ Created on 26.05.2012
 '''
 from PyQt4 import QtCore, QtGui
 
+class ltObjectGui((QtGui.QGraphicsObject)):
+    def __init__(self,chamber,parent=None):
+        super(ltObjectGui, self).__init__(parent)
+        self.chamber = chamber
+
 class ChamberGui(QtGui.QGraphicsObject):
     '''
     This is graphic for chamber representation on qgraphicsscene
@@ -13,7 +18,7 @@ class ChamberGui(QtGui.QGraphicsObject):
     selectedColor = QtGui.QColor(255,0,0)
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
-    signalSelected = QtCore.pyqtSignal(object)
+    signalSelected = QtCore.pyqtSignal(object)        
 
     def __init__(self,chamber,parent=None):
         '''
@@ -85,9 +90,13 @@ class ChamberGui(QtGui.QGraphicsObject):
         painter.setPen(pen)
         painter.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
         painter.drawRect(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
-        painter.drawText(QtCore.QPointF(0,0), str(self.chamber.number))
         painter.drawEllipse(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
-        
+        pen = QtGui.QPen(QtGui.QBrush(self.selectedColor), 3)
+        painter.setPen(pen)
+        painter.setFont(QtGui.QFont('Times',15,QtGui.QFont.DemiBold))
+        rect = QtCore.QRectF(0,0,15,20)
+        painter.drawText(rect, QtCore.Qt.AlignCenter, str(self.chamber.number));
+        #painter.drawText(QtCore.QPointF(0,0), str(self.chamber.number))
         if self.chamber.showTrajectory and (self.chamber.trajectoryImage is not None):
             painter.drawImage(QtCore.QPointF(0,0),self.chamber.trajectoryImage)
         
