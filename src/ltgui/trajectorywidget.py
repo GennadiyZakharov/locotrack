@@ -7,132 +7,119 @@ from __future__ import division
 
 from PyQt4 import QtCore,QtGui
 #from ltcore.actions import LtActions
-from ltcore.signals import *
-from ltgui.labeledwidgets import LabelledSlider,LabelledLineEdit
+from ltgui.analysedialog import AnalyseDialog
+from ltcore.ltactions import createAction
 
 class TrajectoryWidget(QtGui.QWidget):
     '''
-    This widget hols GUI elements for trajectory analysing
+    This widget holds GUI elements for trajectory analysing
     '''
     signalCreateTrajectoryImages = QtCore.pyqtSignal()
     signalAnalyseFromFile = QtCore.pyqtSignal(QtCore.QString, QtCore.QStringList)
 
-    def __init__(self, parent=None):
+    def __init__(self, analyser, parent=None):
         '''
         Constructor
         '''
         super(TrajectoryWidget, self).__init__(parent)
+        self.analysisProgressDialog = QtGui.QProgressDialog()
+        self.analysisProgressDialog.setWindowTitle('Analysing files')
         #
-        layout=QtGui.QVBoxLayout()
+        
+        actionAnalyseFromFiles = createAction(self,"&Analyse from files...", "",
+                                       "document-open", "Open video file")
+        actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
+        '''
+         = createAction(self,"&Capture...", "",
+                                          "camera-web", "")
+        actionPlay = createAction(self,"&Play", "", 
+                                  "media-playback-start", "", True)
+        actionRun =  createAction(self,"&Run", "", 
+                                  "fork", "", True)
+        actionRew = createAction(self,"&Rewind", "", 
+                                 "media-seek-backward", "")
+        actionFwd = createAction(self,"&Forward", "", 
+                                 "media-seek-forward", "")
+        '''
+        self.actions = (actionAnalyseFromFiles,)
         #
-        self.sampleEdit = LabelledLineEdit('Sample Name')
-        layout.addWidget(self.sampleEdit)
-        self.sampleEdit.lineEdit.textChanged.connect(self.descriptionChanged)
+        analyser.signalAnalysisStarted.connect(self.signalAnalysisStarted)             
+        analyser.signalNextFileAnalysing.connect(self.signalNextFileAnalysing)
+        analyser.signalAnalysisFinished.connect(self.signalAnalysisFinished)
+        self.signalAnalyseFromFile.connect(analyser.analyseFromFiles)
+        self.analysisProgressDialog.canceled.connect(analyser.abortAnalysis)
         #
-        self.recordTrajectoryButton = QtGui.QPushButton('Record trajectory')
-        self.recordTrajectoryButton.setCheckable(True)
-        self.recordTrajectoryButton.setEnabled(False)
-        self.recordTrajectoryButton.toggled.connect(self.setTrajectoryRecord)
-        layout.addWidget(self.recordTrajectoryButton)
+        layout=QtGui.QGridLayout()
         #
         self.saveTrajectoryButton = QtGui.QPushButton('Save Trajectory')
-        layout.addWidget(self.saveTrajectoryButton)
+        layout.addWidget(self.saveTrajectoryButton,0,0)
         #
-        self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
-        self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
-        layout.addWidget(self.analyseTrajectoryButton)
+        #self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
+        #self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
+        #layout.addWidget(self.analyseTrajectoryButton,1,0)
         
         self.analyseFromFileButton = QtGui.QPushButton('Analyse from files')
         self.analyseFromFileButton.clicked.connect(self.analyseFromFile)
-        layout.addWidget(self.analyseFromFileButton)
+        layout.addWidget(self.analyseFromFileButton,1,1)
         
         self.createImageButton = QtGui.QPushButton('Create Trajectory Images')
         self.createImageButton.clicked.connect(self.createTrajectoryImages)
-        layout.addWidget(self.createImageButton)
+        layout.addWidget(self.createImageButton,2,0)
         #
-        self.errorTresholdSlider = LabelledSlider('Error Treshold')
+        self.errorTresholdSlider = QtGui.QDoubleSpinBox()
+        errorTresholdLabel = QtGui.QLabel('Error Threshold (mm/s):')
+        errorTresholdLabel.setBuddy(self.errorTresholdSlider)
         self.errorTresholdSlider.setMaximum(100)
-        self.errorTresholdSlider.setValue(50)
-        self.errorTresholdSlider.valueChanged.connect(self.setErrorTheshold)
-        layout.addWidget(self.errorTresholdSlider)
+        self.errorTresholdSlider.setValue(analyser.errorSpeedThreshold)
+        self.errorTresholdSlider.valueChanged.connect(analyser.setErrorThreshold)
+        self.errorTresholdSlider.valueChanged.connect(self.errorTresholdChanged)
+        layout.addWidget(errorTresholdLabel,3,0)
+        layout.addWidget(self.errorTresholdSlider,3,1)
         
-        self.speedTresholdSlider = LabelledSlider('Speed Treshold')
-        self.speedTresholdSlider.setMaximum(100)
-        self.speedTresholdSlider.setValue(28)
-        self.speedTresholdSlider.valueChanged.connect(self.setSpeedTheshold)
-        layout.addWidget(self.speedTresholdSlider)
+        self.speedThresholdSlider = QtGui.QDoubleSpinBox()
+        speedThresholdLabel = QtGui.QLabel('Speed Threshold (mm/s):')
+        speedThresholdLabel.setBuddy(self.speedThresholdSlider)
+        self.speedThresholdSlider.setMaximum(50)
+        self.speedThresholdSlider.setValue(analyser.speedThreshold)
+        self.speedThresholdSlider.valueChanged.connect(analyser.setSpeedThreshold)
+        layout.addWidget(speedThresholdLabel,4,0)
+        layout.addWidget(self.speedThresholdSlider,4,1)
         
-        self.intervalDurationSlider = LabelledSlider('Interval Duration')
-        self.intervalDurationSlider.setMaximum(500)
+        self.intervalDurationSlider = QtGui.QSpinBox()
+        intervalDurationLabel = QtGui.QLabel('Interval Duration (s):')
+        intervalDurationLabel.setBuddy(self.intervalDurationSlider)
+        self.intervalDurationSlider.setMaximum(1000)
         self.intervalDurationSlider.setMinimum(50)
-        self.intervalDurationSlider.setValue(300)
-        self.intervalDurationSlider.valueChanged.connect(self.setIntervalDuration)
-        layout.addWidget(self.intervalDurationSlider)
+        self.intervalDurationSlider.setValue(analyser.intervalDuration)
+        self.intervalDurationSlider.valueChanged.connect(analyser.setIntervalDuration)
+        layout.addWidget(intervalDurationLabel,5,0)
+        layout.addWidget(self.intervalDurationSlider,5,1)
         self.setLayout(layout)
+        
+    def errorTresholdChanged(self, value):
+        if self.speedThresholdSlider.value() > value :
+            self.speedThresholdSlider.setValue(value)
         
     def createTrajectoryImages(self):
         self.signalCreateTrajectoryImages.emit()
-        
-    def setTrajectoryRecord(self, checked):
-        self.emit(signalWriteTrajectory, checked, self.sampleEdit.text())
-
-    def setErrorTheshold(self, value):
-        self.emit(signalErrorTheshold, value/100)
-        
-    def setSpeedTheshold(self, value):
-        self.emit(signalSpeedTheshold, value/100)
+           
+    def signalAnalysisStarted(self, count):
+        self.analysisProgressDialog.setMaximum(count)
+        self.analysisProgressDialog.show()
     
-    def setIntervalDuration(self, value):
-        self.emit(signalIntervalDuration, value)
-        
-    def analyseTrajectory(self):
-        '''
-        '''
-        # Creating formats list
-        formats = ["*.%s" % unicode(videoFormat).lower() \
-                   for videoFormat in ('txt', 'csv')]
-        # Setting last user dir
-        directory =  "."
-        # Executing standard open dialog
-        
-        fname = unicode(QtGui.QFileDialog.getSaveFileName(self,
-                        "Choose output file",
-                        directory, "Data files (%s)" % " ".join(formats)))
-        self.emit(signalAnalyseTrajectory, fname)
-        
+    def signalNextFileAnalysing(self, name, progress):
+        self.analysisProgressDialog.setLabelText(name)
+        self.analysisProgressDialog.setValue(progress)
+    
+    def signalAnalysisFinished(self):
+        self.analysisProgressDialog.close()
     
     def analyseFromFile(self):
         '''
         '''
-        formats = ["*.%s" % unicode(videoFormat).lower() \
-                   for videoFormat in ('txt', 'csv')]
-        # Setting last user dir
-        directory =  "."
-        # Executing standard open dialog
-        fname = unicode(QtGui.QFileDialog.getSaveFileName(self,
-                        "Choose output file",
-                        directory, "Data files (%s)" % " ".join(formats)))
-        if fname == '' :
-            return
-        dialog = QtGui.QFileDialog(self)
-        dialog.setWindowTitle('Open input Files')
-        dialog.setFileMode(QtGui.QFileDialog.ExistingFiles);
-        #dialog.setNameFilter("Chambers (*.lt1)"));
-        if dialog.exec_() :
-            fileNames = dialog.selectedFiles()
-        else :
-            return
-        self.signalAnalyseFromFile.emit(fname, fileNames)
-    
-    def trajectoryWriting(self, checked):
-        self.recordTrajectoryButton.setChecked(checked)
-    
-    def descriptionChanged(self):
-        #
-        sampleName = str(self.sampleEdit.text())
-        flag = (sampleName != '')
-        self.recordTrajectoryButton.setEnabled(flag)
-        if flag :
-            self.emit(signalSampleNameChanged, sampleName)
+        analyseDialog = AnalyseDialog(self)
+        if analyseDialog.exec_() :
+            
+            self.signalAnalyseFromFile.emit(analyseDialog.analyseFileName, analyseDialog.ltFilesList)
         
     

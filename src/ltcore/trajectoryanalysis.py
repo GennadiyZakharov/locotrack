@@ -8,147 +8,219 @@ Created on 07.04.2012
 from __future__ import division
 from math import sqrt
 import os
-import numpy as np
-
 from PyQt4 import QtCore, QtGui
-from ltcore.ltobject import LtObject
-
-totalActivityName = "0-TotalActivity.csv"
-activityName = "1-Activity.csv"
-restName = "2-Rest.csv"
-runName = "3-Run.csv"
-graphName = ".graph.txt"
-
-def correctErrors(chamber):
-    '''
-    scan 
-    '''
-    chamber.ltTrajectory.strip()
-    #startFrame, endFrame = chamber.ltTrajectory.bounds()
-
-def calculateSpeed(chamber, intervalDuration=300):
-    '''
-    '''
-    chamber.ltTrajectory.rstrip()
-    startFrame, endFrame = chamber.ltTrajectory.bounds()
-    currentFrame = startFrame
-    x0, y0 = chamber.ltTrajectory.getXY(startFrame)
-    totalLength = 0
-    intervalNumber = 1
-    intervalLength = 0
-    intervals = []
-    # total time in seconds
-    totalTime = (endFrame - startFrame + 1) / chamber.frameRate
-    while True : # Cycle for all points
-        currentFrame += 1
-        if (currentFrame - startFrame) / chamber.frameRate > intervalDuration * intervalNumber :
-            intervals.append((intervalNumber, intervalLength / intervalDuration))
-            intervalNumber += 1
-            intervalLength = 0
-        if currentFrame > endFrame :
-            break
-        x1, y1 = chamber.ltTrajectory.getXY(currentFrame)
-        if x1 < 0 :
-            continue
-        length = sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2) / chamber.scale
-        totalLength += length
-        intervalLength += length
-        x0, y0 = x1, y1
-    lastTime = (currentFrame - startFrame) / chamber.frameRate - (intervalDuration - 1) * intervalNumber
-    if lastTime >= intervalDuration / 2 :
-        intervals.append((intervalNumber, intervalLength / lastTime))
-    return totalLength / totalTime, intervals
-        
+from ltcore.chamber import Chamber     
 
 class NewRunRestAnalyser(QtCore.QObject):
     
     outString = '{:>25}; {:5}; {:18.6f}; {:18.6f};   {};\n'
-    #sample, interval, activity, speed
+    #sample, interval, activity, speed, fileName
+    signalAnalysisStarted = QtCore.pyqtSignal(int)
+    signalNextFileAnalysing = QtCore.pyqtSignal(str, int)
+    signalAnalysisFinished = QtCore.pyqtSignal()
+    
+    errorNoErrors = 0
+    errorLongMissedInterval = -1
     
     def __init__(self, parent=None):
         '''
         Constructor
         '''
         super(NewRunRestAnalyser, self).__init__(parent)
-        self.intervalDuration = 300.0
-        self.quantDuration = 1.0
-        self.speedTreshold = 5.0 # For imago
-        #self.speedTreshold = 0.4 # For larva
-        self.errorTreshold = 50.0
+        self.intervalDuration = 300.0 # Interval 5 minutes
+        self.quantDuration = 1.0      # Length of quant 
+        self.speedThreshold = 5.0 # For imago
+        #self.speedThreshold = 0.4 # For larva
+        
+        # Error detection parameters
+        self.maxMissedIntervalDuration = 2.0 # Seconds
+        self.maxMissedIntervalCount = 5
+        self.errorSpeedThreshold = 50.0 # mm/s
         '''
         Speed run/rest threshold 
             0.4 mm/s for imago (smoothed trajectory)
-            0.5 mm/s for imago (raw trajectory)
+            5.0 mm/s for imago (raw trajectory)
         '''
+        self.analyseFromFilesRunning = False
+    
+    def setErrorThreshold(self, value):
+        self.errorSpeedThreshold = value
         
-    def checkErrors(self, chamber):
-        if chamber.ltTrajectory is None :
-            return
-        chamber.ltTrajectory.strip()
-        start,end = chamber.ltTrajectory.bounds()
-        x,y = chamber.ltTrajectory.getXY(start)
-        for i in xrange(start+1,end+1):
-            x1,y1 = x,y
-            x,y = chamber.ltTrajectory.getXY(i)
-            if x < 0 :
-                print 'Lost object at frame {}'.format(i)
-                return False
-            length = sqrt((x - x1) ** 2 + (y - y1) ** 2) / chamber.scale
-            spd = length*chamber.frameRate
-            if spd > self.errorTreshold :
-                print 'speed to much at frame {} - {}'.format(i,spd)
-                return False
-        return True
-    def analyseChamber(self, chamber, name, logFile):
+    def setSpeedThreshold(self, value):
+        self.speedThreshold = value
+        
+    def setIntervalDuration(self, value):
+        self.intervalDuration = value
+    
+    def checkForErrors(self, trajectory, scale, frameRate):
+        '''
+        Check trajectory for errors 
+        and return 0 if trajectory sutable for analysis
+        '''
+        def isError(frame1,frame2,ltobject1,ltObject2) :
+            if ltObject2 is None :
+                return -1
+            x1,y1 = ltObject1.center
+            x2,y2 = ltObject2.center
+            length = sqrt((x2-x1)**2 + (y2-y1)**2)
+            time = (frame2-frame1)/frameRate
+            if length/time > self.errorSpeedThreshold :
+                return -2
+            else :
+                return 0
+        
+        missedFramesCount = 0  # Number of bad frames 
+        missedIntervalsCount = 0
+        startFrame, endFrame = trajectory.bounds()
+        # Start frame always not none
+        frame1 = startFrame 
+        ltObject1 = trajectory[startFrame]
+        # Cycle by all frames
+        for frame2 in xrange(startFrame+1, endFrame):
+            ltObject2 = trajectory[frame2]
+            # Check is object present
+            frame2Status = isError(frame1,frame2,ltObject1,ltObject2) 
+            if frame2Status < 0 :
+                if frame2Status == -1 :
+                    print "*** Object not found at frame {}".format(frame2)
+                else :
+                    print "*** Speed too much at frame {}".format(frame2)
+                # Check, if we start new missed interval
+                if missedFramesCount == 0:
+                    missedIntervalsCount += 1
+                    if missedIntervalsCount > self.maxMissedIntervalCount :
+                        return -2
+                missedFramesCount += 1
+                if missedFramesCount / frameRate >= self.maxMissedIntervalDuration :
+                    return -1
+                # Continue to next frame
+                continue
+            if missedFramesCount > 0 :
+                missedFramesCount = 0
+            frame1=frame2
+            ltObject1=ltObject2
+        return 0
+    
+    def analyseFromFiles(self, resultsFileName, inputFileNames):
+        '''
+        Analyse all files from iterator inputFileNames and put results into file resultsFileName
+        '''
+        print "Starting analysis"
+        #Prepare result file for writing
+        resultsFile = open(resultsFileName, 'w')
+        captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
+        resultsFile.write(captionString)
+        # Emit count of tracks to analyse
+        self.signalAnalysisStarted.emit(len(inputFileNames))
+        i = 0
+        self.analyseFromFilesRunning = True
+        for name in inputFileNames :
+            # Check for emergency abort
+            if not self.analyseFromFilesRunning : 
+                print 'Analysis aborted'
+                break
+            # Signal to update GUI
+            self.signalNextFileAnalysing.emit(name, i)
+            i += 1
+            chamber, scale, frameRate = Chamber.loadFromFile(name)
+            if chamber.trajectory is not None :
+                trajectory = chamber.trajectory.clone()
+                # Ensure that start and end frame is not none
+                trajectory.strip()
+                errorStatus = self.checkErrors(trajectory, scale, frameRate, resultsFile) 
+                if errorStatus == 0 :
+                    # Create image and analyse
+                    chamber.createTrajectoryImage()
+                    chamber.trajectoryImage.save(name + '.png')
+                    baseName = os.path.basename(str(name))
+                    pos = baseName.find('.ch', -10, -1)
+                    if pos >= 1 :               
+                        self.analyseChamber(trajectory, scale, frameRate, baseName[:pos], resultsFile)
+                elif errorStatus == -1 :
+                    resultsFile.write('Too many error') 
+        self.signalAnalysisFinished.emit()  
+    
+    def abortAnalysis(self):
+        self.analyseFromFilesRunning = False
+    
+    def analyseChamber(self, trajectory, scale, frameRate, fileName, resultsFile):
         '''
         Analysing chamber
-        
-        We analyse every frame in sequence
         '''
-        if chamber.smoothedTrajectory is None:
-            chamber.smoothedTrajectory = chamber.ltTrajectory.smoothed() 
-        chamber.smoothedTrajectory.strip()
-        startFrame, endFrame = chamber.smoothedTrajectory.bounds()
+        # Working with linear smoothed trajectory
+        
+        startFrame, endFrame = trajectory.getStartEndFrame()
         # Total values
         totalRunLength = 0 # Summary length
-        totalTime = (endFrame - startFrame + 1) / chamber.frameRate # total time in seconds
+        totalTime = (endFrame - startFrame) / frameRate # total time in seconds
         totalActivityCount = 0
         # Interval values
         intervalNumber = 1 # Current interval number
         intervalRunLength = 0 # Run Length on current interval
         intervalActivityCount = 0 # Activity count on this frame
 
-        '''
-        # Manually get first frame
-        frame1 = startFrame
-        x1, y1 = chamber.smoothedTrajectory.getXY(frame1)
-        '''
-        x1 = -1
-        for frame2 in xrange(startFrame, endFrame + 1): # Cycle for all points
+        missedFrames = 0
+        missedCount = 0
+        ltObject1 = None
+        for frame2 in xrange(startFrame, endFrame): # Cycle for all points
+            # Check for emergency abort
+            if not self.analyseFromFilesRunning :
+                logFile.write()
+                return
             # trying to find positive coordinates
-            x2, y2 = chamber.smoothedTrajectory.getXY(frame2)
-            if (frame2 - startFrame) / chamber.frameRate > self.intervalDuration * intervalNumber :
+            ltObject2 = smoothedTrajectory[frame2]
+            if (frame2 - startFrame) / frameRate > self.intervalDuration * intervalNumber :
                 #next interval started
                 logFile.write(self.outString.format(chamber.sampleName, intervalNumber,
-                                                    ((intervalActivityCount/chamber.frameRate) / self.intervalDuration),
-                                                    intervalRunLength / self.intervalDuration, name))
+                                                    ((intervalActivityCount / frameRate) / self.intervalDuration),
+                                                    intervalRunLength / self.intervalDuration, fileName))
                 intervalNumber += 1
                 intervalRunLength = 0
                 intervalActivityCount = 0
-            if x1 < 0 : # no previous point -- store and continue
-                x1, y1 = x2, y2
+                if ltObject2 is None: # Interval ended on error -- we need to reinit next point
+                    print "*** Object not found at frame {}".format(frame2)
+                    ltObject1 = None
+                    continue
+            if ltObject2 is None : # need next point without errors
+                print "*** Object not found at frame {}".format(frame2)
+                if missedFrames == 0:
+                    missedCount += 1
+                    if missedCount > 5 :
+                        print '*** Analysis aborted'
+                    logFile.write('*** Aborted with to much missed intervals; {}\n'.format(fileName))
+                missedFrames += 1
+                if missedFrames / chamber.frameRate >= 2.0 :
+                    print '*** Analysis aborted'
+                    logFile.write('*** Aborted with missed object at frame {}; {}\n'.format(frame2, fileName))
+                    return
+                continue
+            missedFrames = 0
+            if ltObject1 is None : # no previous point -- store and continue
+                ltObject1 = ltObject2
                 frame1 = frame2
                 continue
-            if (frame2 - frame1) / chamber.frameRate < self.quantDuration :
-                continue
-            length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / chamber.scale
+            x1, y1 = ltObject1.center
+            x2, y2 = ltObject2.center
+            length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / scale
+            time = (frame2 - frame1) / frameRate
+            speed = length / time
+            if speed >= self.errorTreshold :
+                print "*** Speed too much at frame {}-{} ".format(frame1, frame2)
+                if frame2 - frame1 == 1:
+                    missedCount += 1
+                    if missedCount > 5 :
+                        print '*** Analysis aborted'
+                    logFile.write('*** Aborted with to much error intervals; {}\n'.format(fileName))
+            if (frame2 - frame1) / chamber.frameRate <= 1.0 :
+                    continue
+                    print '*** Analysis aborted'
+                    logFile.write('*** Aborted with error at frame {}-{}; {}\n'.format(frame1, frame2, fileName))
+                    return
             totalRunLength += length
             intervalRunLength += length
-            time = (frame2 - frame1) / chamber.frameRate
-            speed = length / time
             if speed >= self.speedTreshold :
-                intervalActivityCount += (frame2 - frame1) # 1 if no errors
-                totalActivityCount += (frame2 - frame1)
+                intervalActivityCount += frame2 - frame1 # 1 if no errors
+                totalActivityCount += frame2 - frame1
             x1, y1 = x2, y2
             frame1 = frame2
             QtGui.QApplication.processEvents()
@@ -162,258 +234,5 @@ class NewRunRestAnalyser(QtCore.QObject):
         '''
         # total output
         logFile.write(self.outString.format(chamber.sampleName, -1,
-                                            ((totalActivityCount/chamber.frameRate) / totalTime),
-                                            totalRunLength / totalTime, name))
-
-class RunRestAnalyser(QtCore.QObject):
-    '''
-    Classic analyser, based on run/rest periods
-    '''
-
-    def __init__(self, parent=None):
-        '''
-        Constructor
-        '''
-        super(RunRestAnalyser, self).__init__(parent)
-        self.quantDuration = 1.0
-        self.intervalDuration = 300.0
-        self.speedTreshold = 0.28
-        self.errorTreshold = 5.0
-        self.blackTreshold = 50
-        
-    def readPoint(self):
-        line = self.trajectoryFile.readline()
-        if not line :
-            print line
-            return None
-        frameNumber, x, y = [float(n) for n in line.split()]
-        if (x >= 0) and (y >= 0) :
-            self.trackArray[int(x), int(y)] += 1
-            #self.trackImage.setPixel(int(x), int(y), 0)
-        return (frameNumber / self.frameRate, x / self.scale, y / self.scale)
-    
-    def activityString(self, interval, activity, runFreq, runSpeed):
-        return '{0:>25}; {1:5}; {2:18.6f}; {3:18.6f}; {4:18.6f};\n'.format(
-            self.sampleName, interval,
-            activity, runFreq, runSpeed)
-    
-    def restString(self, interval, restDuration):
-        return '{0:>25}; {1:5}; {2:18.6f};\n'.format(
-            self.sampleName,
-            interval, restDuration)
-    
-    def runString(self, interval, runDuration, runLength):
-        return '{0:>25}; {1:5}; {2:18.6f}; {3:18.6f}; {4:18.6f};\n'.format(
-            self.sampleName, interval,
-            runDuration, runLength, runLength / runDuration)
-        
-    def setErrorTreshold(self, value):
-        self.errorTreshold = value
-        
-    def setRunRestTreshold(self, value):
-        self.speedTreshold = value
-    def setIntervalDuration(self, value):
-        self.intervalDuration = value
-    
-    def analyseDir(self, dirName):
-        dirList = os.listdir(dirName)
-        dirList.sort()
-        for fileName in dirList :
-            fullName = os.path.join(dirName, fileName)
-            if not os.path.isdir(fullName) and fileName[-3:] == 'lt1' :
-                self.analyseFile(fullName, dirName)
-        '''
-        for dir, dirnames, filenames in os.walk(dirName):
-            for filename in filenames:
-                print filename
-                if filename[-3:] == 'lt1' :
-                    self.analyseFile(os.path.join(dirName, filename), dirName)
-        '''
-    def openOutputFile(self, name, captionString):
-        if os.path.isfile(name) :
-            mode = 'a'
-        else :
-            mode = 'w'
-        outFile = open(name, mode)
-        if mode == 'w' :
-            outFile.write(captionString)
-        return outFile
-
-    def analyseFile(self, fileName, dirName):
-        '''
-        Do analysis of one track
-        '''
-        #
-        print "Starting analysis of file " + fileName
-        baseName = os.path.splitext(fileName)[0]
-
-        print baseName
-        self.totalActivityFile = self.openOutputFile(os.path.join(dirName, totalActivityName),
-            '                   Sample;   None;           Activity;            RunFreq(1/min);    RunSpeed;\n')                          
-        self.activityFile = self.openOutputFile(os.path.join(dirName, activityName),
-            '                   Sample;   Int;           Activity;            RunFreq(1/min);    RunSpeed;\n')
-        self.restFile = self.openOutputFile(os.path.join(dirName, restName),
-            '                   Sample;   Int;           RestTime;\n')
-        self.runFile = self.openOutputFile(os.path.join(dirName, runName),
-            '                   Sample;   Int;            RunTime;             RunLen;           RunSpeed;\n')
-        #self.graphFile = open(fileName + graphName, 'w')
-        self.errorFile = open(baseName + '.err', 'w') 
-        #
-        self.trajectoryFile = open(fileName, 'r')
-        if self.trajectoryFile is None :
-            print "Error opening file"
-            return
-        self.trajectoryFile.readline()
-        self.left, self.top = [int(x) for x in self.trajectoryFile.readline().split()]
-        width, height = [int(x) for x in self.trajectoryFile.readline().split()]
-        self.scale = float(self.trajectoryFile.readline())
-        self.frameRate = float(self.trajectoryFile.readline())
-        self.sampleName = self.trajectoryFile.readline().rstrip()
-        self.trajectoryFile.readline()
-        self.trajectoryFile.readline()
-        #
-        self.trackArray = np.zeros((width, height), dtype=int) 
-        self.trackImage = QtGui.QImage(width, height, QtGui.QImage.Format_Indexed8)
-        colorTable = [QtGui.qRgb(i, i, i) for i in xrange(256)]
-        self.trackImage.setColorTable(colorTable)
-        self.trackImage.fill(255)
-        # 
-        lastState = -1 # стостяние движения личинки
-        # //0 - покой, 1 - движение, -1 - не определено
-        secondPoint = self.readPoint()
-        # Store start time
-        startTime = secondPoint[0]
-        
-        errorCount = 0
-        intervalNumber = 1
-        # Total parameters by all record length
-        totalRunDuration = 0.0
-        totalRunCount = 0
-        totalRunLen = 0.0
-        # This is variables to calculate run/rest 
-        restDuration = 0.0
-        runDuration = 0.0
-        runLen = 0.0
-        runStart = -1
-        restStart = -1
-        # Main cycle -- input file
-        while True : 
-            # Resetting Interval Values
-            intervalDuration = 0.0
-            intervalRunDuration = 0.0
-            intervalRunCount = 0
-            intervalRunLen = 0.0
-            print "interval started " + str(intervalNumber)
-            # interval cycle
-            while True : 
-                firstPoint = secondPoint
-                
-                # Reading Next Point according to quant duration
-                while True :
-                    secondPoint = self.readPoint()
-                    QtCore.QCoreApplication.processEvents()
-                    if secondPoint is None :
-                        # Input File ended
-                        break
-                    quantDuration = secondPoint[0] - firstPoint[0]
-                    # Checking if it is enough to quant 
-                    if quantDuration < self.quantDuration :
-                        continue
-                    if secondPoint[1] < 0 : # This was error 
-                        errorCount += 1
-                        self.errorFile.write("{0:5} Error {1:3} -- no object found\n".format(secondPoint[0], errorCount))
-                        continue
-                    quantLen = sqrt((secondPoint[1] - firstPoint[1]) ** 2 + 
-                            (secondPoint[2] - firstPoint[2]) ** 2)
-                    
-                    speed = quantLen / quantDuration
-                    if speed > self.errorTreshold :
-                        errorCount += 1
-                        self.errorFile.write('{0:5} Error {1:3} -- speed too much\n'.format(secondPoint[0], errorCount))
-                        continue
-                    else :
-                        break 
-                #
-                if secondPoint is None :
-                    break
-                #print 'readed quant '+str(quantDuration)
-                # Calculating speed by quant
-                intervalDuration += quantDuration
-                #print 'intduration',intervalDuration
-                '''
-                self.graphFile.write("{0:10.2f} {1:12.4f}\n".format(
-                    secondPoint[0], quantLen / quantDuration))
-                '''
-                if speed > self.speedTreshold :
-                    #//личинка двигалась на данном кванте
-                    runDuration += quantDuration #//добавляет этот квант к побежке
-                    intervalRunDuration += quantDuration
-                    totalRunDuration += quantDuration
-                    runLen += quantLen
-                    totalRunLen += quantLen
-                    intervalRunLen += quantLen
-                    if lastState == 0 :
-                        #//кончился предыдущий период покоя закончился -- записываем
-                        #//записываем в выходной файл данные об отдыхе
-                        string = self.restString(restStart, restDuration)
-                        self.restFile.write(string)
-                        # Обнуляем
-                        restDuration = 0
-                              
-                    if (lastState == -1) or (lastState == 0) : # начали анализировать движение
-                        lastState = 1 # поставили анализируемый период
-                        intervalRunCount += 1 # на данном интервале началась еще одна побежка
-                        totalRunCount += 1
-                        runStart = intervalNumber # запомнили, на каком интервале началась побежка
-                else :
-                    # личинка не двигалась
-                    restDuration += quantDuration
-                    if lastState == 1 :
-                        # кончилась побежка - -записываем 
-                        # записываем в выходной файл данные о побежке
-                        string = self.runString(runStart, runDuration, runLen)
-                        self.runFile.write(string)
-                        runDuration = 0
-                        runLen = 0
-                    if (lastState == -1) or (lastState == 1) : # начали анализировать покой
-                        lastState = 0 #; // поставили анализируемый период
-                        restStart = intervalNumber #запомнили, на каком интервале начался период покоя
-    
-                if intervalDuration >= self.intervalDuration : 
-                    #; // закончилась обработка интервала
-                    print 'time {0}, int {1} dur {2} ended'.format(secondPoint[0], intervalNumber, intervalDuration)
-                    string = self.activityString(intervalNumber,
-                            intervalRunDuration / intervalDuration, 60 * intervalRunCount / intervalDuration,
-                            intervalRunLen / intervalRunDuration if intervalRunDuration > 0.1 else 0)
-                    self.activityFile.write(string)
-                    intervalNumber += 1 
-                    break
-            # Writing interval activity index and run count
-            if secondPoint is None :
-                break
-        
-        self.trajectoryFile.close()
-        self.activityFile.close()
-        self.runFile.close()
-        self.restFile.close()
-        #self.graphFile.close()
-        self.errorFile.close()
-        if errorCount == 0 :
-            os.remove(baseName + '.err')
-        for i in xrange(width) :
-            for j in xrange(height) :    
-                intensity = 0 if self.trackArray[i, j] > self.blackTreshold  else 255 - int((self.trackArray[i, j] / self.blackTreshold) * 255)
-                self.trackImage.setPixel(i, j, intensity)
-                
-        self.trackImage.save(baseName + '.png', format='PNG')
-        #self.totalActivityFile = open(totalActivityName,'w')
-        totalTime = firstPoint[0] - startTime
-        string = self.activityString(-1,
-                         totalRunDuration / totalTime, 60 * totalRunCount / totalTime,
-                         totalRunLen / totalRunDuration)
-        self.totalActivityFile.write(string)
-        self.totalActivityFile.close()
-        print 'file {}, length:{}, errors:{}'.format(fileName, totalTime, errorCount)
-        
-        
-        
+                                            ((totalActivityCount / chamber.frameRate) / totalTime),
+                                            totalRunLength / totalTime, fileName))

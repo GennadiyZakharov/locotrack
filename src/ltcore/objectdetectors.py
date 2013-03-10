@@ -36,7 +36,7 @@ class massCenterDetector():
     '''
     name = 'massCenter'
     description = 'threshold and center'
-    def detectObject(self, frame, size, matrices, threshold, ellipseCrop):
+    def detectObject(self, frame, size, matrices, threshold, ellipseCrop, ):
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         averageVal = cv.Avg(frame)[0]
         if ellipseCrop :

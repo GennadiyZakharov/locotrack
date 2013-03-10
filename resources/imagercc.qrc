@@ -1,0 +1,26 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file alias="application-exit.png">images/application-exit.png</file>
+  
+  <file alias="camera-web.png">images/camera-web.png</file>
+  <file alias="document-open.png">images/document-open.png</file>
+  <file alias="dialog-close.png">images/dialog-close.png</file>
+  <file alias="fork.png">images/fork.png</file>
+  <file alias="media-playback-start.png">images/media-playback-start.png</file>
+  <file alias="media-seek-backward.png">images/media-seek-backward.png</file>
+  <file alias="media-seek-forward.png">images/media-seek-forward.png</file>
+  
+  <file alias="media-record.png">images/media-record.png</file>
+  <file alias="measure.png">images/measure.png</file>
+  <file alias="document-save.png">images/document-save.png</file>
+  <file alias="process-stop.png">images/process-stop.png</file>
+  <file alias="distribute-horizontal-center.png">images/distribute-horizontal-center.png</file>
+  
+  <file alias="help-about.png">images/help-about.png</file>
+  <file alias="help-contents.png">images/help-contents.png</file>
+  <file alias="back.png">images/back.png</file>
+  <file alias="home.png">images/home.png</file>
+  <file>help/index.html</file>
+  
+</qresource>
+</RCC>

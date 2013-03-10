@@ -31,7 +31,7 @@ class ChamberWidget(QtGui.QWidget):
         self.showTrajectoryCheckBox = QtGui.QCheckBox()
         self.showTrajectoryCheckBox.setText('Show Trajectory')
         self.showTrajectoryCheckBox.setChecked(chamber.showTrajectory)
-        self.showTrajectoryCheckBox.toggled.connect(self.chamber.setTrajectoryShow)
+        self.showTrajectoryCheckBox.toggled.connect(self.chamber.setShowTrajectory)
         layout.addWidget(self.showTrajectoryCheckBox)
         self.setLayout(layout)
         chamber.signalGuiDataUpdated.connect(self.update)

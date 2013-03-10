@@ -74,6 +74,7 @@ class CvGraphics(QtGui.QGraphicsView):
             self.scene.removeItem(self.pixmapObject)
             self.pixmap.convertFromImage(self.frame)
             self.pixmapObject = self.scene.addPixmap(self.pixmap)
+            #self.pixmapObject.  Bring Back
             self.scene.setSceneRect(self.pixmapObject.boundingRect())
         else :
             self.pixmap.convertFromImage(self.frame)

@@ -6,12 +6,15 @@ Created on 18.03.2011
 
 import sys, os
 from PyQt4 import QtCore, QtGui
+import platform
 
 from ltcore.signals import *
 from ltcore.consts import *
 
 from ltcore.cvprocessor import CvProcessor
-from ltcore.ltactions import LtActions
+from ltcore.ltactions import addActions,createAction
+
+import imagercc
 
 #from ltgui.cvlabel import CvLabel
 from ltgui.cvgraphics import CvGraphics
@@ -19,6 +22,7 @@ from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
 from ltgui.cvprocessorwidget import CvProcessorWidget
 from ltgui.trajectorywidget import TrajectoryWidget
+from ltgui.helpwidget import HelpWidget
 
 
 class LtMainWindow(QtGui.QMainWindow):
@@ -32,25 +36,22 @@ class LtMainWindow(QtGui.QMainWindow):
         '''
         super(LtMainWindow, self).__init__(parent)
         self.setWindowTitle(applicationName + ' ' + applicationVersion)
-        self.setObjectName("ltMainWindow")
-                
-        self.dirty = False
-        
+        self.setObjectName("ltMainWindow")      
         # ==== Creating core functional units ====
-        self.ltActions = LtActions(self) # Actions
-        self.cvProcessor = CvProcessor(self)           
-                
+        #self.ltActions = LtActions(self) # Actions
+        self.cvProcessor = CvProcessor(self)                
         # ==== Creating GUI ====
+        status = self.statusBar()
+        status.setSizeGripEnabled(False)
         # ---- Creating main video widget ----
         self.cvLabel = CvGraphics(self)
         self.cvLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.cvLabel.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.cvLabel.setObjectName("cvLabel")
         self.setCentralWidget(self.cvLabel)
-        self.connect(self.cvProcessor, signalNextFrame, self.cvLabel.putImage)
+        self.cvProcessor.signalNextFrame.connect(self.cvLabel.putImage)
         
-        
-        # ---- Creating dock panel for videoplayer ----
+        # ---- Creating dock panel for video player ----
         videoDockPanel = QtGui.QDockWidget("Video Control", self)
         videoDockPanel.setObjectName("videoDockWidget")
         videoDockPanel.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
@@ -65,24 +66,19 @@ class LtMainWindow(QtGui.QMainWindow):
         chambersDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         chambersDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
-        self.chambersWidget = ChambersWidget() 
+        self.chambersWidget = ChambersWidget(self.cvProcessor.chambers) 
         #self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
         # ---- chambersWidget ----
         self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)        
         self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
-        self.connect(self.chambersWidget, signalSetChamber,
-                     self.cvProcessor.addChamber)
-        self.chambersWidget.signalClearChamber.connect(
-                     self.cvProcessor.clearChamber)
+        
         self.chambersWidget.signalChamberSelected.connect(
             self.cvLabel.selectChamberGui)
+        self.chambersWidget.signalSetScale.connect(self.cvProcessor.setScale)
         
         self.cvLabel.signalChamberSelected.connect(
             self.chambersWidget.selectChamber)
-        
-        self.connect(self.chambersWidget, signalSetScale,
-                     self.cvProcessor.setScale)
         
         self.cvProcessor.chambers.signalChamberAdded.connect(
             self.chambersWidget.addChamber)
@@ -97,9 +93,9 @@ class LtMainWindow(QtGui.QMainWindow):
         # ---- Creating dock panel for image processing ---- 
         cvProcessorDockPanel = QtGui.QDockWidget("Image processor", self) # Created and set caption
         cvProcessorDockPanel.setObjectName("chambersDockWidget")
-        cvProcessorDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
+        cvProcessorDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         cvProcessorDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
-        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, cvProcessorDockPanel)
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvProcessorDockPanel)
         self.cvProcessorWidget = CvProcessorWidget(self.cvProcessor) 
         cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
         # ---- Creating dock panel for trajectory Widget
@@ -108,31 +104,40 @@ class LtMainWindow(QtGui.QMainWindow):
         cvTrajectoryDockPanel.setAllowedAreas(QtCore.Qt.RightDockWidgetArea)
         cvTrajectoryDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
-        self.cvTrajectoryWidget = TrajectoryWidget() 
+        self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.runRestAnalyser) 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
-        self.connect(self.cvTrajectoryWidget, signalWriteTrajectory, self.cvProcessor.saveObjectToTrajectory)
+        self.chambersWidget.recordTrajectoryButton.toggled.connect(self.cvProcessor.setRecordTrajectory)
         self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
-        self.connect(self.cvTrajectoryWidget, signalSampleNameChanged, self.cvProcessor.setSampleName)
+        
         self.cvTrajectoryWidget.signalCreateTrajectoryImages.connect(self.cvProcessor.createTrajectoryImages)
-        self.cvTrajectoryWidget.signalAnalyseFromFile.connect(self.cvProcessor.analyseFromFiles)
-        self.cvTrajectoryWidget.speedTresholdSlider.setValue(self.cvProcessor.runRestAnalyser.speedTreshold)
-        self.cvProcessor.trajectoryWriting.connect(self.cvTrajectoryWidget.trajectoryWriting)
-        self.cvTrajectoryWidget.saveTrajectoryButton.clicked.connect(self.cvProcessor.saveProject)             
+        self.cvTrajectoryWidget.saveTrajectoryButton.clicked.connect(self.cvProcessor.saveProject)
+        
         
         # ==== Creating menu ====
+        
         projectMenu = self.menuBar().addMenu("&Project")
-        self.ltActions.addActions(projectMenu, self.ltActions.projectActions)
-        
+        self.quitAction = createAction(self,"Exit...", QtGui.QKeySequence.Quit, 
+                                          "application-exit", "Exit program")
+        projectMenu.addAction(self.quitAction)
+        projectToolbar = self.addToolBar("Project")
+        projectToolbar.setObjectName("projectToolBar")
+        addActions(projectToolbar, (self.quitAction,))
+
         videoMenu = self.menuBar().addMenu("&Video")
-        self.ltActions.addActions(videoMenu, self.ltActions.videoActions)
+        addActions(videoMenu, self.videoWidget.actions)
+        chamberMenu = self.menuBar().addMenu("&Chamber")
+        addActions(chamberMenu, self.chambersWidget.actions)
+        trajectoryMenu = self.menuBar().addMenu("&Trajectory")
+        addActions(trajectoryMenu, self.cvTrajectoryWidget.actions)
         
-        # ==== Making Connections actions ====
-
-        # ---- self ----
-        self.connect(self, signalCaptureFromFile, self.cvProcessor.loadVideoFile)
-
-        
-        
+        helpMenu = self.menuBar().addMenu("&Help")
+        helpAboutAction = createAction(self,"&About LocoTrack",'',
+                                       'help-about','')
+        helpAboutAction.triggered.connect(self.helpAbout)
+        helpHelpAction = createAction(self,"&Help", QtGui.QKeySequence.HelpContents,
+                                      'help-contents')
+        helpHelpAction.triggered.connect(self.helpHelp)
+        addActions(helpMenu, (helpAboutAction, helpHelpAction))
         # ---- cvProcessorWidget ----
         self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,
                      self.cvProcessor.setNegative)
@@ -147,51 +152,19 @@ class LtMainWindow(QtGui.QMainWindow):
         
         # ---- Main menu ----
         # Project menu
-        self.connect(self.ltActions.projectQuitAction, signalTriggered, self.close)
+        self.quitAction.triggered.connect(self.close)      
+        # Restore window settings
+        settings = QtCore.QSettings()
+        self.restoreGeometry(settings.value("ltMainWindow/Geometry").toByteArray())
+        self.restoreState(settings.value("ltMainWindow/State").toByteArray())
         
-        # Video Menu
-        self.connect(self.ltActions.videoOpenAction, signalTriggered, self.on_videoOpen)
-        self.connect(self.ltActions.videoCaptureAction, signalTriggered, self.cvProcessor.cvPlayer.captureFromCam)
-        self.connect(self.ltActions.videoPlayAction, signalTriggered, self.cvProcessor.cvPlayer.play)
-        #self.connect(self.ltActions.videoStopAction, signalTriggered, self.cvProcessor.cvPlayer.stop)
-        self.connect(self.ltActions.videoRewAction, signalTriggered, self.cvProcessor.cvPlayer.seekRew)
-        self.connect(self.ltActions.videoFwdAction, signalTriggered, self.cvProcessor.cvPlayer.seekFwd)
-        
-        
-        
-        # !!!!!!!!!!! Testing !!!!!!!!!!!!!!!
-     
     # ==== Slots to handle actions ====
-    def on_videoOpen(self):
-        '''
-        Open video file
-        '''
-        # Setting last user dir
-        directory = os.path.dirname(self.cvProcessor.cvPlayer.videoFileName) \
-            if self.cvProcessor.cvPlayer.videoFileName is not None else "."
-        # Creating formats list
-        formats = ["*.{}".format(unicode(videoFormat).lower()) \
-                   for videoFormat in ('avi', 'mpg', 'ogg')]
-        # Executing standard open dialog
-        fname = unicode(QtGui.QFileDialog.getOpenFileName(self,
-                        "Choose video file",
-                        directory, "Video files (%s)" % " ".join(formats)))
-        
-        if fname is not None :
-            self.emit(signalCaptureFromFile, fname)
-            self.setWindowTitle(fname)
-        
-    def on_CvPlayerCapturing(self, length):
-        pass 
-    
-    def accumulate(self):
-        self.emit(signalAccumulate, self.chambersDockBar.accumulateSpinBox.value())        
     
     def saveProject(self):
         pass
     
     def okToContinue(self):
-        if self.dirty:
+        if False:
             reply = QtGui.QMessageBox.question(self,
                                          " Unsaved Changes",
                                          "Save unsaved changes?",
@@ -203,22 +176,38 @@ class LtMainWindow(QtGui.QMainWindow):
                 self.saveProject()
         return True
     
+    def showInfo(self, messageKind, messageText):
+        '''
+        Show info message and log it to logFile
+        '''
+        if messageKind == 0 :
+            self.statusBar().showMessage(messageText,5000)
+        elif messageKind == -1 :
+            QtGui.QMessageBox('Error: '+messageText)
+    
     # Close Event handler
     def closeEvent(self, event):
         # Asking user to confirm
-        if self.okToContinue():
-            # Save settings and exit
-            '''
-            settings = QtCore.QSettings()
-            filename = QtCore.QVariant(QtCore.QString(self.filename)) \
-                if self.filename is not None else QtCore.QVariant()
-            settings.setValue("LastFile", filename)
-            recentFiles = QtCore.QVariant(self.recentFiles) \
-                if self.recentFiles else QtCore.QVariant()
-            settings.setValue("RecentFiles", recentFiles)
-            settings.setValue("Geometry", QtCore.QVariant(self.saveGeometry()))
-            settings.setValue("MainWindow/State",
-                              QtCore.QVariant(self.saveState()))
-            '''
-        else:
-            event.ignore()
+        #if self.okToContinue():
+        # Save settings and exit 
+        settings = QtCore.QSettings()
+        settings.setValue("ltMainWindow/Geometry", 
+                          QtCore.QVariant(self.saveGeometry()))
+        settings.setValue("ltMainWindow/State", 
+                          QtCore.QVariant(self.saveState()))
+        
+    def helpAbout(self):
+        QtGui.QMessageBox.about(self, "About LocoTrack",
+                """<b>LocoTrack</b> v {0}
+                <p>Copyright &copy; 2012-2013. 
+                All rights reserved.
+                <p>This application can be used to .
+                
+                <p>Python {1} - Qt {2} - PyQt {3} on {4}""".format(
+                applicationVersion, platform.python_version(),
+                QtCore.QT_VERSION_STR, QtCore.PYQT_VERSION_STR,
+                platform.system()))
+    
+    def helpHelp(self):
+        form = HelpWidget("index.html", self)
+        form.show()

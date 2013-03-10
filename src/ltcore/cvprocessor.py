@@ -26,7 +26,7 @@ class CvProcessor(QtCore.QObject):
     Also this class process video and writes data to chamber
     '''
     trajectoryWriting = QtCore.pyqtSignal(bool)
-    
+    signalNextFrame = QtCore.pyqtSignal(object)
 
     def __init__(self, parent=None):
         '''
@@ -37,6 +37,7 @@ class CvProcessor(QtCore.QObject):
         self.cvPlayer = CvPlayer(self)
         self.cvPlayer.nextFrame.connect(self.getNextFrame)
         self.cvPlayer.videoSourceOpened.connect(self.videoOpened)
+        self.cvPlayer.videoSourceClosed.connect(self.videoClosed)
         # Chamber list
         self.chambers = ChambersManager()
         self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
@@ -47,8 +48,9 @@ class CvProcessor(QtCore.QObject):
         self.showProcessedImage = True
         self.showContour = True
         self.ellipseCrop = True
+        self.analyseFromFilesRunning = False
         # Reset Trajectory
-        self.saveToFile = False
+        self.recordTrajectory = False
         self.videoLength = None
         # Visual Parameters
         self.scaleLabelPosition = (20, 20)
@@ -63,21 +65,9 @@ class CvProcessor(QtCore.QObject):
         self.objectDetectorIndex = 0
         self.runRestAnalyser = NewRunRestAnalyser(self)
         #self.errorDetector = ErrorDetector()
-        #self.analysisMethodMaxBright = False
         
     def openProject(self, fileName):
         pass
-    
-    def loadVideoFile(self, fileName):
-        self.cvPlayer.captureFromFile(fileName)
-        self.chambers.clear()
-        for name in sorted(glob(fileName + '*.lt1')) :
-            print "Opening chamber ", name
-            chamber,scale,frameRate = Chamber.loadFromFile(name)
-            self.chambers.addChamber(chamber) 
-            self.scale = scale
-            QtGui.QApplication.processEvents()             
-        #self.processFrame()
         
     def saveProject(self):
         '''
@@ -88,17 +78,29 @@ class CvProcessor(QtCore.QObject):
             chamber.saveToFile(self.cvPlayer.videoFileName + ".ch{0:02d}.lt1",
                                          self.scale, self.cvPlayer.frameRate)
 
-    def videoOpened(self, length, frameRate):
+    def videoOpened(self, length, frameRate, fileName):
         '''
         Get length and frame rate of opened video file
         '''
-        self.saveObjectToTrajectory(False)
         self.videoLength = length
         self.frameRate = frameRate
-     
+        for name in sorted(glob(str(fileName) + '*.lt1')) :
+            print "Opening chamber ", name
+            chamber,scale,frameRate = Chamber.loadFromFile(name)
+            self.chambers.addChamber(chamber) 
+            QtGui.QApplication.processEvents()  
+        if len(self.chambers) > 0 :
+            self.scale = scale
         
+    def videoClosed(self):
+        self.chambers.clear()
+        self.videoLength = -1
+        self.frameRate = -1
+    
     def videoEnded(self):
-        self.saveObjectToTrajectory(False, None)
+        self.setRecordTrajectory(False, None)
+        
+    
         
     def getNextFrame(self, frame, frameNumber):
         '''
@@ -130,7 +132,7 @@ class CvProcessor(QtCore.QObject):
         # Draw all chambers and object properties
         self.drawChambers(frame)
         # send processed frame to display
-        self.emit(signalNextFrame, frame) 
+        self.signalNextFrame.emit(frame) 
         
     def preProcess(self, frame):
         '''
@@ -196,7 +198,7 @@ class CvProcessor(QtCore.QObject):
             point = tuple(int(coor) for coor in chamber.ltObject.center)
             cv.Circle(frame, point, 2, color, cv.CV_FILLED)
             # Draw contours
-            if self.showContour and (chamber.ltObject.contours is not None) :
+            if self.showContour and (chamber.ltObject is not None) and (chamber.ltObject.contour is not None) :
                 cv.DrawContours(frame, chamber.ltObject.contours, 200, 100, -1, 1)
             # Reset to full image
             cv.ResetImageROI(frame)
@@ -252,58 +254,30 @@ class CvProcessor(QtCore.QObject):
         '''
         self.chambers.setThreshold(value)
     
-    def saveObjectToTrajectory(self, checked):
+    def setRecordTrajectory(self, checked):
         '''
         Enable/Disable trajectory saving
         '''
-        if self.saveToFile == checked :
+        if self.recordTrajectory == checked :
             return
-        print 'SaveTrajectory:', checked
         if self.scale is None :
             #TODO:
+            print 'Cannot save chambers: no scale present'
             return
-        self.saveToFile = checked
-        self.trajectoryWriting.emit(self.saveToFile)
-        if self.saveToFile :
-            # Init array for trajectory from current location
-            for chamber in self.chambers :
-                chamber.initTrajectory(self.frameNumber,self.videoLength)
-                chamber.saveObjectToTrajectory = True
-    
-    def setSampleName(self, sampleName):
-        self.chambers.setSampleName(sampleName)
+        self.recordTrajectory = checked
+        if self.recordTrajectory :
+            # Init array for trajectory from current location to end of video file
+            self.chambers.initTrajectories(self.frameNumber,self.videoLength)
+            self.chambers.setRecordTrajectories(True)
+        self.trajectoryWriting.emit(self.recordTrajectory)
+        self.processFrame()
     
     @QtCore.pyqtSlot()
     def chambersDataUpdated(self):
         self.processFrame()      
     
     def createTrajectoryImages(self):
-        for chamber in self.chambers:
-            chamber.createTrajectoryImage()
-    
-    def analyseFromFiles(self, fileName, inputFileNames):
-        print "Starting analysis"
-        if os.path.isfile(fileName) :
-            mode = 'a'
-        else :
-            mode = 'w'
-        outFile = open(fileName, mode)
-        if mode == 'w' :
-            captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
-            outFile.write(captionString)
-        for name in inputFileNames :
-            if not str(name).endswith('.lt1') :
-                continue
-            chamber = Chamber.loadFromFile(name)
-            if chamber.trajectory is not None :
-                chamber.createTrajectoryImage()
-                chamber.trajectoryImage.save(name + '.png')
-                baseName = os.path.basename(str(name))
-                pos = baseName.find('.ch', -10, -1)
-                print baseName, pos
-                if pos >= 1 :
-                    if self.runRestAnalyser.checkErrors(chamber) :
-                        self.runRestAnalyser.analyseChamber(chamber, baseName[:pos], outFile)            
+        self.chambers.createTrajectoryImages()          
     
     def analyseChambers(self, fileName):
         '''
@@ -327,13 +301,6 @@ class CvProcessor(QtCore.QObject):
                 name = os.path.basename(self.cvPlayer.videoFileName)
                 if self.runRestAnalyser.checkErrors(chamber) :
                     self.runRestAnalyser.analyseChamber(chamber, name, outFile)
-                '''
-                #correctErrors(chamber)
-                totalActivity, intervals = calculateSpeed(chamber)
-                for number, activity in intervals :
-                    outFile.write(formatString.format(chamber.sampleName, number, activity))
-                outFile.write(formatString.format(chamber.sampleName, 'Total', totalActivity))
-                '''
         outFile.close()
         print 'Analysis finished'
         

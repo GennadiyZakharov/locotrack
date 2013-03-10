@@ -4,7 +4,6 @@ Created on 18.03.2011
 '''
 
 from __future__ import division
-
 import cv
 from PyQt4 import QtCore
 
@@ -27,7 +26,7 @@ class CvPlayer(QtCore.QObject):
     playing = QtCore.pyqtSignal(bool) # Emits when player starts
     running = QtCore.pyqtSignal(bool) # Emits when running at max speed
     # Video
-    videoSourceOpened = QtCore.pyqtSignal(int, float) # video length (in frames) and frame rate
+    videoSourceOpened = QtCore.pyqtSignal(int, float, str) # video length (in frames) and frame rate
     videoSourceClosed = QtCore.pyqtSignal() # Video closed
     videoSourceEnded  = QtCore.pyqtSignal()  # End of file reached
     # Frame process
@@ -41,7 +40,7 @@ class CvPlayer(QtCore.QObject):
         self.playSpeed = 1.0 #
         self.timer = None    # Timer to extract frames from file or cam 
         self.runTroughFlag = False     # This flag is used to process frames at maximum speed
-        self.frameRate = 5.0           # Default frameRate      
+        self.frameRate = -1           # Default frameRate      
         self.videoFileName = ''        # No File opened
         self.captureDevice = None      # No device for capturing
         self.videoFileLength = -1      # Length of video file
@@ -53,8 +52,7 @@ class CvPlayer(QtCore.QObject):
     @classmethod
     def loadFromFile(cls, inputFile):
         '''
-        Load all player settings from file
-        File must be opened for reading
+        Load all player settings from file, opened for reading
         '''
         #TODO: implement
         player = cls()
@@ -62,8 +60,7 @@ class CvPlayer(QtCore.QObject):
     
     def saveToFile(self, outputFile):
         '''
-        Save all player settings to file
-        File must be opened for writing
+        Save all player settings to file, opened for writing
         '''
         #TODO:  implement
         if self.videoFileName is None :
@@ -75,7 +72,7 @@ class CvPlayer(QtCore.QObject):
     
     def startPlayTimer(self):
         '''
-        Start playing timer, at current speed
+        Start playing timer at current speed
         '''
         self.stopPlayTimer() # Killing active timer, if it exists
         self.timer = self.startTimer(1000 / (self.frameRate * self.playSpeed))
@@ -88,20 +85,21 @@ class CvPlayer(QtCore.QObject):
             self.killTimer(self.timer) # Stop timer
             self.timer = None          # And now we have no timer
     
-    @QtCore.pyqtSlot(str)
+    @QtCore.pyqtSlot(QtCore.QString)
     def captureFromFile(self, fileName):
         '''
         Open video file for capturing
         '''
         self.captureClose()    
-        self.captureDevice = cv.CaptureFromFile(fileName) # Try to open file
+        self.captureDevice = cv.CaptureFromFile(unicode(fileName)) # Try to open file
         if self.captureDevice is None : # Error opening file
             #TODO: error report 
+            print "Error opening vide file {}".format(fileName)
             return 
-        self.videoFileName = fileName # Store file name
+        self.videoFileName = unicode(fileName) # Store file name
         # Get video parameters
-        self.videoFileLength = cv.GetCaptureProperty(self.captureDevice,
-                                                     cv.CV_CAP_PROP_FRAME_COUNT)
+        self.videoFileLength = int(cv.GetCaptureProperty(self.captureDevice,
+                                                     cv.CV_CAP_PROP_FRAME_COUNT))
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
         self.seekInterval = self.videoFileLength // 50
@@ -110,23 +108,31 @@ class CvPlayer(QtCore.QObject):
         #TODO: do as message
         print 'Opened file: ' + self.videoFileName
         print 'File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate) 
-        self.videoSourceOpened.emit(self.videoFileLength, self.frameRate)
         self.timerEvent() # Process first frame
+        self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName)
+        
     
     @QtCore.pyqtSlot(int)
     def captureFromCam(self, camNumber):
         '''
-        Open video camera
+        Start capturing from video camera
         '''
-        #TODO: implement
         self.captureClose()
+        self.captureDevice = cv.CaptureFromCAM(camNumber)
+        #TODO: implement
+        if self.captureDevice is None :
+            #TODO: error report
+            print "Error opening video cam number {}".format(camNumber)
+            return
+        self.frameRate = cv.GetCaptureProperty(self.captureDevice,
+                                               cv.CV_CAP_PROP_FPS)
      
     @QtCore.pyqtSlot()
     def captureClose(self):
         '''
         Close video source
         '''
-        if self.captureDevice is not None :
+        if self.captureDevice is None :
             return # Nothing to do               
         # Reset timer and runTroughFlag
         self.runTroughFlag = False     # This flag is used to process frames at maximum speed
@@ -134,9 +140,11 @@ class CvPlayer(QtCore.QObject):
         self.videoFileName = ''          # No File opened
         self.captureDevice = None     # No device for capturing
         self.videoFileLength = -1   # Length of video file
+        self.frameRate = -1
         self.frameNumber = -1       # No number for current frame
         self.setLeftBorder(0)           # Borders of playing interval 
         self.setRightBorder(0)
+        self.seekInterval = 0
         self.videoSourceClosed.emit()
          
     @QtCore.pyqtSlot(bool)   
@@ -165,6 +173,8 @@ class CvPlayer(QtCore.QObject):
         '''
         if self.runTroughFlag == checked :
             return # Nothing to do
+        if self.videoFileLength == -1 :
+            return
         if self.captureDevice is None : # No device to play from
             self.running.emit(False) 
             return

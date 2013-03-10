@@ -49,10 +49,8 @@ class Chamber(QtCore.QObject):
         self.number = number
         self.ltObject = None
         # No trajectory is recorded
-        self.trajectory = None
-        self.smoothedTrajectory = None
-        self.trajectoryImage = None 
-        self.saveObjectToTrajectory = False
+        self.resetTrajectory()
+        self.recordTrajectory = False
         # Individual threshold
         self.threshold = 60
         # Do not show trajectory
@@ -84,8 +82,9 @@ class Chamber(QtCore.QObject):
         '''
         set number of chamber
         '''
-        self.number = number
-        self.signalGuiDataUpdated.emit()
+        if self.number != number :
+            self.number = number
+            self.signalGuiDataUpdated.emit()
     
     def setThreshold(self, value):
         '''    
@@ -106,30 +105,32 @@ class Chamber(QtCore.QObject):
     
     def setRecordTrajectory(self, checked):
         '''
-        Set, if we showing trajectory or not
+        Set, if we saving ltObjects to trajectory
         '''  
-        if self.saveObjectToTrajectory == checked:
+        if self.recordTrajectory == checked:
             return
-        self.saveObjectToTrajectory = checked
+        self.recordTrajectory = checked
         self.signalGuiDataUpdated.emit() 
             
-    def setTrajectoryShow(self, checked):
+    def setShowTrajectory(self, checked):
         '''
         Set, if we showing trajectory or not
         '''
         if self.showTrajectory == checked:
             return
         self.showTrajectory = checked
+        '''
         if self.showTrajectory:
             self.createTrajectoryImage()
+        '''
         self.signalGuiDataUpdated.emit()
     
     def setLtObject(self, ltObject, frameNumber):
         '''
-        Set object for chamber and save it to trajectory, if saveObjectToTrajectory enabled
+        Set object for chamber and save it to trajectory, if setRecordTrajectory enabled
         '''
         self.ltObject = ltObject
-        if (self.trajectory is not None) and self.saveObjectToTrajectory :
+        if (self.trajectory is not None) and self.recordTrajectory :
             self.trajectory[frameNumber] = ltObject
     
     '''
@@ -145,7 +146,7 @@ class Chamber(QtCore.QObject):
             
     def move(self, dirX, dirY):
         '''
-        Move chamber for dirX, dirY
+        Move chamber by dirX, dirY
         '''
         self.rect.moveTo(self.rect.left() + dirX, self.rect.top() + dirY)
         self.signalPositionUpdated.emit()
@@ -180,9 +181,8 @@ class Chamber(QtCore.QObject):
         '''
         if self.trajectory is not None : # Delete old trajectory
             self.resetTrajectory()
-        # Init trajectory to save frames from current to end of file
+        # Init trajectory to save frames
         self.trajectory = LtTrajectory(startFrame, endFrame)
-        self.trajectory[startFrame] = self.ltObject
         self.signalGuiDataUpdated.emit()
     
     def resetTrajectory(self):
@@ -190,7 +190,6 @@ class Chamber(QtCore.QObject):
         Remove stored trajectory
         '''
         self.trajectory = None
-        self.smoothedTrajectory = None
         self.trajectoryImage = None
         self.signalGuiDataUpdated.emit()
     
@@ -200,49 +199,54 @@ class Chamber(QtCore.QObject):
         '''
         if self.trajectory is None : # No trajectory to create image
             return 
-        
         black = QtGui.QColor(0, 0, 0)
-        if self.trajectoryImage is None: # Create new white image with black pen
-            self.trajectoryImage = QtGui.QImage(self.rect.size(), QtGui.QImage.Format_ARGB32_Premultiplied)
-            self.trajectoryPainter = QtGui.QPainter(self.trajectoryImage)
-            self.trajectoryPainter.setPen(black)
-        # Delete old image
+        self.trajectoryImage = QtGui.QImage(self.rect.size(), QtGui.QImage.Format_ARGB32_Premultiplied)
         self.trajectoryImage.fill(QtCore.Qt.transparent)
+        trajectoryPainter = QtGui.QPainter(self.trajectoryImage)
+        trajectoryPainter.setPen(black)
+        # Drawing trajectory
         point1 = None
         point2 = None
         for ltObject in self.trajectory :
             if ltObject is None :
                 continue
-            x, y = ltObject.center
-            point2 = QtCore.QPointF(x, y) # Reading first point
+            point2 = QtCore.QPointF(*ltObject.center) # Reading first point
             if point1 is None :
                 point1 = point2
                 continue
-            self.trajectoryPainter.drawLine(point2, point1)
+            trajectoryPainter.drawLine(point2, point1)
             point1 = point2
-        self.trajectoryPainter.end()
+        trajectoryPainter.end()
     
     @classmethod
     def loadFromFile(cls, fileName):
         '''
-        Load chamber from file
+        Load chamber and trajectory from file
         '''
+        def stripeq(string):
+            '''
+            strip `=` if presented (new chamber format)
+            '''
+            pos = string.find('=')
+            if pos >= 0 : # New file format
+                return string[pos+1:]
+            else :
+                return string   
         print 'Load  chamber from file {}'.format(fileName)
         trajectoryFile = open(fileName, 'r')
         if trajectoryFile.readline() != cls.fileCaption :
-            #TODO: excepting
             return None
-        x, y = [int(value) for value in trajectoryFile.readline().split()]
-        width, height = [int(value) for value in trajectoryFile.readline().split()]
-        rect = QtCore.QRect(x, y, width, height)
-        chamber = cls(rect)
-        # TODO: implement mm
-        scale = float(trajectoryFile.readline())
-        frameRate = float(trajectoryFile.readline())
-        chamber.sampleName = trajectoryFile.readline().strip()
-        chamber.threshold = float(trajectoryFile.readline())
+        # Chamber position and size
+        x, y = [int(value) for value in stripeq(trajectoryFile.readline()).split()]
+        width, height = [int(value) for value in stripeq(trajectoryFile.readline()).split()]
+        # Creating chamber
+        chamber = cls(QtCore.QRect(x, y, width, height))
+        # TODO: Reading scale label and frame rate
+        scale = float(stripeq(trajectoryFile.readline()))
+        frameRate = float(stripeq(trajectoryFile.readline()))
+        chamber.sampleName = stripeq(trajectoryFile.readline()).strip()
+        chamber.threshold = float(stripeq(trajectoryFile.readline()))
         if trajectoryFile.readline().strip() == 'Trajectory:' :
-            print 'Load  trajectory from file {}'.format(fileName)
             chamber.trajectory = LtTrajectory.loadFromFile(trajectoryFile)
             chamber.createTrajectoryImage()
         else :
@@ -253,47 +257,28 @@ class Chamber(QtCore.QObject):
     def saveToFile(self, fileNameTemplate, scale, frameRate):
         '''
         Save trajectory to file
-        scale and Frame Rate must be written in file
-        It is used to analyse chambers individually
+        
+        Scale and Frame Rate must be written in file
+        It is used to analyse chambers
         '''
         fileName = fileNameTemplate.format(self.number)
         print 'Save chamber for sample {} to file {}'.format(self.sampleName, fileName)
         trajectoryFile = open(fileName, 'w')
         trajectoryFile.write(self.fileCaption)
-        trajectoryFile.write("{0} {1}\n".format(self.left(), self.top()))
-        trajectoryFile.write("{0} {1}\n".format(self.width(), self.height()))
-        trajectoryFile.write("{0}\n".format(scale)) 
-        trajectoryFile.write("{0}\n".format(frameRate))
-        trajectoryFile.write(self.sampleName + "\n")
-        trajectoryFile.write('{}\n'.format(self.threshold))
-        print "file {0} created".format(fileName)
+        trajectoryFile.write('Position = {0} {1}\n'.format(self.left(), self.top()))
+        trajectoryFile.write('Size = {0} {1}\n'.format(self.width(), self.height()))
+        trajectoryFile.write('Scale (px/mm) = {0}\n'.format(scale)) 
+        trajectoryFile.write('FrameRate = {0}\n'.format(frameRate))
+        trajectoryFile.write('Sample name = {}\n'.format(self.sampleName))
+        trajectoryFile.write('Threshold level = {}\n'.format(self.threshold))
         if self.trajectory is not None :
             trajectoryFile.write('Trajectory:' + "\n")
-            self.trajectory.rstrip()
+            self.trajectory.strip()
             self.trajectory.saveToFile(trajectoryFile)
-            if self.trajectoryImage is None :
-                self.createTrajectoryImage()
-            self.trajectoryImage.save(fileName + '.png')
-            # Calculate fractal dimersion
-            #self.calculateFractalDimersion()
-            
         else :
             trajectoryFile.write('No trajectory recorded' + "\n")
         trajectoryFile.close()
-        '''
-        # Calculate speed
-        speedFile = open(fileName + '.spd', 'w')
-        if self.trajectory is not None :
-            x2, y2 = self.trajectory[self.trajectory.startFrame].center
-            for i in xrange(self.trajectory.startFrame + 1, self.trajectory.endFrame) :
-                point2 = self.trajectory[i]
-                if point2 is None :
-                    continue
-                x1, y1 = x2, y2
-                x2, y2 = point2.center
-                runlen = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / self.scale
-                speedFile.write('{:5} {:18.6f}\n'.format(i, runlen * self.frameRate))
-        '''
+        
 '''
 Small test
 '''          
