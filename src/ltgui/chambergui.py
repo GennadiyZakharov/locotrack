@@ -41,6 +41,12 @@ class ChamberGui(QtGui.QGraphicsObject):
     
     # Event handling
     
+    def isMoveAllowed(self, rect):
+        return self.allowedRect.contains(rect,True)
+    
+    def setAllowedRect(self, rect):
+        self.allowedRect = rect
+    
     def keyPressEvent(self, event):
         key = event.key()
         if key == QtCore.Qt.Key_Left:
@@ -54,8 +60,15 @@ class ChamberGui(QtGui.QGraphicsObject):
         else :
             return
         if (event.modifiers() & QtCore.Qt.ShiftModifier):
-            self.chamber.resize(dirX,dirY)
-            self.update()
+            rect = QtCore.QRect(self.chamber.rect)
+            rect.setWidth(rect.width()+dirX)
+            rect.setHeight(rect.height()+dirY)
+            # TODO: minimum chamber size: remove magic number
+            if (rect.height()<5) or (rect.width()<5) :
+                return
+            if self.isMoveAllowed(rect) :
+                self.chamber.resize(dirX,dirY)
+                self.update()
         else :
             self.moveBy(dirX,dirY)
             self.onMove()
@@ -70,8 +83,13 @@ class ChamberGui(QtGui.QGraphicsObject):
     
     def onMove(self):
         # graph widget was moved to new pos()
-        pos = self.pos()
-        self.chamber.moveTo(QtCore.QPoint(pos.x(),pos.y()))
+        pos = QtCore.QPoint(int(self.pos().x()),int(self.pos().y()))
+        rect = QtCore.QRect(self.chamber.rect)
+        rect.moveTo(pos)
+        if self.isMoveAllowed(rect) :
+            self.chamber.moveTo(QtCore.QPoint(pos.x(),pos.y()))
+        else :
+            self.setPos(QtCore.QPointF(self.chamber.rect.topLeft()))
     
     def focusInEvent(self, event):
         self.signalSelected.emit(self.chamber)

@@ -8,6 +8,7 @@ from __future__ import division
 from PyQt4 import QtCore,QtGui
 #from ltcore.actions import LtActions
 from ltgui.analysedialog import AnalyseDialog
+from ltgui.actionbutton import ActionButton
 from ltcore.ltactions import createAction
 
 class TrajectoryWidget(QtGui.QWidget):
@@ -26,9 +27,9 @@ class TrajectoryWidget(QtGui.QWidget):
         self.analysisProgressDialog.setWindowTitle('Analysing files')
         #
         
-        actionAnalyseFromFiles = createAction(self,"&Analyse from files...", "",
+        self.actionAnalyseFromFiles = createAction(self,"&Analyse from files...", "",
                                        "document-open", "Open video file")
-        actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
+        self.actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
         '''
          = createAction(self,"&Capture...", "",
                                           "camera-web", "")
@@ -41,7 +42,7 @@ class TrajectoryWidget(QtGui.QWidget):
         actionFwd = createAction(self,"&Forward", "", 
                                  "media-seek-forward", "")
         '''
-        self.actions = (actionAnalyseFromFiles,)
+        self.actions = (self.actionAnalyseFromFiles,)
         #
         analyser.signalAnalysisStarted.connect(self.signalAnalysisStarted)             
         analyser.signalNextFileAnalysing.connect(self.signalNextFileAnalysing)
@@ -51,21 +52,8 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         layout=QtGui.QGridLayout()
         #
-        self.saveTrajectoryButton = QtGui.QPushButton('Save Trajectory')
-        layout.addWidget(self.saveTrajectoryButton,0,0)
-        #
-        #self.analyseTrajectoryButton = QtGui.QPushButton('Analyse trajectory')
-        #self.analyseTrajectoryButton.clicked.connect(self.analyseTrajectory)
-        #layout.addWidget(self.analyseTrajectoryButton,1,0)
-        
-        self.analyseFromFileButton = QtGui.QPushButton('Analyse from files')
-        self.analyseFromFileButton.clicked.connect(self.analyseFromFile)
-        layout.addWidget(self.analyseFromFileButton,1,1)
-        
-        self.createImageButton = QtGui.QPushButton('Create Trajectory Images')
-        self.createImageButton.clicked.connect(self.createTrajectoryImages)
-        layout.addWidget(self.createImageButton,2,0)
-        #
+        self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
+        layout.addWidget(self.analyseFromFileButton,0,0)
         self.errorTresholdSlider = QtGui.QDoubleSpinBox()
         errorTresholdLabel = QtGui.QLabel('Error Threshold (mm/s):')
         errorTresholdLabel.setBuddy(self.errorTresholdSlider)
@@ -73,8 +61,8 @@ class TrajectoryWidget(QtGui.QWidget):
         self.errorTresholdSlider.setValue(analyser.errorSpeedThreshold)
         self.errorTresholdSlider.valueChanged.connect(analyser.setErrorThreshold)
         self.errorTresholdSlider.valueChanged.connect(self.errorTresholdChanged)
-        layout.addWidget(errorTresholdLabel,3,0)
-        layout.addWidget(self.errorTresholdSlider,3,1)
+        layout.addWidget(errorTresholdLabel,1,0)
+        layout.addWidget(self.errorTresholdSlider,1,1)
         
         self.speedThresholdSlider = QtGui.QDoubleSpinBox()
         speedThresholdLabel = QtGui.QLabel('Speed Threshold (mm/s):')
@@ -82,8 +70,8 @@ class TrajectoryWidget(QtGui.QWidget):
         self.speedThresholdSlider.setMaximum(50)
         self.speedThresholdSlider.setValue(analyser.speedThreshold)
         self.speedThresholdSlider.valueChanged.connect(analyser.setSpeedThreshold)
-        layout.addWidget(speedThresholdLabel,4,0)
-        layout.addWidget(self.speedThresholdSlider,4,1)
+        layout.addWidget(speedThresholdLabel,2,0)
+        layout.addWidget(self.speedThresholdSlider,2,1)
         
         self.intervalDurationSlider = QtGui.QSpinBox()
         intervalDurationLabel = QtGui.QLabel('Interval Duration (s):')
@@ -92,8 +80,8 @@ class TrajectoryWidget(QtGui.QWidget):
         self.intervalDurationSlider.setMinimum(50)
         self.intervalDurationSlider.setValue(analyser.intervalDuration)
         self.intervalDurationSlider.valueChanged.connect(analyser.setIntervalDuration)
-        layout.addWidget(intervalDurationLabel,5,0)
-        layout.addWidget(self.intervalDurationSlider,5,1)
+        layout.addWidget(intervalDurationLabel,3,0)
+        layout.addWidget(self.intervalDurationSlider,3,1)
         self.setLayout(layout)
         
     def errorTresholdChanged(self, value):

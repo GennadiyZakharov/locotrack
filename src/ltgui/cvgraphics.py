@@ -30,7 +30,8 @@ class CvGraphics(QtGui.QGraphicsView):
         self.scene = QtGui.QGraphicsScene()
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setScene(self.scene)
-        self.setMinimumSize(320, 200) 
+        #self.setMinimumSize(320, 200) 
+        #self.setSizePolicy(QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Fixed)
         self.setAcceptDrops(True)
         self.enableDnD = False
         self.selectedRect = None
@@ -38,8 +39,10 @@ class CvGraphics(QtGui.QGraphicsView):
         self.pixmapObject = self.scene.addPixmap(self.pixmap)
         #self.pixmapObject.setScale(1.0)
         self.scene.setSceneRect(self.pixmapObject.boundingRect())
+        self.setSize()
         self.chambersGui = {} # dict to store gui for cahmbers
         self.selectedChamber = None
+        self.dragStartPosition = None
         
     @QtCore.pyqtSlot(object)
     def putImage(self, iplImage) :
@@ -66,6 +69,12 @@ class CvGraphics(QtGui.QGraphicsView):
             return 
         self.updateImage()
     
+    def setSize(self):
+        size = self.pixmap.size()
+        rect = QtCore.QRect(QtCore.QPoint(0,0),size)
+        #self.fitInView(self.pixmapObject.boundingRect(), mode=QtCore.Qt.KeepAspectRatio)
+        self.setGeometry(rect)
+    
     def updateImage(self):
         '''
         Display frame and draw selected region
@@ -76,6 +85,8 @@ class CvGraphics(QtGui.QGraphicsView):
             self.pixmapObject = self.scene.addPixmap(self.pixmap)
             #self.pixmapObject.  Bring Back
             self.scene.setSceneRect(self.pixmapObject.boundingRect())
+            #self.setSceneRect(self.pixmapObject.boundingRect())
+            self.setSize()
         else :
             self.pixmap.convertFromImage(self.frame)
             self.scene.update()
@@ -96,6 +107,7 @@ class CvGraphics(QtGui.QGraphicsView):
         new chamber was created
         '''
         chamberGui = ChamberGui(chamber)
+        chamberGui.setAllowedRect(self.pixmap.rect())
         self.scene.addItem(chamberGui)
         self.chambersGui[chamber]=chamberGui 
         chamberGui.signalSelected.connect(self.selectChamberGui)
@@ -126,6 +138,8 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         self.enableDnD = enable
     
+    def isPointAllowed(self, point):
+        return self.pixmapObject.boundingRect().contains(point)
     
     # TODO: deal with drag. it seems, that it is something wrong
     def mousePressEvent(self, event) :
@@ -136,10 +150,13 @@ class CvGraphics(QtGui.QGraphicsView):
         if not self.enableDnD :
             super(CvGraphics, self).mousePressEvent(event)
             return
+        pos = self.mapToScene(event.pos())
+        if not self.isPointAllowed(pos) :
+            return
         print "mousePressed event ", event.pos()
         # If it is left button -- store position
         if (event.button() == QtCore.Qt.LeftButton) :
-            self.dragStartPosition = self.mapToScene(event.pos()).toPoint()
+            self.dragStartPosition = pos.toPoint()
             
 
     def mouseMoveEvent(self, event) :
@@ -150,11 +167,15 @@ class CvGraphics(QtGui.QGraphicsView):
         if not self.enableDnD :
             super(CvGraphics, self).mouseMoveEvent(event)
             return
+        if self.dragStartPosition is None :
+            return
         print "MouseMove Event"
         # If left button not pressed -- exit
         if not (event.buttons() & QtCore.Qt.LeftButton) :
             return
         pos = self.mapToScene(event.pos()).toPoint()
+        if not self.isPointAllowed(pos) :
+            return
         # If distance between current and start point too small --exit
         if (pos - self.dragStartPosition).manhattanLength() < QtGui.QApplication.startDragDistance() :
             return
@@ -203,7 +224,10 @@ class CvGraphics(QtGui.QGraphicsView):
             super(CvGraphics, self).dragMoveEvent(event)
             return
         print "DragMove event"
-        print event.pos()
+        pos = self.mapToScene(event.pos())
+        print pos
+        if not self.isPointAllowed(pos):
+            return
         # Saving currenly selected rectangle
         self.selectedRect.setRect(QtCore.QRectF(QtCore.QRect(self.mapToScene(event.pos()).toPoint(), self.dragStartPosition)))
         self.scene.update()
@@ -221,7 +245,8 @@ class CvGraphics(QtGui.QGraphicsView):
         # Check if we receive drag event with coordinates
         if event.mimeData().hasFormat("cvlabel/pos") :
             # Put selection area into QRect 
-            rect = QtCore.QRect(self.dragStartPosition, self.mapToScene(event.pos()).toPoint())
+            pos = self.mapToScene(event.pos())
+            rect = QtCore.QRect(self.dragStartPosition, pos.toPoint())
             # And send it via signal
             self.emit(signalRegionSelected, rect)
             event.acceptProposedAction()

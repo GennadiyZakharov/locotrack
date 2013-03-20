@@ -82,6 +82,7 @@ class CvProcessor(QtCore.QObject):
         '''
         Get length and frame rate of opened video file
         '''
+        self.videoClosed()
         self.videoLength = length
         self.frameRate = frameRate
         for name in sorted(glob(str(fileName) + '*.lt1')) :
@@ -99,9 +100,7 @@ class CvProcessor(QtCore.QObject):
     
     def videoEnded(self):
         self.setRecordTrajectory(False, None)
-        
-    
-        
+          
     def getNextFrame(self, frame, frameNumber):
         '''
         get frame from cvPlayer, save it and process
@@ -202,7 +201,8 @@ class CvProcessor(QtCore.QObject):
                 cv.DrawContours(frame, chamber.ltObject.contours, 200, 100, -1, 1)
             # Reset to full image
             cv.ResetImageROI(frame)
-
+    
+    @QtCore.pyqtSlot(bool)
     def setNegative(self, value):
         '''
         Set if we need to negative image
@@ -225,6 +225,7 @@ class CvProcessor(QtCore.QObject):
         self.objectDetectorIndex = index
         self.processFrame()
     
+    @QtCore.pyqtSlot(QtCore.QRect)
     def addChamber(self, rect):
         '''
         Create chamber from rect 
@@ -234,6 +235,7 @@ class CvProcessor(QtCore.QObject):
     def clearChamber(self, chamber):
         self.chambers.removeChamber(chamber)
     
+    @QtCore.pyqtSlot(QtCore.QRect)
     def setScale(self, rect):
         '''
         set scale according to rect
@@ -254,6 +256,7 @@ class CvProcessor(QtCore.QObject):
         '''
         self.chambers.setThreshold(value)
     
+    @QtCore.pyqtSlot(bool)
     def setRecordTrajectory(self, checked):
         '''
         Enable/Disable trajectory saving
@@ -267,7 +270,7 @@ class CvProcessor(QtCore.QObject):
         self.recordTrajectory = checked
         if self.recordTrajectory :
             # Init array for trajectory from current location to end of video file
-            self.chambers.initTrajectories(self.frameNumber,self.videoLength)
+            self.chambers.initTrajectories(self.frameNumber,self.videoLength+1)
             self.chambers.setRecordTrajectories(True)
         self.trajectoryWriting.emit(self.recordTrajectory)
         self.processFrame()

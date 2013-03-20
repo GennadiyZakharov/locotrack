@@ -4,7 +4,6 @@ Created on 18.03.2011
 @author: Gena
 '''
 
-import sys, os
 from PyQt4 import QtCore, QtGui
 import platform
 
@@ -41,8 +40,8 @@ class LtMainWindow(QtGui.QMainWindow):
         #self.ltActions = LtActions(self) # Actions
         self.cvProcessor = CvProcessor(self)                
         # ==== Creating GUI ====
-        status = self.statusBar()
-        status.setSizeGripEnabled(False)
+        #status = self.statusBar()
+        #status.setSizeGripEnabled(False)
         # ---- Creating main video widget ----
         self.cvLabel = CvGraphics(self)
         self.cvLabel.setAlignment(QtCore.Qt.AlignCenter)
@@ -106,12 +105,9 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
         self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.runRestAnalyser) 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
-        self.chambersWidget.recordTrajectoryButton.toggled.connect(self.cvProcessor.setRecordTrajectory)
+        self.chambersWidget.actionRecordTrajectory.toggled.connect(self.cvProcessor.setRecordTrajectory)
+        self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.saveProject)
         self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
-        
-        self.cvTrajectoryWidget.signalCreateTrajectoryImages.connect(self.cvProcessor.createTrajectoryImages)
-        self.cvTrajectoryWidget.saveTrajectoryButton.clicked.connect(self.cvProcessor.saveProject)
-        
         
         # ==== Creating menu ====
         
@@ -119,10 +115,11 @@ class LtMainWindow(QtGui.QMainWindow):
         self.quitAction = createAction(self,"Exit...", QtGui.QKeySequence.Quit, 
                                           "application-exit", "Exit program")
         projectMenu.addAction(self.quitAction)
+        '''
         projectToolbar = self.addToolBar("Project")
         projectToolbar.setObjectName("projectToolBar")
         addActions(projectToolbar, (self.quitAction,))
-
+        '''
         videoMenu = self.menuBar().addMenu("&Video")
         addActions(videoMenu, self.videoWidget.actions)
         chamberMenu = self.menuBar().addMenu("&Chamber")
