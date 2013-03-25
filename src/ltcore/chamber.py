@@ -78,6 +78,7 @@ class Chamber(QtCore.QObject):
         '''
         return (self.Xmatrix, self.Ymatrix)
     
+    @QtCore.pyqtSlot(int)
     def setNumber(self, number):
         '''
         set number of chamber
@@ -86,6 +87,7 @@ class Chamber(QtCore.QObject):
             self.number = number
             self.signalGuiDataUpdated.emit()
     
+    @QtCore.pyqtSlot(int)
     def setThreshold(self, value):
         '''    
         Set threshold value   
@@ -94,7 +96,8 @@ class Chamber(QtCore.QObject):
             self.threshold = value
             self.signalGuiDataUpdated.emit()
             self.signalRecalculateChamber.emit()
-            
+    
+    @QtCore.pyqtSlot(QtCore.QString)
     def setSampleName(self, sampleName):
         '''    
         Set set sample name  
@@ -103,6 +106,7 @@ class Chamber(QtCore.QObject):
             self.sampleName = sampleName
             self.signalGuiDataUpdated.emit()
     
+    @QtCore.pyqtSlot(bool)
     def setRecordTrajectory(self, checked):
         '''
         Set, if we saving ltObjects to trajectory
@@ -112,6 +116,7 @@ class Chamber(QtCore.QObject):
         self.recordTrajectory = checked
         self.signalGuiDataUpdated.emit() 
             
+    @QtCore.pyqtSlot(bool)
     def setShowTrajectory(self, checked):
         '''
         Set, if we showing trajectory or not
@@ -119,10 +124,7 @@ class Chamber(QtCore.QObject):
         if self.showTrajectory == checked:
             return
         self.showTrajectory = checked
-        '''
-        if self.showTrajectory:
-            self.createTrajectoryImage()
-        '''
+        # TODO: implement show trajectory
         self.signalGuiDataUpdated.emit()
     
     def setLtObject(self, ltObject, frameNumber):
@@ -162,6 +164,7 @@ class Chamber(QtCore.QObject):
         self.signalPositionUpdated.emit()
         self.signalRecalculateChamber.emit()
         
+    @QtCore.pyqtSlot(QtCore.QRect)
     def setPosition(self, rect):
         '''
         Move chamber to rect
@@ -190,33 +193,7 @@ class Chamber(QtCore.QObject):
         Remove stored trajectory
         '''
         self.trajectory = None
-        self.trajectoryImage = None
         self.signalGuiDataUpdated.emit()
-    
-    def createTrajectoryImage(self):
-        '''
-        Create track image from stored trajectory
-        '''
-        if self.trajectory is None : # No trajectory to create image
-            return 
-        black = QtGui.QColor(0, 0, 0)
-        self.trajectoryImage = QtGui.QImage(self.rect.size(), QtGui.QImage.Format_ARGB32_Premultiplied)
-        self.trajectoryImage.fill(QtCore.Qt.transparent)
-        trajectoryPainter = QtGui.QPainter(self.trajectoryImage)
-        trajectoryPainter.setPen(black)
-        # Drawing trajectory
-        point1 = None
-        point2 = None
-        for ltObject in self.trajectory :
-            if ltObject is None :
-                continue
-            point2 = QtCore.QPointF(*ltObject.center) # Reading first point
-            if point1 is None :
-                point1 = point2
-                continue
-            trajectoryPainter.drawLine(point2, point1)
-            point1 = point2
-        trajectoryPainter.end()
     
     @classmethod
     def loadFromFile(cls, fileName):
@@ -234,7 +211,8 @@ class Chamber(QtCore.QObject):
                 return string   
         print 'Load  chamber from file {}'.format(fileName)
         trajectoryFile = open(fileName, 'r')
-        if trajectoryFile.readline() != cls.fileCaption :
+        if trajectoryFile.readline().strip() != cls.fileCaption.strip() :
+            print 'This is not Trajectory'
             return None
         # Chamber position and size
         x, y = [int(value) for value in stripeq(trajectoryFile.readline()).split()]
@@ -248,7 +226,6 @@ class Chamber(QtCore.QObject):
         chamber.threshold = float(stripeq(trajectoryFile.readline()))
         if trajectoryFile.readline().strip() == 'Trajectory:' :
             chamber.trajectory = LtTrajectory.loadFromFile(trajectoryFile)
-            chamber.createTrajectoryImage()
         else :
             chamber.trajectory = None
         trajectoryFile.close()

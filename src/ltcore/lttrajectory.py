@@ -71,7 +71,21 @@ class LtTrajectory(object):
         '''
         internalNumber = self.frameToInternal(index)
         self.cpX[internalNumber], self.cpY[internalNumber] = self.ltObjectToXY(ltObject)
-         
+    
+    def minMax(self):
+        maxX, maxY=0,0
+        minX, minY = 1000,1000
+        for i in xrange(len(self)) :
+            x = self.cpX[i]
+            y = self.cpY[i]
+            if x == -1 or y==-1 :
+                continue
+            if x> maxX: maxX=x
+            if x< minX: minX=x
+            if y> maxY: maxY=y
+            if y< minY: minY=y
+        return (minX,minY,maxX,maxY)
+       
     def frameToInternal(self, frameNumber):
         '''
         Convert frame number to internal number (numpy array)

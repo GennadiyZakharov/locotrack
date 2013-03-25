@@ -69,26 +69,28 @@ class ChambersWidget(QtGui.QWidget):
         self.actions = (self.actionSetChamber,self.actionClearChamber,None,
                         self.actionSetScale,None,
                         self.actionRecordTrajectory,self.actionSaveTrajectory)
-        # Add chamber button    
-        self.setChamberButton = ActionButton(self.actionSetChamber)
-        layout.addWidget(self.setChamberButton, 2, 0)
-        # Clear chamber button
-        self.clearChamberButton = ActionButton(self.actionClearChamber)
-        layout.addWidget(self.clearChamberButton, 2, 1)
-        self.clearChamberButton.clicked.connect(self.chamberClear)
-        # Set scale button
-        self.scaleButton = ActionButton(self.actionSetScale)
-        layout.addWidget(self.scaleButton,3,0)      
+        # Saple name label and edit
         sampleNameLabel = QtGui.QLabel('Sample name:')
         sampleNameEdit = QtGui.QLineEdit()
         sampleNameLabel.setBuddy(sampleNameEdit)
         sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)
-        layout.addWidget(sampleNameLabel,4,0)
-        layout.addWidget(sampleNameEdit,4,1)
+        layout.addWidget(sampleNameLabel,2,0)
+        layout.addWidget(sampleNameEdit,2,1)
+        # Add chamber button    
+        self.setChamberButton = ActionButton(self.actionSetChamber)
+        layout.addWidget(self.setChamberButton, 3, 0)
+        # Clear chamber button
+        self.clearChamberButton = ActionButton(self.actionClearChamber)
+        layout.addWidget(self.clearChamberButton, 3, 1)
+        self.clearChamberButton.clicked.connect(self.chamberClear)
+        # Set scale button
+        self.scaleButton = ActionButton(self.actionSetScale)
+        layout.addWidget(self.scaleButton,4,0)      
+
         self.recordTrajectoryButton = ActionButton(self.actionRecordTrajectory)
-        layout.addWidget(self.recordTrajectoryButton)
+        layout.addWidget(self.recordTrajectoryButton,5,0)
         self.saveTrajectoryButton = ActionButton(self.actionSaveTrajectory)
-        layout.addWidget(self.saveTrajectoryButton)
+        layout.addWidget(self.saveTrajectoryButton,5,1)
         self.setLayout(layout)
     
     def getChamberByNumber(self, number):
@@ -178,7 +180,8 @@ class ChambersWidget(QtGui.QWidget):
             self.chambersList.setRowCount(chamber.number)
         self.chamberWidgets[chamber] = chamberWidget
         self.chambersList.setCellWidget(chamber.number-1, 0, chamberWidget)
-        #self.chambersList.verticalHeader().setDefaultSectionSize(rowheight) 
+        #self.chambersList.verticalHeader().setDefaultSectionSize(rowheight)
+        
     
     def removeChamber(self, chamber):
         '''

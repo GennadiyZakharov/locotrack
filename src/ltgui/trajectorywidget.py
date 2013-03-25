@@ -30,18 +30,6 @@ class TrajectoryWidget(QtGui.QWidget):
         self.actionAnalyseFromFiles = createAction(self,"&Analyse from files...", "",
                                        "document-open", "Open video file")
         self.actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
-        '''
-         = createAction(self,"&Capture...", "",
-                                          "camera-web", "")
-        actionPlay = createAction(self,"&Play", "", 
-                                  "media-playback-start", "", True)
-        actionRun =  createAction(self,"&Run", "", 
-                                  "fork", "", True)
-        actionRew = createAction(self,"&Rewind", "", 
-                                 "media-seek-backward", "")
-        actionFwd = createAction(self,"&Forward", "", 
-                                 "media-seek-forward", "")
-        '''
         self.actions = (self.actionAnalyseFromFiles,)
         #
         analyser.signalAnalysisStarted.connect(self.signalAnalysisStarted)             
@@ -52,26 +40,54 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         layout=QtGui.QGridLayout()
         #
-        self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
-        layout.addWidget(self.analyseFromFileButton,0,0)
-        self.errorTresholdSlider = QtGui.QDoubleSpinBox()
-        errorTresholdLabel = QtGui.QLabel('Error Threshold (mm/s):')
-        errorTresholdLabel.setBuddy(self.errorTresholdSlider)
-        self.errorTresholdSlider.setMaximum(100)
-        self.errorTresholdSlider.setValue(analyser.errorSpeedThreshold)
-        self.errorTresholdSlider.valueChanged.connect(analyser.setErrorThreshold)
-        self.errorTresholdSlider.valueChanged.connect(self.errorTresholdChanged)
-        layout.addWidget(errorTresholdLabel,1,0)
-        layout.addWidget(self.errorTresholdSlider,1,1)
         
-        self.speedThresholdSlider = QtGui.QDoubleSpinBox()
+        self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
+        layout.addWidget(self.analyseFromFileButton)
+        #
+        defaultSettingsLabel = QtGui.QLabel('Default set for:')
+        layout.addWidget(defaultSettingsLabel,1,0)
+        defaultSettigsComboBox = QtGui.QComboBox() 
+        defaultSettingsLabel.setBuddy(defaultSettigsComboBox)
+        layout.addWidget(defaultSettigsComboBox,1,1)
+        defaultSettigsComboBox.addItems(['Larva','Imago'])
+        defaultSettigsComboBox.currentIndexChanged.connect(self.setDefaultSettings)
+        #
+        self.errorTresholdSpinBox = QtGui.QDoubleSpinBox()
+        errorTresholdLabel = QtGui.QLabel('Error speed threshold (mm/s):')
+        errorTresholdLabel.setBuddy(self.errorTresholdSpinBox)
+        self.errorTresholdSpinBox.setMaximum(100)
+        self.errorTresholdSpinBox.setValue(analyser.errorSpeedThreshold)
+        self.errorTresholdSpinBox.valueChanged.connect(analyser.setErrorSpeedThreshold)
+        self.errorTresholdSpinBox.valueChanged.connect(self.errorTresholdChanged)
+        layout.addWidget(errorTresholdLabel)
+        layout.addWidget(self.errorTresholdSpinBox)
+        #
+        maxMissedIntervalCountLabel = QtGui.QLabel('maxMissedIntervalDuration')
+        maxMissedIntervalCountSpinBox = QtGui.QSpinBox()
+        maxMissedIntervalCountLabel.setBuddy(maxMissedIntervalCountSpinBox)
+        maxMissedIntervalCountSpinBox.setMaximum(10)
+        maxMissedIntervalCountSpinBox.setValue(analyser.maxMissedIntervalCount)
+        maxMissedIntervalCountSpinBox.valueChanged.connect(analyser.setMaxMissedIntervalCount)
+        layout.addWidget(maxMissedIntervalCountLabel)
+        layout.addWidget(maxMissedIntervalCountSpinBox)
+        #
+        maxMissedIntervalDurationLabel = QtGui.QLabel('maxMissedIntervalDuration')
+        maxMissedIntervalDurationSpinBox = QtGui.QDoubleSpinBox()
+        maxMissedIntervalDurationLabel.setBuddy(maxMissedIntervalDurationSpinBox)
+        maxMissedIntervalDurationSpinBox.setMaximum(10.0)
+        maxMissedIntervalDurationSpinBox.setValue(analyser.maxMissedIntervalDuration)
+        maxMissedIntervalDurationSpinBox.valueChanged.connect(analyser.setMaxMissedIntervalDuration)
+        layout.addWidget(maxMissedIntervalDurationLabel)
+        layout.addWidget(maxMissedIntervalDurationSpinBox)
+        #
+        self.speedThresholdSpinBox = QtGui.QDoubleSpinBox()
         speedThresholdLabel = QtGui.QLabel('Speed Threshold (mm/s):')
-        speedThresholdLabel.setBuddy(self.speedThresholdSlider)
-        self.speedThresholdSlider.setMaximum(50)
-        self.speedThresholdSlider.setValue(analyser.speedThreshold)
-        self.speedThresholdSlider.valueChanged.connect(analyser.setSpeedThreshold)
-        layout.addWidget(speedThresholdLabel,2,0)
-        layout.addWidget(self.speedThresholdSlider,2,1)
+        speedThresholdLabel.setBuddy(self.speedThresholdSpinBox)
+        self.speedThresholdSpinBox.setMaximum(50)
+        self.speedThresholdSpinBox.setValue(analyser.runRestSpeedThreshold)
+        self.speedThresholdSpinBox.valueChanged.connect(analyser.setRunRestSpeedThreshold)
+        layout.addWidget(speedThresholdLabel)
+        layout.addWidget(self.speedThresholdSpinBox)
         
         self.intervalDurationSlider = QtGui.QSpinBox()
         intervalDurationLabel = QtGui.QLabel('Interval Duration (s):')
@@ -80,13 +96,57 @@ class TrajectoryWidget(QtGui.QWidget):
         self.intervalDurationSlider.setMinimum(50)
         self.intervalDurationSlider.setValue(analyser.intervalDuration)
         self.intervalDurationSlider.valueChanged.connect(analyser.setIntervalDuration)
-        layout.addWidget(intervalDurationLabel,3,0)
-        layout.addWidget(self.intervalDurationSlider,3,1)
+        layout.addWidget(intervalDurationLabel)
+        layout.addWidget(self.intervalDurationSlider)
+        
+        createImageLabel = QtGui.QLabel('Image Creation method')
+        layout.addWidget(createImageLabel)
+        self.createImageComboBox = QtGui.QComboBox()
+        createImageLabel.setBuddy(self.createImageComboBox)
+        self.createImageComboBox.addItems(analyser.imageCreatorsCaptions)
+        self.createImageComboBox.setCurrentIndex(1)
+        self.createImageComboBox.currentIndexChanged.connect(analyser.setImageCreator)
+        self.createImageComboBox.currentIndexChanged.connect(self.setLevelsEnabled)
+        layout.addWidget(self.createImageComboBox)
+        
+        imageLevelsLabel = QtGui.QLabel('Accumulate image levels')
+        layout.addWidget(imageLevelsLabel)
+        self.imageLevelsSpinBox = QtGui.QSpinBox()
+        createImageLabel.setBuddy(self.imageLevelsSpinBox)
+        self.imageLevelsSpinBox.setMaximum(10)
+        self.imageLevelsSpinBox.setValue(analyser.imageLevels)
+        self.imageLevelsSpinBox.valueChanged.connect(analyser.setImageLevelsCount)
+        layout.addWidget(self.imageLevelsSpinBox)
+        
+        writeSpeedLabel = QtGui.QLabel('Write speed info')
+        layout.addWidget(writeSpeedLabel)
+        writeSpeedCheckBox = QtGui.QCheckBox()
+        writeSpeedLabel.setBuddy(writeSpeedCheckBox)
+        layout.addWidget(writeSpeedCheckBox)
+        writeSpeedCheckBox.stateChanged.connect(analyser.setWriteSpeed)
+        
         self.setLayout(layout)
         
+        defaultSettigsComboBox.setCurrentIndex(1)
+    
+    def setDefaultSettings(self, index):
+        if index == 0 :
+            # Larva
+            self.errorTresholdSpinBox.setValue(3.3)
+            self.speedThresholdSpinBox.setValue(0.4)
+            self.createImageComboBox.setCurrentIndex(0)
+        elif index == 1 :
+            # Imago
+            self.errorTresholdSpinBox.setValue(50)
+            self.speedThresholdSpinBox.setValue(5)
+            self.createImageComboBox.setCurrentIndex(1)
+    
+    def setLevelsEnabled(self, index):
+        self.imageLevelsSpinBox.setEnabled(index == 1)
+        
     def errorTresholdChanged(self, value):
-        if self.speedThresholdSlider.value() > value :
-            self.speedThresholdSlider.setValue(value)
+        if self.speedThresholdSpinBox.value() > value :
+            self.speedThresholdSpinBox.setValue(value)
         
     def createTrajectoryImages(self):
         self.signalCreateTrajectoryImages.emit()

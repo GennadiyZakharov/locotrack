@@ -7,6 +7,7 @@ Created on 07.04.2012
 
 from __future__ import division
 from math import sqrt
+import numpy as np
 import os
 from PyQt4 import QtCore, QtGui
 from ltcore.chamber import Chamber     
@@ -20,7 +21,9 @@ class NewRunRestAnalyser(QtCore.QObject):
     signalAnalysisFinished = QtCore.pyqtSignal()
     
     errorNoErrors = 0
-    errorLongMissedInterval = -1
+    errorTooLongMissedInterval = -1
+    errorTooMuchMissedIntervals = -2
+    imageMargin = 10
     
     def __init__(self, parent=None):
         '''
@@ -29,8 +32,8 @@ class NewRunRestAnalyser(QtCore.QObject):
         super(NewRunRestAnalyser, self).__init__(parent)
         self.intervalDuration = 300.0 # Interval 5 minutes
         self.quantDuration = 1.0      # Length of quant 
-        self.speedThreshold = 5.0 # For imago
-        #self.speedThreshold = 0.4 # For larva
+        self.runRestSpeedThreshold = 5.0 # For imago
+        #self.runRestSpeedThreshold = 0.4 # For larva
         
         # Error detection parameters
         self.maxMissedIntervalDuration = 2.0 # Seconds
@@ -42,73 +45,100 @@ class NewRunRestAnalyser(QtCore.QObject):
             5.0 mm/s for imago (raw trajectory)
         '''
         self.analyseFromFilesRunning = False
+        self.imageLevels = 3
+        self.imageCreators = [self.createImageLines, self.createImageDots]
+        self.imageCreatorsCaptions = ['Lines','Dots (accumulate)']
+        self.imageCreator = self.createImageDots
+        self.setWriteSpeed(0)
     
-    def setErrorThreshold(self, value):
+    @QtCore.pyqtSlot(int)
+    def setWriteSpeed(self, checked):
+        self.writeSpeedInfo = checked
+      
+    @QtCore.pyqtSlot(int)
+    def setImageCreator(self, index):
+        self.imageCreator = self.imageCreators[index]
+    
+    @QtCore.pyqtSlot(int)
+    def setImageLevelsCount(self, value):
+        self.imageLevels = value
+    
+    @QtCore.pyqtSlot(float)
+    def setMaxMissedIntervalDuration(self, value):
+        self.maxMissedIntervalDuration = value
+    
+    @QtCore.pyqtSlot(int)
+    def setMaxMissedIntervalCount(self, value):
+        self.maxMissedIntervalCount = value
+    
+    @QtCore.pyqtSlot(float)
+    def setErrorSpeedThreshold(self, value):
         self.errorSpeedThreshold = value
         
-    def setSpeedThreshold(self, value):
-        self.speedThreshold = value
+    @QtCore.pyqtSlot(float)
+    def setRunRestSpeedThreshold(self, value):
+        self.runRestSpeedThreshold = value
         
+    @QtCore.pyqtSlot(float)
     def setIntervalDuration(self, value):
         self.intervalDuration = value
     
-    def checkForErrors(self, trajectory, scale, frameRate):
+    def createImageDots(self, trajectory):
         '''
-        Check trajectory for errors 
-        and return 0 if trajectory sutable for analysis
+        Create trajectory image in dots representation
         '''
-        def isError(frame1,frame2,ltobject1,ltObject2) :
-            if ltObject2 is None :
-                return -1
-            x1,y1 = ltObject1.center
-            x2,y2 = ltObject2.center
-            length = sqrt((x2-x1)**2 + (y2-y1)**2)
-            time = (frame2-frame1)/frameRate
-            if length/time > self.errorSpeedThreshold :
-                return -2
-            else :
-                return 0
-        
-        missedFramesCount = 0  # Number of bad frames 
-        missedIntervalsCount = 0
-        startFrame, endFrame = trajectory.bounds()
-        # Start frame always not none
-        frame1 = startFrame 
-        ltObject1 = trajectory[startFrame]
-        # Cycle by all frames
-        for frame2 in xrange(startFrame+1, endFrame):
-            ltObject2 = trajectory[frame2]
-            # Check is object present
-            frame2Status = isError(frame1,frame2,ltObject1,ltObject2) 
-            if frame2Status < 0 :
-                if frame2Status == -1 :
-                    print "*** Object not found at frame {}".format(frame2)
-                else :
-                    print "*** Speed too much at frame {}".format(frame2)
-                # Check, if we start new missed interval
-                if missedFramesCount == 0:
-                    missedIntervalsCount += 1
-                    if missedIntervalsCount > self.maxMissedIntervalCount :
-                        return -2
-                missedFramesCount += 1
-                if missedFramesCount / frameRate >= self.maxMissedIntervalDuration :
-                    return -1
-                # Continue to next frame
+        minX,minY, maxX,maxY = trajectory.minMax()
+        trajectoryImage = QtGui.QImage(maxX-minX + self.imageMargin * 2,
+            maxY-minY + self.imageMargin * 2, QtGui.QImage.Format_RGB888)
+        trajectoryImage.fill(QtCore.Qt.white)
+        step = 255 // self.imageLevels
+        displace = QtCore.QPoint(self.imageMargin-minX,self.imageMargin-minY)
+        for ltObject in trajectory :
+            if ltObject is None :
                 continue
-            if missedFramesCount > 0 :
-                missedFramesCount = 0
-            frame1=frame2
-            ltObject1=ltObject2
-        return 0
+            point = self.ltObjectToPoint(ltObject,displace)
+            color = trajectoryImage.pixel(point)
+            level = color & 255
+            newLevel = max(0, level - step)
+            trajectoryImage.setPixel(point, QtGui.QColor(newLevel, newLevel, newLevel).rgb())
+            QtGui.QApplication.processEvents()
+        return trajectoryImage
     
+    def ltObjectToPoint(self, ltObject, displace):
+        return QtCore.QPointF(*ltObject.center).toPoint()+displace
+    
+    def createImageLines(self, trajectory):
+        '''
+        Create trajectory image in lines representation
+        '''   
+        minX,minY,maxX,maxY = trajectory.minMax()
+        displace = QtCore.QPoint(self.imageMargin-minX,self.imageMargin-minY)
+        trajectoryImage = QtGui.QImage(maxX-minX + self.imageMargin * 2,
+            maxY-minY + self.imageMargin * 2, QtGui.QImage.Format_ARGB32_Premultiplied)
+        trajectoryPainter = QtGui.QPainter(trajectoryImage)
+        trajectoryPainter.setPen(QtCore.Qt.black)
+        trajectoryImage.fill(QtCore.Qt.white)
+        ltObject1 = None
+        for ltObject2 in trajectory :
+            if ltObject2 is None : continue
+            if ltObject1 is None :
+                ltObject1 = ltObject2
+                continue
+            trajectoryPainter.drawLine(self.ltObjectToPoint(ltObject1,displace),
+                                       self.ltObjectToPoint(ltObject2,displace))
+            ltObject1=ltObject2
+            QtGui.QApplication.processEvents()
+        trajectoryPainter.end()
+        return trajectoryImage
+     
+    @QtCore.pyqtSlot(QtCore.QString, QtCore.QStringList)   
     def analyseFromFiles(self, resultsFileName, inputFileNames):
         '''
         Analyse all files from iterator inputFileNames and put results into file resultsFileName
         '''
-        print "Starting analysis"
         #Prepare result file for writing
         resultsFile = open(resultsFileName, 'w')
-        captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
+        captionString = '                  Sample ;   Int;           Activity;             Speed ;    FileName;\n'
         resultsFile.write(captionString)
         # Emit count of tracks to analyse
         self.signalAnalysisStarted.emit(len(inputFileNames))
@@ -119,37 +149,100 @@ class NewRunRestAnalyser(QtCore.QObject):
             if not self.analyseFromFilesRunning : 
                 print 'Analysis aborted'
                 break
+            baseName = os.path.basename(str(name))
+            pos = baseName.find('.ch')
+            if pos < 0 : 
+                continue  
             # Signal to update GUI
-            self.signalNextFileAnalysing.emit(name, i)
             i += 1
+            self.signalNextFileAnalysing.emit(name, i)
+            QtGui.QApplication.processEvents()
             chamber, scale, frameRate = Chamber.loadFromFile(name)
-            if chamber.trajectory is not None :
-                trajectory = chamber.trajectory.clone()
-                # Ensure that start and end frame is not none
-                trajectory.strip()
-                errorStatus = self.checkErrors(trajectory, scale, frameRate, resultsFile) 
-                if errorStatus == 0 :
-                    # Create image and analyse
-                    chamber.createTrajectoryImage()
-                    chamber.trajectoryImage.save(name + '.png')
-                    baseName = os.path.basename(str(name))
-                    pos = baseName.find('.ch', -10, -1)
-                    if pos >= 1 :               
-                        self.analyseChamber(trajectory, scale, frameRate, baseName[:pos], resultsFile)
-                elif errorStatus == -1 :
-                    resultsFile.write('Too many error') 
+            if chamber.trajectory is None : 
+                continue
+            trajectory = chamber.trajectory.clone()
+            # Ensure that start and end frame is not none
+            trajectory.strip()
+            # speed info
+            spdName = name+'.spd' if self.writeSpeedInfo != 0 else None
+            errorStatus = self.checkForErrors(trajectory, scale, frameRate, spdName) 
+            if errorStatus == self.errorNoErrors :
+                # Create image and analyse   
+                self.analyseChamber(trajectory, chamber.sampleName, scale, frameRate, baseName[:pos], resultsFile)
+                image = self.imageCreator(trajectory)
+                image.save(name + '.png')         
+            elif errorStatus == self.errorTooMuchMissedIntervals :
+                resultsFile.write('Too much missed intervals; {};\n'.format(baseName[:pos])) 
+            elif errorStatus == self.errorTooLongMissedInterval :
+                resultsFile.write('Too long missed interval; {};\n'.format(baseName[:pos])) 
+                    
         self.signalAnalysisFinished.emit()  
     
+    @QtCore.pyqtSlot()
     def abortAnalysis(self):
         self.analyseFromFilesRunning = False
     
-    def analyseChamber(self, trajectory, scale, frameRate, fileName, resultsFile):
+    def checkForErrors(self, trajectory, scale, frameRate, spdFileName=None):
+        '''
+        Check trajectory for errors 
+        and return 0 if trajectory suitable for analysis
+        '''
+        def getSpeed(frame1, frame2, ltObject1, ltObject2):
+            if ltObject2 is None :
+                return None
+            x1, y1 = ltObject1.center
+            x2, y2 = ltObject2.center
+            length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / scale
+            time = (frame2 - frame1) / frameRate
+            return length / time
+            
+        if spdFileName is not None:
+            spdFile = open(spdFileName, 'w')
+        missedFramesCount = 0  # Number of bad frames 
+        missedIntervalsCount = 0
+        startFrame, endFrame = trajectory.bounds()
+        # Start frame always not none (trajectory stripped)
+        frame1 = startFrame 
+        ltObject1 = trajectory[startFrame]
+        # Cycle by all frames
+        for frame2 in xrange(startFrame + 1, endFrame):
+            ltObject2 = trajectory[frame2]
+            # Check is frame2 buggy
+            speed = getSpeed(frame1, frame2, ltObject1, ltObject2)
+            if (speed is None) or (speed > self.errorSpeedThreshold):  
+                # An error -- print error message
+                if speed is None :
+                    print "*** Object not found at frame {}".format(frame2)
+                else :
+                    print "*** Speed too much at frame {}".format(frame2)
+                # Check, if we start new missed interval
+                if missedFramesCount == 0:
+                    missedIntervalsCount += 1
+                    if missedIntervalsCount > self.maxMissedIntervalCount :
+                        return self.errorTooMuchMissedIntervals
+                missedFramesCount += 1
+                if missedFramesCount / frameRate >= self.maxMissedIntervalDuration :
+                    return self.errorTooLongMissedInterval
+                # Continue to next frame
+                continue
+            # If we are here -- we found good frame -- missed intervals ended
+            if missedFramesCount > 0 :
+                missedFramesCount = 0
+            #
+            if spdFileName is not None:
+                spdFile.write('{:5}  {:18.6f}\n'.format(frame1, speed)) 
+            #
+            frame1 = frame2
+            ltObject1 = ltObject2
+            QtGui.QApplication.processEvents()
+        # If we here -- trajectory ended, all OK
+        return self.errorNoErrors
+    
+    def analyseChamber(self, trajectory, sampleName, scale, frameRate, fileName, resultsFile):
         '''
         Analysing chamber
         '''
-        # Working with linear smoothed trajectory
-        
-        startFrame, endFrame = trajectory.getStartEndFrame()
+        startFrame, endFrame = trajectory.bounds()
         # Total values
         totalRunLength = 0 # Summary length
         totalTime = (endFrame - startFrame) / frameRate # total time in seconds
@@ -158,43 +251,27 @@ class NewRunRestAnalyser(QtCore.QObject):
         intervalNumber = 1 # Current interval number
         intervalRunLength = 0 # Run Length on current interval
         intervalActivityCount = 0 # Activity count on this frame
-
-        missedFrames = 0
-        missedCount = 0
         ltObject1 = None
         for frame2 in xrange(startFrame, endFrame): # Cycle for all points
             # Check for emergency abort
             if not self.analyseFromFilesRunning :
-                logFile.write()
+                resultsFile.write('Analysis aborted')
                 return
             # trying to find positive coordinates
-            ltObject2 = smoothedTrajectory[frame2]
+            ltObject2 = trajectory[frame2]
             if (frame2 - startFrame) / frameRate > self.intervalDuration * intervalNumber :
                 #next interval started
-                logFile.write(self.outString.format(chamber.sampleName, intervalNumber,
+                resultsFile.write(self.outString.format(sampleName, intervalNumber,
                                                     ((intervalActivityCount / frameRate) / self.intervalDuration),
                                                     intervalRunLength / self.intervalDuration, fileName))
                 intervalNumber += 1
                 intervalRunLength = 0
                 intervalActivityCount = 0
                 if ltObject2 is None: # Interval ended on error -- we need to reinit next point
-                    print "*** Object not found at frame {}".format(frame2)
                     ltObject1 = None
                     continue
             if ltObject2 is None : # need next point without errors
-                print "*** Object not found at frame {}".format(frame2)
-                if missedFrames == 0:
-                    missedCount += 1
-                    if missedCount > 5 :
-                        print '*** Analysis aborted'
-                    logFile.write('*** Aborted with to much missed intervals; {}\n'.format(fileName))
-                missedFrames += 1
-                if missedFrames / chamber.frameRate >= 2.0 :
-                    print '*** Analysis aborted'
-                    logFile.write('*** Aborted with missed object at frame {}; {}\n'.format(frame2, fileName))
-                    return
                 continue
-            missedFrames = 0
             if ltObject1 is None : # no previous point -- store and continue
                 ltObject1 = ltObject2
                 frame1 = frame2
@@ -204,35 +281,16 @@ class NewRunRestAnalyser(QtCore.QObject):
             length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / scale
             time = (frame2 - frame1) / frameRate
             speed = length / time
-            if speed >= self.errorTreshold :
-                print "*** Speed too much at frame {}-{} ".format(frame1, frame2)
-                if frame2 - frame1 == 1:
-                    missedCount += 1
-                    if missedCount > 5 :
-                        print '*** Analysis aborted'
-                    logFile.write('*** Aborted with to much error intervals; {}\n'.format(fileName))
-            if (frame2 - frame1) / chamber.frameRate <= 1.0 :
-                    continue
-                    print '*** Analysis aborted'
-                    logFile.write('*** Aborted with error at frame {}-{}; {}\n'.format(frame1, frame2, fileName))
-                    return
             totalRunLength += length
             intervalRunLength += length
-            if speed >= self.speedTreshold :
+            #print frame1, frame2, speed
+            if speed >= self.runRestSpeedThreshold :
                 intervalActivityCount += frame2 - frame1 # 1 if no errors
                 totalActivityCount += frame2 - frame1
-            x1, y1 = x2, y2
+            ltObject1 = ltObject2
             frame1 = frame2
             QtGui.QApplication.processEvents()
-        '''
-        # Last interval may be smaller - dispatching it
-        lastTime = (frame2 - startFrame) / chamber.frameRate - (self.intervalDuration - 1) * intervalNumber
-        if lastTime >= self.intervalDuration * (1/2) :
-            logFile.write(self.outString.format(chamber.sampleName, intervalNumber,
-                                                ((intervalActivityCount/chamber.frameRate) / lastTime),
-                                                intervalRunLength / lastTime))
-        '''
         # total output
-        logFile.write(self.outString.format(chamber.sampleName, -1,
-                                            ((totalActivityCount / chamber.frameRate) / totalTime),
+        resultsFile.write(self.outString.format(sampleName, -1,
+                                            ((totalActivityCount / frameRate) / totalTime),
                                             totalRunLength / totalTime, fileName))
