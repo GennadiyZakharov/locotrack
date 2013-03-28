@@ -47,7 +47,7 @@ class NewRunRestAnalyser(QtCore.QObject):
         self.analyseFromFilesRunning = False
         self.imageLevels = 3
         self.imageCreators = [self.createImageLines, self.createImageDots]
-        self.imageCreatorsCaptions = ['Lines','Dots (accumulate)']
+        self.imageCreatorsCaptions = ['Lines','Dots']
         self.imageCreator = self.createImageDots
         self.setWriteSpeed(0)
     
@@ -215,6 +215,7 @@ class NewRunRestAnalyser(QtCore.QObject):
                     print "*** Object not found at frame {}".format(frame2)
                 else :
                     print "*** Speed too much at frame {}".format(frame2)
+                    trajectory[frame2]=None
                 # Check, if we start new missed interval
                 if missedFramesCount == 0:
                     missedIntervalsCount += 1
@@ -270,7 +271,8 @@ class NewRunRestAnalyser(QtCore.QObject):
                 if ltObject2 is None: # Interval ended on error -- we need to reinit next point
                     ltObject1 = None
                     continue
-            if ltObject2 is None : # need next point without errors
+            if ltObject2 is None :
+                # Dismiss error frame and go to next one
                 continue
             if ltObject1 is None : # no previous point -- store and continue
                 ltObject1 = ltObject2

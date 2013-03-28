@@ -4,7 +4,7 @@ Created on 09.03.2013
 @author: gena
 '''
     
-from PyQt4.QtCore import (QUrl, Qt, SIGNAL, SLOT)
+from PyQt4.QtCore import (QUrl, Qt)
 from PyQt4.QtGui import (QAction, QApplication, QDialog, QIcon,
         QKeySequence, QLabel, QTextBrowser, QToolBar, QVBoxLayout)
 import imagercc

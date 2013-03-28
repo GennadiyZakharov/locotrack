@@ -9,7 +9,6 @@ import cv
 import os
 from math import sqrt
 from PyQt4 import QtCore,QtGui
-from ltcore.signals import *
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
 from ltcore.trajectoryanalysis import NewRunRestAnalyser
@@ -27,6 +26,7 @@ class CvProcessor(QtCore.QObject):
     '''
     trajectoryWriting = QtCore.pyqtSignal(bool)
     signalNextFrame = QtCore.pyqtSignal(object)
+    projectOpened = QtCore.pyqtSignal(str)
 
     def __init__(self, parent=None):
         '''
@@ -92,12 +92,14 @@ class CvProcessor(QtCore.QObject):
             QtGui.QApplication.processEvents()  
         if len(self.chambers) > 0 :
             self.scale = scale
+        self.projectOpened.emit(os.path.basename(str(fileName)))
         
     def videoClosed(self):
         self.chambers.clear()
         self.videoLength = -1
         self.frameRate = -1
-    
+        self.projectOpened.emit('')
+        
     def videoEnded(self):
         self.setRecordTrajectory(False, None)
           
@@ -266,11 +268,13 @@ class CvProcessor(QtCore.QObject):
         if self.scale is None :
             #TODO:
             print 'Cannot save chambers: no scale present'
+            self.recordTrajectory = False
+            self.trajectoryWriting.emit(False)
             return
         self.recordTrajectory = checked
         if self.recordTrajectory :
             # Init array for trajectory from current location to end of video file
-            self.chambers.initTrajectories(self.frameNumber,self.videoLength+1)
+            self.chambers.initTrajectories(self.frameNumber,self.videoLength+2)
             self.chambers.setRecordTrajectories(True)
         self.trajectoryWriting.emit(self.recordTrajectory)
         self.processFrame()
@@ -281,29 +285,4 @@ class CvProcessor(QtCore.QObject):
     
     def createTrajectoryImages(self):
         self.chambers.createTrajectoryImages()          
-    
-    def analyseChambers(self, fileName):
-        '''
-        Analyse all chambersGui and print data about it in output file
-        '''
-        if self.chambersGui == [] :
-            return
-        print "Starting analysis"
-        if os.path.isfile(fileName) :
-            mode = 'a'
-        else :
-            mode = 'w'
-        outFile = open(fileName, mode)
-        if mode == 'w' :
-            captionString = '                  Sample ;   Int;           Activity;             Speed ;\n'
-            outFile.write(captionString)
-        
-        for chamber in self.chambersGui :
-            if chamber.trajectory is not None :
-                print 'Analysing chamber'
-                name = os.path.basename(self.cvPlayer.videoFileName)
-                if self.runRestAnalyser.checkErrors(chamber) :
-                    self.runRestAnalyser.analyseChamber(chamber, name, outFile)
-        outFile.close()
-        print 'Analysis finished'
         

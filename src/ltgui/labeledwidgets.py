@@ -6,7 +6,7 @@ Created on 19.03.2011
 
 from __future__ import division
 from __future__ import unicode_literals
-from future_builtins import *
+#from future_builtins import *
 
 from PyQt4.QtCore import QString, Qt
 from PyQt4.QtGui import (QBoxLayout,

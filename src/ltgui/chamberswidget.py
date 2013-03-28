@@ -6,12 +6,8 @@ Created on 18.12.2010
 
 from PyQt4 import QtCore, QtGui
 from ltcore.ltactions import createAction
-from ltcore.signals import *
 from ltgui.actionbutton import ActionButton
 import imagercc
-
-#from ltgui.labeledwidgets import LabelledSlider
-from chamberwidget import ChamberWidget
 
 class ChambersWidget(QtGui.QWidget):
     '''
@@ -19,6 +15,7 @@ class ChambersWidget(QtGui.QWidget):
     It displays list of chambers, 
     holds buttons to create, delete chambers and scale label
     '''
+    signalEnableDnD   = QtCore.pyqtSignal(bool)
     signalScaleSelect = QtCore.pyqtSignal(bool)
     signalChamberSelect = QtCore.pyqtSignal(bool)
     
@@ -44,15 +41,18 @@ class ChambersWidget(QtGui.QWidget):
         #chambersLabel.setBuddy(self.chambersList)
         #layout.addWidget(chambersLabel, 0, 0, 1, 2)
         # list of chambers
-        self.chamberWidgets = {} # 
+        self.chamberWidgets = {} #
+        self.selectedChamber = None 
         self.chambersList = QtGui.QTableWidget()
-        self.chambersList.setColumnCount(1)
-        self.chambersList.setSizePolicy(QtGui.QSizePolicy.Preferred,QtGui.QSizePolicy.Preferred)
-        
-        layout.addWidget(self.chambersList, 1, 0, 1, 2)
-        self.selectedChamber = -1
+        self.chambersList.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents);
+        self.chambersList.setColumnCount(2)
+        self.chambersList.setHorizontalHeaderLabels(['Sample name','Threshold'])
         self.chambersList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.chambersList.cellPressed.connect(self.chamberSelectionChanged)
+        header = self.chambersList.verticalHeader()
+        header.setClickable(True)
+        header.sectionClicked.connect(self.chamberSelectionChanged)
+        layout.addWidget(self.chambersList, 1, 0, 1, 2)
+        
         # Actions
         self.actionSetChamber = createAction(self,"Set chamber", "",
                                        "distribute-horizontal-center", "", True)
@@ -69,7 +69,7 @@ class ChambersWidget(QtGui.QWidget):
         self.actions = (self.actionSetChamber,self.actionClearChamber,None,
                         self.actionSetScale,None,
                         self.actionRecordTrajectory,self.actionSaveTrajectory)
-        # Saple name label and edit
+        # Sample name label and edit
         sampleNameLabel = QtGui.QLabel('Sample name:')
         sampleNameEdit = QtGui.QLineEdit()
         sampleNameLabel.setBuddy(sampleNameEdit)
@@ -100,27 +100,26 @@ class ChambersWidget(QtGui.QWidget):
         return None 
         
         
-    def chamberSelectionChanged(self) :
+    def chamberSelectionChanged(self, index) :
         '''
         Select different chamber, or unselect current
         '''
-        currentRow = self.chambersList.currentRow()
-        chamber = self.getChamberByNumber(currentRow+1)
+        chamber = self.getChamberByNumber(index+1)
         if chamber is self.selectedChamber :
             self.selectChamber(None)
         else :
             self.selectChamber(chamber)
         
     def selectChamber(self, chamber):
+        '''
+        Move selection to chamber
+        if chamber is None, clear selection
+        '''
         if chamber is self.selectedChamber :
             return
         self.selectedChamber = chamber
-        if  self.selectedChamber is not None:
-            self.chambersList.setCurrentCell(chamber.number-1, 0)
-        else :
-            self.chambersList.clearSelection()
         self.signalChamberSelected.emit(self.selectedChamber)
-  
+        
     def regionSelected(self, rect):
         '''
         This procedure is called, when some region
@@ -132,12 +131,6 @@ class ChambersWidget(QtGui.QWidget):
             self.signalSetScale.emit(rect)
         elif self.setChamberButton.isChecked() :
             # This rect was chamber selection
-            '''
-            for chamber in self.chamberWidgets.keys() :
-                if rect.intersects(chamber.rect) :
-                    QtGui.QMessageBox.warning(self,'Chambers manager', 'New chamber can`t intersect with existing one')
-                    return
-            '''
             self.signalSetChamber.emit(rect)
     '''
     def setScale(self, checked):
@@ -155,7 +148,7 @@ class ChambersWidget(QtGui.QWidget):
         if self.scaleButton.isChecked() :
             self.setChamberButton.setChecked(False)
         # We sent signal to enable drag on cvLabel
-        self.emit(signalEnableDnD, checked)
+        self.signalEnableDnD.emit(checked)
         # Now we only can wait for signal from cvLabel to receive 
         # selected Rectangle
         
@@ -170,17 +163,39 @@ class ChambersWidget(QtGui.QWidget):
                                          QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             self.signalClearChamber.emit(self.selectedChamber)
+       
+    def updateChamberGui(self):
+        chamber = self.sender()
+        sampleName, thresholdSpibBox = self.chamberWidgets[chamber]
+        sampleName.setText(chamber.sampleName)
+        thresholdSpibBox.setValue(chamber.threshold)
         
     def addChamber(self, chamber):
         '''
         Add new created chamber to list adn create GUI widget for it
         '''
-        chamberWidget = ChamberWidget(chamber)
-        if self.chambersList.rowCount() < chamber.number :
+        number = chamber.number-1
+        if self.chambersList.rowCount() <= number :
             self.chambersList.setRowCount(chamber.number)
+        '''
+        chamberWidget = ChamberWidget(chamber)
         self.chamberWidgets[chamber] = chamberWidget
         self.chambersList.setCellWidget(chamber.number-1, 0, chamberWidget)
+        self.chambersList.resizeColumnsToContents()
         #self.chambersList.verticalHeader().setDefaultSectionSize(rowheight)
+        '''
+        
+        sampleName = QtGui.QLineEdit()
+        sampleName.setText(chamber.sampleName)
+        sampleName.textChanged.connect(chamber.setSampleName)
+        self.chambersList.setCellWidget(number,0,sampleName)
+        thresholdSpinBox = QtGui.QSpinBox()
+        thresholdSpinBox.setMaximum(100)
+        thresholdSpinBox.setValue(chamber.threshold)
+        thresholdSpinBox.valueChanged.connect(chamber.setThreshold)
+        self.chambersList.setCellWidget(number,1,thresholdSpinBox)
+        self.chamberWidgets[chamber]=(sampleName,thresholdSpinBox)
+        chamber.signalGuiDataUpdated.connect(self.updateChamberGui)
         
     
     def removeChamber(self, chamber):
@@ -189,6 +204,7 @@ class ChambersWidget(QtGui.QWidget):
         '''
         self.selectedChamber = None
         self.chambersList.removeCellWidget(chamber.number-1,0)
+        self.chambersList.removeCellWidget(chamber.number-1,1)
         del self.chamberWidgets[chamber]
         if self.chambersList.rowCount() == chamber.number :
             i = 1 # 

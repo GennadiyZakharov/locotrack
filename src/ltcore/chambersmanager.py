@@ -100,13 +100,6 @@ class ChambersManager(QtCore.QObject):
         self.sampleName = sampleName
         for chamber in self.chambers :
             chamber.setSampleName(sampleName)
-        
-    def createTrajectoryImages(self):
-        '''
-        Create trajectory images for all chambers
-        '''
-        for chamber in self.chambers:
-            chamber.createTrajectoryImage()
             
     def initTrajectories(self, startFrame, endFrame):
         for chamber in self.chambers :

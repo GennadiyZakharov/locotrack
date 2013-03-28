@@ -15,7 +15,6 @@ class TrajectoryWidget(QtGui.QWidget):
     '''
     This widget holds GUI elements for trajectory analysing
     '''
-    signalCreateTrajectoryImages = QtCore.pyqtSignal()
     signalAnalyseFromFile = QtCore.pyqtSignal(QtCore.QString, QtCore.QStringList)
 
     def __init__(self, analyser, parent=None):
@@ -42,7 +41,7 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         
         self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
-        layout.addWidget(self.analyseFromFileButton)
+        layout.addWidget(self.analyseFromFileButton,0,0,1,2)
         #
         defaultSettingsLabel = QtGui.QLabel('Default set for:')
         layout.addWidget(defaultSettingsLabel,1,0)
@@ -53,7 +52,7 @@ class TrajectoryWidget(QtGui.QWidget):
         defaultSettigsComboBox.currentIndexChanged.connect(self.setDefaultSettings)
         #
         self.errorTresholdSpinBox = QtGui.QDoubleSpinBox()
-        errorTresholdLabel = QtGui.QLabel('Error speed threshold (mm/s):')
+        errorTresholdLabel = QtGui.QLabel('Error threshold (mm/s):')
         errorTresholdLabel.setBuddy(self.errorTresholdSpinBox)
         self.errorTresholdSpinBox.setMaximum(100)
         self.errorTresholdSpinBox.setValue(analyser.errorSpeedThreshold)
@@ -62,7 +61,7 @@ class TrajectoryWidget(QtGui.QWidget):
         layout.addWidget(errorTresholdLabel)
         layout.addWidget(self.errorTresholdSpinBox)
         #
-        maxMissedIntervalCountLabel = QtGui.QLabel('maxMissedIntervalDuration')
+        maxMissedIntervalCountLabel = QtGui.QLabel('Max missed count')
         maxMissedIntervalCountSpinBox = QtGui.QSpinBox()
         maxMissedIntervalCountLabel.setBuddy(maxMissedIntervalCountSpinBox)
         maxMissedIntervalCountSpinBox.setMaximum(10)
@@ -71,7 +70,7 @@ class TrajectoryWidget(QtGui.QWidget):
         layout.addWidget(maxMissedIntervalCountLabel)
         layout.addWidget(maxMissedIntervalCountSpinBox)
         #
-        maxMissedIntervalDurationLabel = QtGui.QLabel('maxMissedIntervalDuration')
+        maxMissedIntervalDurationLabel = QtGui.QLabel('Max missed duration ')
         maxMissedIntervalDurationSpinBox = QtGui.QDoubleSpinBox()
         maxMissedIntervalDurationLabel.setBuddy(maxMissedIntervalDurationSpinBox)
         maxMissedIntervalDurationSpinBox.setMaximum(10.0)
@@ -81,7 +80,7 @@ class TrajectoryWidget(QtGui.QWidget):
         layout.addWidget(maxMissedIntervalDurationSpinBox)
         #
         self.speedThresholdSpinBox = QtGui.QDoubleSpinBox()
-        speedThresholdLabel = QtGui.QLabel('Speed Threshold (mm/s):')
+        speedThresholdLabel = QtGui.QLabel('Run threshold (mm/s):')
         speedThresholdLabel.setBuddy(self.speedThresholdSpinBox)
         self.speedThresholdSpinBox.setMaximum(50)
         self.speedThresholdSpinBox.setValue(analyser.runRestSpeedThreshold)
@@ -132,7 +131,7 @@ class TrajectoryWidget(QtGui.QWidget):
     def setDefaultSettings(self, index):
         if index == 0 :
             # Larva
-            self.errorTresholdSpinBox.setValue(3.3)
+            self.errorTresholdSpinBox.setValue(4.0)
             self.speedThresholdSpinBox.setValue(0.4)
             self.createImageComboBox.setCurrentIndex(0)
         elif index == 1 :
@@ -147,9 +146,6 @@ class TrajectoryWidget(QtGui.QWidget):
     def errorTresholdChanged(self, value):
         if self.speedThresholdSpinBox.value() > value :
             self.speedThresholdSpinBox.setValue(value)
-        
-    def createTrajectoryImages(self):
-        self.signalCreateTrajectoryImages.emit()
            
     def signalAnalysisStarted(self, count):
         self.analysisProgressDialog.setMaximum(count)

@@ -7,7 +7,6 @@ Created on 18.03.2011
 from PyQt4 import QtCore, QtGui
 import platform
 
-from ltcore.signals import *
 from ltcore.consts import *
 
 from ltcore.cvprocessor import CvProcessor
@@ -34,7 +33,7 @@ class LtMainWindow(QtGui.QMainWindow):
         Constructor
         '''
         super(LtMainWindow, self).__init__(parent)
-        self.setWindowTitle(applicationName + ' ' + applicationVersion)
+        self.setProjectName()
         self.setObjectName("ltMainWindow")      
         # ==== Creating core functional units ====
         #self.ltActions = LtActions(self) # Actions
@@ -43,12 +42,13 @@ class LtMainWindow(QtGui.QMainWindow):
         #status = self.statusBar()
         #status.setSizeGripEnabled(False)
         # ---- Creating main video widget ----
-        self.cvLabel = CvGraphics(self)
-        self.cvLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.cvLabel.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.cvLabel.setObjectName("cvLabel")
-        self.setCentralWidget(self.cvLabel)
-        self.cvProcessor.signalNextFrame.connect(self.cvLabel.putImage)
+        self.cvGraphics = CvGraphics(self)
+        self.cvGraphics.setAlignment(QtCore.Qt.AlignCenter)
+        self.cvGraphics.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.cvGraphics.setObjectName("cvGraphics")
+        self.setCentralWidget(self.cvGraphics)
+        self.cvProcessor.signalNextFrame.connect(self.cvGraphics.putImage)
+        self.cvProcessor.projectOpened.connect(self.setProjectName)
         
         # ---- Creating dock panel for video player ----
         videoDockPanel = QtGui.QDockWidget("Video Control", self)
@@ -69,24 +69,24 @@ class LtMainWindow(QtGui.QMainWindow):
         #self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
         # ---- chambersWidget ----
-        self.connect(self.chambersWidget, signalEnableDnD, self.cvLabel.enableSelection)        
-        self.connect(self.cvLabel, signalRegionSelected, self.chambersWidget.regionSelected)
+        self.chambersWidget.signalEnableDnD.connect(self.cvGraphics.enableSelection)        
+        self.cvGraphics.signalRegionSelected.connect(self.chambersWidget.regionSelected)
         
         self.chambersWidget.signalChamberSelected.connect(
-            self.cvLabel.selectChamberGui)
+            self.cvGraphics.selectChamberGui)
         self.chambersWidget.signalSetScale.connect(self.cvProcessor.setScale)
         
-        self.cvLabel.signalChamberSelected.connect(
+        self.cvGraphics.signalChamberSelected.connect(
             self.chambersWidget.selectChamber)
         
         self.cvProcessor.chambers.signalChamberAdded.connect(
             self.chambersWidget.addChamber)
         self.cvProcessor.chambers.signalChamberAdded.connect(
-            self.cvLabel.addChamberGui)
+            self.cvGraphics.addChamberGui)
         self.cvProcessor.chambers.signalChamberDeleted.connect(
             self.chambersWidget.removeChamber)
         self.cvProcessor.chambers.signalChamberDeleted.connect(
-            self.cvLabel.delChamberGui)
+            self.cvGraphics.delChamberGui)
 
         
         # ---- Creating dock panel for image processing ---- 
@@ -106,8 +106,9 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.runRestAnalyser) 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
         self.chambersWidget.actionRecordTrajectory.toggled.connect(self.cvProcessor.setRecordTrajectory)
+        self.cvProcessor.trajectoryWriting.connect(self.chambersWidget.actionRecordTrajectory.setChecked)
         self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.saveProject)
-        self.connect(self.cvTrajectoryWidget, signalAnalyseTrajectory, self.cvProcessor.analyseChambers)
+        
         
         # ==== Creating menu ====
         
@@ -136,13 +137,13 @@ class LtMainWindow(QtGui.QMainWindow):
         helpHelpAction.triggered.connect(self.helpHelp)
         addActions(helpMenu, (helpAboutAction, helpHelpAction))
         # ---- cvProcessorWidget ----
-        self.connect(self.cvProcessorWidget.negativeChechBox.checkBox, signalStateChanged,
+        self.cvProcessorWidget.negativeChechBox.stateChanged.connect(
                      self.cvProcessor.setNegative)
-        self.connect(self.cvProcessorWidget.showProcessedChechBox.checkBox, signalStateChanged,
+        self.cvProcessorWidget.showProcessedChechBox.stateChanged.connect(
                      self.cvProcessor.setShowProcessed)
-        self.connect(self.cvProcessorWidget.showContourChechBox.checkBox, signalStateChanged,
+        self.cvProcessorWidget.showContourChechBox.stateChanged.connect(
                      self.cvProcessor.setShowContour)
-        self.cvProcessorWidget.tresholdSlider.valueChanged.connect(
+        self.cvProcessorWidget.thresholdSlider.valueChanged.connect(
                      self.cvProcessor.setTreshold)
         self.cvProcessorWidget.ellipseCropCheckBox.stateChanged.connect(
                      self.cvProcessor.setEllipseCrop)
@@ -156,6 +157,12 @@ class LtMainWindow(QtGui.QMainWindow):
         self.restoreState(settings.value("ltMainWindow/State").toByteArray())
         
     # ==== Slots to handle actions ====
+    
+    def setProjectName(self, name=''):
+        title = applicationName + ' ' + applicationVersion
+        if name != '' :
+            title += ' - '+name
+        self.setWindowTitle(title)
     
     def saveProject(self):
         pass

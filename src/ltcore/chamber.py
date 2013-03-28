@@ -186,7 +186,7 @@ class Chamber(QtCore.QObject):
             self.resetTrajectory()
         # Init trajectory to save frames
         self.trajectory = LtTrajectory(startFrame, endFrame)
-        self.signalGuiDataUpdated.emit()
+        #self.signalGuiDataUpdated.emit()
     
     def resetTrajectory(self):
         '''

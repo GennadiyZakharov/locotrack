@@ -4,9 +4,6 @@ Created on 20.03.2011
 @author: Gena
 '''
 from PyQt4 import QtCore, QtGui
-#from ltcore.actions import LtActions
-from ltcore.signals import *
-from ltgui.labeledwidgets import *
 
 class CvProcessorWidget(QtGui.QWidget):
     '''
@@ -20,40 +17,52 @@ class CvProcessorWidget(QtGui.QWidget):
         super(CvProcessorWidget, self).__init__(parent)
         self.cvProcessor = cvProcessor
         layout = QtGui.QGridLayout()
-        # Some checkboxes
-        self.showProcessedChechBox = LabelledCheckBox("Show processed image")
-        layout.addWidget(self.showProcessedChechBox, 2, 0)
-        self.negativeChechBox = LabelledCheckBox("Negative")
-        layout.addWidget(self.negativeChechBox, 2, 1)
-        self.showContourChechBox = LabelledCheckBox("Show Contour")
-        layout.addWidget(self.showContourChechBox, 3, 0)
+        # 
+        showProcessedLabel = QtGui.QLabel("Show processed")
+        self.showProcessedChechBox = QtGui.QCheckBox()
+        self.showProcessedChechBox.setChecked(True)
+        layout.addWidget(showProcessedLabel, 0, 0)
+        layout.addWidget(self.showProcessedChechBox, 0, 1)
+        #
+        self.negativeChechBox = QtGui.QCheckBox()
+        negativeLabel = QtGui.QLabel("Negative")
+        layout.addWidget(negativeLabel)
+        layout.addWidget(self.negativeChechBox)
+        #
+        self.showContourChechBox = QtGui.QCheckBox()
+        showContoursLabel = QtGui.QLabel("Show Contour")
+        layout.addWidget(showContoursLabel)
+        layout.addWidget(self.showContourChechBox)
         self.showContourChechBox.setCheckState(QtCore.Qt.Checked)
-        self.ellipseCropCheckBox = LabelledCheckBox("Crop Central Ellipse")
+        self.ellipseCropCheckBox = QtGui.QCheckBox()
+        cropLabel = QtGui.QLabel("Crop Central Ellipse")
+        layout.addWidget(cropLabel)
         self.ellipseCropCheckBox.setCheckState(QtCore.Qt.Checked)
-        layout.addWidget(self.ellipseCropCheckBox, 3, 1)
-        # Treshold slider
-        self.tresholdSlider = LabelledSlider('Treshold')
-        self.tresholdSlider.setMaximum(100)
-        self.tresholdSlider.setValue(60)
-        layout.addWidget(self.tresholdSlider, 4, 0, 1, 2)
-        objectDetectorLabel = QtGui.QLabel('Detection method: ')
+        layout.addWidget(self.ellipseCropCheckBox)
+        #
+        objectDetectorLabel = QtGui.QLabel('Detection method:')
         self.ObjectDetectorsComboBox = QtGui.QComboBox()
         objectDetectorLabel.setBuddy(self.ObjectDetectorsComboBox)
         self.ObjectDetectorsComboBox.addItems(
             [detector.name for detector in self.cvProcessor.objectDetectors])
         self.ObjectDetectorsComboBox.currentIndexChanged.connect(
             self.cvProcessor.setObjectDetector)
-        layout.addWidget(objectDetectorLabel,5,0)
-        layout.addWidget(self.ObjectDetectorsComboBox,5,1)       
+        self.ObjectDetectorsComboBox.currentIndexChanged.connect(
+            self.enableThreshold)
+        layout.addWidget(objectDetectorLabel)
+        layout.addWidget(self.ObjectDetectorsComboBox)   
+        # Threshold slider
+        self.thresholdSlider = QtGui.QSlider(QtCore.Qt.Horizontal)
+        thresholdLabel = QtGui.QLabel('Image threshold (%)')
+        self.thresholdSlider.setMaximum(100)
+        self.thresholdSlider.setValue(60)
+        self.thresholdSlider.setEnabled(False)
+        layout.addWidget(thresholdLabel)
+        layout.addWidget(self.thresholdSlider)    
         # Layout
         self.setLayout(layout)
         
-    def accumulate(self):
-        self.emit(signalAccumulate, self.accumulateSpinBox.value())
         
-    def resetBackground(self):
-        '''
-        Clear accumulated background
-        '''
-        self.emit(signalAccumulate, None)
+    def enableThreshold(self, index):
+        self.thresholdSlider.setEnabled(index == 1)
         

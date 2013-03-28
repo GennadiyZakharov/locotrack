@@ -4,7 +4,6 @@ Created on 26.05.2012
 '''
 from PyQt4 import QtCore, QtGui
 import cv
-from ltcore.signals import *
 from ltgui.chambergui import ChamberGui
 
 class CvGraphics(QtGui.QGraphicsView):
@@ -19,6 +18,8 @@ class CvGraphics(QtGui.QGraphicsView):
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
     signalChamberSelected = QtCore.pyqtSignal(object)
+    
+    signalRegionSelected = QtCore.pyqtSignal(QtCore.QRect)
 
     def __init__(self, parent=None):
         '''
@@ -248,7 +249,7 @@ class CvGraphics(QtGui.QGraphicsView):
             pos = self.mapToScene(event.pos())
             rect = QtCore.QRect(self.dragStartPosition, pos.toPoint())
             # And send it via signal
-            self.emit(signalRegionSelected, rect)
+            self.signalRegionSelected.emit(rect)
             event.acceptProposedAction()
             self.scene.removeItem(self.selectedRect)
             self.selectedRect = None
