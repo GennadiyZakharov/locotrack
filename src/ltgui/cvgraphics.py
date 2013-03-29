@@ -12,7 +12,6 @@ class CvGraphics(QtGui.QGraphicsView):
     -video frame
     -chamber objects
     -scale objects
-
     '''
     initialSize = (320, 200)
     chamberMove = QtCore.pyqtSignal(int, int)
@@ -20,6 +19,9 @@ class CvGraphics(QtGui.QGraphicsView):
     signalChamberSelected = QtCore.pyqtSignal(object)
     
     signalRegionSelected = QtCore.pyqtSignal(QtCore.QRect)
+    
+    selectingScale = 1
+    selectingChamber = 2
 
     def __init__(self, parent=None):
         '''
@@ -31,16 +33,12 @@ class CvGraphics(QtGui.QGraphicsView):
         self.scene = QtGui.QGraphicsScene()
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setScene(self.scene)
-        #self.setMinimumSize(320, 200) 
-        #self.setSizePolicy(QtGui.QSizePolicy.Fixed,QtGui.QSizePolicy.Fixed)
         self.setAcceptDrops(True)
-        self.enableDnD = False
+        self.selecting = None
         self.selectedRect = None
         #insert pixmap into (0,0)
         self.pixmapObject = self.scene.addPixmap(self.pixmap)
-        #self.pixmapObject.setScale(1.0)
         self.scene.setSceneRect(self.pixmapObject.boundingRect())
-        self.setSize()
         self.chambersGui = {} # dict to store gui for cahmbers
         self.selectedChamber = None
         self.dragStartPosition = None
@@ -70,12 +68,6 @@ class CvGraphics(QtGui.QGraphicsView):
             return 
         self.updateImage()
     
-    def setSize(self):
-        size = self.pixmap.size()
-        rect = QtCore.QRect(QtCore.QPoint(0,0),size)
-        #self.fitInView(self.pixmapObject.boundingRect(), mode=QtCore.Qt.KeepAspectRatio)
-        self.setGeometry(rect)
-    
     def updateImage(self):
         '''
         Display frame and draw selected region
@@ -84,10 +76,9 @@ class CvGraphics(QtGui.QGraphicsView):
             self.scene.removeItem(self.pixmapObject)
             self.pixmap.convertFromImage(self.frame)
             self.pixmapObject = self.scene.addPixmap(self.pixmap)
-            #self.pixmapObject.  Bring Back
+            self.pixmapObject.setZValue(-1)
             self.scene.setSceneRect(self.pixmapObject.boundingRect())
-            #self.setSceneRect(self.pixmapObject.boundingRect())
-            self.setSize()
+
         else :
             self.pixmap.convertFromImage(self.frame)
             self.scene.update()
@@ -103,6 +94,7 @@ class CvGraphics(QtGui.QGraphicsView):
             self.chambersGui[chamber].setSelected(True)
         self.signalChamberSelected.emit(chamber)
     
+    @QtCore.pyqtSlot(object)
     def addChamberGui(self, chamber):
         '''
         new chamber was created
@@ -110,9 +102,10 @@ class CvGraphics(QtGui.QGraphicsView):
         chamberGui = ChamberGui(chamber)
         chamberGui.setAllowedRect(self.pixmap.rect())
         self.scene.addItem(chamberGui)
-        self.chambersGui[chamber]=chamberGui 
+        self.chambersGui[chamber] = chamberGui 
         chamberGui.signalSelected.connect(self.selectChamberGui)
-        
+    
+    @QtCore.pyqtSlot(object)
     def delChamberGui(self, chamber):
         '''
         chamber is schelded for remove -- must remove gui for it
@@ -120,61 +113,41 @@ class CvGraphics(QtGui.QGraphicsView):
         self.selectChamberGui(None)
         self.scene.removeItem(self.chambersGui[chamber])
         del self.chambersGui[chamber]
-     
-    def updatePixpamSize(self):
-        self.setSizePolicy(QtCore.Qt.QSizePolicy)
     
     @QtCore.pyqtSlot(bool)
     def selectScale(self, checked):
-        self.enableDnD = checked
+        self.selecting = self.selectingScale if checked else None
     
     @QtCore.pyqtSlot(bool)
     def selectChamber(self, checked):
-        self.enableDnD = checked
-    
-    @QtCore.pyqtSlot(bool)
-    def enableSelection(self, enable):
-        '''
-        Enable region selection
-        '''
-        self.enableDnD = enable
+        self.selecting = self.selectingChamber if checked else None
     
     def isPointAllowed(self, point):
         return self.pixmapObject.boundingRect().contains(point)
     
-    # TODO: deal with drag. it seems, that it is something wrong
     def mousePressEvent(self, event) :
-        '''
-        Hander is called, when mouse button is pressed
-        '''
         # If selection not enabled -- exit
-        if not self.enableDnD :
+        if self.selecting is None :
             super(CvGraphics, self).mousePressEvent(event)
+            return
+        if not (event.buttons() & QtCore.Qt.LeftButton) :
             return
         pos = self.mapToScene(event.pos())
         if not self.isPointAllowed(pos) :
             return
-        print "mousePressed event ", event.pos()
-        # If it is left button -- store position
-        if (event.button() == QtCore.Qt.LeftButton) :
-            self.dragStartPosition = pos.toPoint()
+        self.dragStartPosition = pos
             
 
     def mouseMoveEvent(self, event) :
-        '''
-        Hander is called, when mouse moves
-        '''
-        # If selection not enabled -- exit
-        if not self.enableDnD :
+        if self.selecting is None :
             super(CvGraphics, self).mouseMoveEvent(event)
             return
         if self.dragStartPosition is None :
             return
-        print "MouseMove Event"
         # If left button not pressed -- exit
         if not (event.buttons() & QtCore.Qt.LeftButton) :
             return
-        pos = self.mapToScene(event.pos()).toPoint()
+        pos = self.mapToScene(event.pos())
         if not self.isPointAllowed(pos) :
             return
         # If distance between current and start point too small --exit
@@ -182,7 +155,11 @@ class CvGraphics(QtGui.QGraphicsView):
             return
         # Everything ok
         pen = QtGui.QPen(QtGui.QColor(0, 0, 255))
-        self.selectedRect = self.scene.addRect(QtCore.QRectF(QtCore.QRect(pos, self.dragStartPosition)), pen)
+        # Creating line or rect according to task
+        if self.selecting == self.selectingScale :
+            self.selectedRect = self.scene.addLine(QtCore.QLineF(pos, self.dragStartPosition), pen)
+        else :
+            self.selectedRect = self.scene.addRect(QtCore.QRectF(pos, self.dragStartPosition), pen)
         # Constructing data with start pos 
         mimeData = QtCore.QMimeData();
         data = QtCore.QByteArray()
@@ -199,58 +176,45 @@ class CvGraphics(QtGui.QGraphicsView):
         drag.setPixmap(pixmap)
         '''
         # Starting drag
-        print "drag start"
-        drag.start(QtCore.Qt.CopyAction)
+        drag.start()
         # Update image to draw selected region on it
-        self.updateImage()
+        # self.updateImage()
     
     def dragEnterEvent(self, event) :
-        '''
-        Starting drag
-        '''
-        # If selection not enabled -- exit
-        if not self.enableDnD :
+        if self.selecting is None :
             super(CvGraphics, self).dragEnterEvent(event)
             return
-        print "dragEnter Event"
         if event.mimeData().hasFormat("cvlabel/pos") :
             event.acceptProposedAction()
             
     def dragMoveEvent(self, event):
-        '''
-        Hander is called, when drag event processes
-        '''
         # If selection not enabled -- exit
-        if not self.enableDnD :
+        if self.selecting is None :
             super(CvGraphics, self).dragMoveEvent(event)
             return
-        print "DragMove event"
         pos = self.mapToScene(event.pos())
-        print pos
         if not self.isPointAllowed(pos):
             return
         # Saving currenly selected rectangle
-        self.selectedRect.setRect(QtCore.QRectF(QtCore.QRect(self.mapToScene(event.pos()).toPoint(), self.dragStartPosition)))
-        self.scene.update()
+        if self.selecting == 1 :
+            self.selectedRect.setLine(QtCore.QLineF(self.dragStartPosition, pos))
+        else :
+            self.selectedRect.setRect(QtCore.QRectF(self.dragStartPosition, pos).normalized())
+        #self.scene.update()
     
     def dropEvent(self, event) :
-        '''
-        Hander is called, when drag finished
-        '''
-        
-        # If selection not enabled -- exit
-        if not self.enableDnD :
+        if self.selecting is None :
             super(CvGraphics, self).dropEvent(event)
             return
-        print "dropEvent"
         # Check if we receive drag event with coordinates
         if event.mimeData().hasFormat("cvlabel/pos") :
             # Put selection area into QRect 
             pos = self.mapToScene(event.pos())
-            rect = QtCore.QRect(self.dragStartPosition, pos.toPoint())
+            rect = QtCore.QRect(self.dragStartPosition.toPoint(), pos.toPoint())
             # And send it via signal
-            self.signalRegionSelected.emit(rect)
-            event.acceptProposedAction()
             self.scene.removeItem(self.selectedRect)
             self.selectedRect = None
+            self.dragStartPosition = None
+            event.acceptProposedAction()
+            self.signalRegionSelected.emit(rect)
             

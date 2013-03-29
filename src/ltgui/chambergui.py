@@ -1,12 +1,11 @@
 '''
 Created on 26.05.2012
-
 @author: gena
 '''
 from PyQt4 import QtCore, QtGui
 
 class ltObjectGui((QtGui.QGraphicsObject)):
-    def __init__(self,chamber,parent=None):
+    def __init__(self, chamber, parent=None):
         super(ltObjectGui, self).__init__(parent)
         self.chamber = chamber
 
@@ -14,13 +13,13 @@ class ChamberGui(QtGui.QGraphicsObject):
     '''
     This is graphic for chamber representation on qgraphicsscene
     '''
-    normalColor = QtGui.QColor(0,255,0)
-    selectedColor = QtGui.QColor(255,0,0)
+    normalColor = QtGui.QColor(0, 255, 0)
+    selectedColor = QtGui.QColor(255, 0, 0)
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
     signalSelected = QtCore.pyqtSignal(object)        
 
-    def __init__(self,chamber,parent=None):
+    def __init__(self, chamber, parent=None):
         '''
         Constructor
         '''
@@ -42,7 +41,7 @@ class ChamberGui(QtGui.QGraphicsObject):
     # Event handling
     
     def isMoveAllowed(self, rect):
-        return self.allowedRect.contains(rect,True)
+        return self.allowedRect.contains(rect, True)
     
     def setAllowedRect(self, rect):
         self.allowedRect = rect
@@ -50,31 +49,30 @@ class ChamberGui(QtGui.QGraphicsObject):
     def keyPressEvent(self, event):
         key = event.key()
         if key == QtCore.Qt.Key_Left:
-            dirX,dirY = (-1,0)
+            dirX, dirY = (-1, 0)
         elif key == QtCore.Qt.Key_Right :
-            dirX,dirY = (1,0)
+            dirX, dirY = (1, 0)
         elif key == QtCore.Qt.Key_Up :
-            dirX,dirY = (0,-1)
+            dirX, dirY = (0, -1)
         elif key == QtCore.Qt.Key_Down :
-            dirX,dirY = (0,1)
+            dirX, dirY = (0, 1)
         else :
             return
         if (event.modifiers() & QtCore.Qt.ShiftModifier):
             rect = QtCore.QRect(self.chamber.rect)
-            rect.setWidth(rect.width()+dirX)
-            rect.setHeight(rect.height()+dirY)
+            rect.setWidth(rect.width() + dirX)
+            rect.setHeight(rect.height() + dirY)
             # TODO: minimum chamber size: remove magic number
-            if (rect.height()<5) or (rect.width()<5) :
+            if (rect.height() < 5) or (rect.width() < 5) :
                 return
             if self.isMoveAllowed(rect) :
-                self.chamber.resize(dirX,dirY)
+                self.chamber.resize(dirX, dirY)
                 self.update()
         else :
-            self.moveBy(dirX,dirY)
+            self.moveBy(dirX, dirY)
             self.onMove()
     
     def setSelected(self, flag):
-        print 'selecting', flag
         if flag :
             self.color = self.selectedColor
         else :
@@ -83,11 +81,11 @@ class ChamberGui(QtGui.QGraphicsObject):
     
     def onMove(self):
         # graph widget was moved to new pos()
-        pos = QtCore.QPoint(int(self.pos().x()),int(self.pos().y()))
+        pos = QtCore.QPoint(int(self.pos().x()), int(self.pos().y()))
         rect = QtCore.QRect(self.chamber.rect)
         rect.moveTo(pos)
         if self.isMoveAllowed(rect) :
-            self.chamber.moveTo(QtCore.QPoint(pos.x(),pos.y()))
+            self.chamber.moveTo(QtCore.QPoint(pos.x(), pos.y()))
         else :
             self.setPos(QtCore.QPointF(self.chamber.rect.topLeft()))
     
@@ -96,27 +94,27 @@ class ChamberGui(QtGui.QGraphicsObject):
         return QtGui.QGraphicsObject.focusInEvent(self, event)  
     # Painting procedures
     def boundingRect(self):
-        return QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size()))
+        return QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size()))
 
     def shape(self):
         path = QtGui.QPainterPath()
-        path.addRect(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
+        path.addRect(QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size())))
         return path
     
     def paint(self, painter, option, widget=None):
         pen = QtGui.QPen(QtGui.QBrush(self.color), 3)
         painter.setPen(pen)
         painter.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
-        painter.drawRect(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
-        painter.drawEllipse(QtCore.QRectF(QtCore.QPointF(0,0),QtCore.QSizeF(self.chamber.size())))
+        painter.drawRect(QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size())))
+        painter.drawEllipse(QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size())))
         pen = QtGui.QPen(QtGui.QBrush(self.selectedColor), 3)
         painter.setPen(pen)
-        painter.setFont(QtGui.QFont('Times',15,QtGui.QFont.DemiBold))
-        rect = QtCore.QRectF(0,0,15,20)
+        painter.setFont(QtGui.QFont('Times', 15, QtGui.QFont.DemiBold))
+        rect = QtCore.QRectF(0, 0, 15, 20)
         painter.drawText(rect, QtCore.Qt.AlignCenter, str(self.chamber.number));
         #painter.drawText(QtCore.QPointF(0,0), str(self.chamber.number))
         if self.chamber.showTrajectory and (self.chamber.trajectoryImage is not None):
-            painter.drawImage(QtCore.QPointF(0,0),self.chamber.trajectoryImage)
+            painter.drawImage(QtCore.QPointF(0, 0), self.chamber.trajectoryImage)
         
         '''
         painter.setFont(QtGui.QFont('Arial', pointSize=16))

@@ -15,14 +15,13 @@ class ChambersWidget(QtGui.QWidget):
     It displays list of chambers, 
     holds buttons to create, delete chambers and scale label
     '''
-    signalEnableDnD   = QtCore.pyqtSignal(bool)
     signalScaleSelect = QtCore.pyqtSignal(bool)
     signalChamberSelect = QtCore.pyqtSignal(bool)
     
     signalChamberSelected = QtCore.pyqtSignal(object)
     
-    signalSetScale     = QtCore.pyqtSignal(QtCore.QRect)
-    signalSetChamber   = QtCore.pyqtSignal(QtCore.QRect)
+    signalSetScale = QtCore.pyqtSignal(QtCore.QRect)
+    signalSetChamber = QtCore.pyqtSignal(QtCore.QRect)
     signalClearChamber = QtCore.pyqtSignal(object) 
 
     def __init__(self, chambersManager, parent=None):
@@ -46,7 +45,7 @@ class ChambersWidget(QtGui.QWidget):
         self.chambersList = QtGui.QTableWidget()
         self.chambersList.horizontalHeader().setResizeMode(QtGui.QHeaderView.ResizeToContents);
         self.chambersList.setColumnCount(2)
-        self.chambersList.setHorizontalHeaderLabels(['Sample name','Threshold'])
+        self.chambersList.setHorizontalHeaderLabels(['Sample name', 'Threshold'])
         self.chambersList.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         header = self.chambersList.verticalHeader()
         header.setClickable(True)
@@ -54,28 +53,28 @@ class ChambersWidget(QtGui.QWidget):
         layout.addWidget(self.chambersList, 1, 0, 1, 2)
         
         # Actions
-        self.actionSetChamber = createAction(self,"Set chamber", "",
+        self.actionSetChamber = createAction(self, "Set chamber", "",
                                        "distribute-horizontal-center", "", True)
-        self.actionSetChamber.toggled.connect(self.setScaleOrChamber)
-        self.actionClearChamber = createAction(self,"Clear chamber", "", 
+        self.actionSetChamber.toggled.connect(self.setChamber)
+        self.actionClearChamber = createAction(self, "Clear chamber", "",
                                   "process-stop", "")
-        self.actionSetScale =  createAction(self,"Set scale", "", 
+        self.actionSetScale = createAction(self, "Set scale", "",
                                   "measure", "", True)
-        self.actionSetScale.toggled.connect(self.setScaleOrChamber)
-        self.actionRecordTrajectory = createAction(self,"&Record trajectory", "", 
+        self.actionSetScale.toggled.connect(self.setScale)
+        self.actionRecordTrajectory = createAction(self, "&Record trajectory", "",
                                  "media-record", "", True)
-        self.actionSaveTrajectory = createAction(self,"Save trajectory", "", 
+        self.actionSaveTrajectory = createAction(self, "Save trajectory", "",
                                  "document-save", "")
-        self.actions = (self.actionSetChamber,self.actionClearChamber,None,
-                        self.actionSetScale,None,
-                        self.actionRecordTrajectory,self.actionSaveTrajectory)
+        self.actions = (self.actionSetChamber, self.actionClearChamber, None,
+                        self.actionSetScale, None,
+                        self.actionRecordTrajectory, self.actionSaveTrajectory)
         # Sample name label and edit
         sampleNameLabel = QtGui.QLabel('Sample name:')
         sampleNameEdit = QtGui.QLineEdit()
         sampleNameLabel.setBuddy(sampleNameEdit)
         sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)
-        layout.addWidget(sampleNameLabel,2,0)
-        layout.addWidget(sampleNameEdit,2,1)
+        layout.addWidget(sampleNameLabel, 2, 0)
+        layout.addWidget(sampleNameEdit, 2, 1)
         # Add chamber button    
         self.setChamberButton = ActionButton(self.actionSetChamber)
         layout.addWidget(self.setChamberButton, 3, 0)
@@ -85,12 +84,12 @@ class ChambersWidget(QtGui.QWidget):
         self.clearChamberButton.clicked.connect(self.chamberClear)
         # Set scale button
         self.scaleButton = ActionButton(self.actionSetScale)
-        layout.addWidget(self.scaleButton,4,0)      
+        layout.addWidget(self.scaleButton, 4, 0)      
 
         self.recordTrajectoryButton = ActionButton(self.actionRecordTrajectory)
-        layout.addWidget(self.recordTrajectoryButton,5,0)
+        layout.addWidget(self.recordTrajectoryButton, 5, 0)
         self.saveTrajectoryButton = ActionButton(self.actionSaveTrajectory)
-        layout.addWidget(self.saveTrajectoryButton,5,1)
+        layout.addWidget(self.saveTrajectoryButton, 5, 1)
         self.setLayout(layout)
     
     def getChamberByNumber(self, number):
@@ -104,7 +103,7 @@ class ChambersWidget(QtGui.QWidget):
         '''
         Select different chamber, or unselect current
         '''
-        chamber = self.getChamberByNumber(index+1)
+        chamber = self.getChamberByNumber(index + 1)
         if chamber is self.selectedChamber :
             self.selectChamber(None)
         else :
@@ -132,25 +131,14 @@ class ChambersWidget(QtGui.QWidget):
         elif self.setChamberButton.isChecked() :
             # This rect was chamber selection
             self.signalSetChamber.emit(rect)
-    '''
+    
     def setScale(self, checked):
-        self.setChamberButton.setChecked(False)
+        self.actionSetChamber.setChecked(False)
         self.signalScaleSelect.emit(checked)
     
     def setChamber(self, checked):
+        self.actionSetScale.setChecked(False)
         self.signalChamberSelect.emit(checked)
-    '''
-    def setScaleOrChamber(self, checked):
-        '''
-        This procedure is called, when setScale or setChamber button
-        is pressed
-        '''
-        if self.scaleButton.isChecked() :
-            self.setChamberButton.setChecked(False)
-        # We sent signal to enable drag on cvLabel
-        self.signalEnableDnD.emit(checked)
-        # Now we only can wait for signal from cvLabel to receive 
-        # selected Rectangle
         
     def chamberClear(self):
         '''
@@ -174,7 +162,7 @@ class ChambersWidget(QtGui.QWidget):
         '''
         Add new created chamber to list adn create GUI widget for it
         '''
-        number = chamber.number-1
+        number = chamber.number - 1
         if self.chambersList.rowCount() <= number :
             self.chambersList.setRowCount(chamber.number)
         '''
@@ -188,13 +176,13 @@ class ChambersWidget(QtGui.QWidget):
         sampleName = QtGui.QLineEdit()
         sampleName.setText(chamber.sampleName)
         sampleName.textChanged.connect(chamber.setSampleName)
-        self.chambersList.setCellWidget(number,0,sampleName)
+        self.chambersList.setCellWidget(number, 0, sampleName)
         thresholdSpinBox = QtGui.QSpinBox()
         thresholdSpinBox.setMaximum(100)
         thresholdSpinBox.setValue(chamber.threshold)
         thresholdSpinBox.valueChanged.connect(chamber.setThreshold)
-        self.chambersList.setCellWidget(number,1,thresholdSpinBox)
-        self.chamberWidgets[chamber]=(sampleName,thresholdSpinBox)
+        self.chambersList.setCellWidget(number, 1, thresholdSpinBox)
+        self.chamberWidgets[chamber] = (sampleName, thresholdSpinBox)
         chamber.signalGuiDataUpdated.connect(self.updateChamberGui)
         
     
@@ -203,8 +191,8 @@ class ChambersWidget(QtGui.QWidget):
         Remove GUI for chamber 
         '''
         self.selectedChamber = None
-        self.chambersList.removeCellWidget(chamber.number-1,0)
-        self.chambersList.removeCellWidget(chamber.number-1,1)
+        self.chambersList.removeCellWidget(chamber.number - 1, 0)
+        self.chambersList.removeCellWidget(chamber.number - 1, 1)
         del self.chamberWidgets[chamber]
         if self.chambersList.rowCount() == chamber.number :
             i = 1 # 

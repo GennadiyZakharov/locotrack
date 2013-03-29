@@ -48,6 +48,7 @@ class Chamber(QtCore.QObject):
         self.sampleName = sampleName
         self.number = number
         self.ltObject = None
+        self.frameNumber = -1
         # No trajectory is recorded
         self.resetTrajectory()
         self.recordTrajectory = False
@@ -132,6 +133,7 @@ class Chamber(QtCore.QObject):
         Set object for chamber and save it to trajectory, if setRecordTrajectory enabled
         '''
         self.ltObject = ltObject
+        self.frameNumber = frameNumber
         if (self.trajectory is not None) and self.recordTrajectory :
             self.trajectory[frameNumber] = ltObject
     
@@ -180,7 +182,7 @@ class Chamber(QtCore.QObject):
     '''
     def initTrajectory(self, startFrame, endFrame):
         '''
-        Init array to store trajectory from startFrame to EndFrame
+        Init trajectory from startFrame to EndFrame
         '''
         if self.trajectory is not None : # Delete old trajectory
             self.resetTrajectory()
@@ -196,6 +198,7 @@ class Chamber(QtCore.QObject):
         self.signalGuiDataUpdated.emit()
     
     @classmethod
+    @QtCore.pyqtSlot(QtCore.QString)
     def loadFromFile(cls, fileName):
         '''
         Load chamber and trajectory from file
@@ -206,7 +209,7 @@ class Chamber(QtCore.QObject):
             '''
             pos = string.find('=')
             if pos >= 0 : # New file format
-                return string[pos+1:]
+                return string[pos + 1:]
             else :
                 return string   
         print 'Load  chamber from file {}'.format(fileName)
@@ -231,11 +234,12 @@ class Chamber(QtCore.QObject):
         trajectoryFile.close()
         return chamber, scale, frameRate
     
+    @QtCore.pyqtSlot(QtCore.QString, float, float)
     def saveToFile(self, fileNameTemplate, scale, frameRate):
         '''
         Save trajectory to file
         
-        Scale and Frame Rate must be written in file
+        scale and frameRate must be written in file
         It is used to analyse chambers
         '''
         fileName = fileNameTemplate.format(self.number)

@@ -69,7 +69,8 @@ class LtMainWindow(QtGui.QMainWindow):
         #self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
         # ---- chambersWidget ----
-        self.chambersWidget.signalEnableDnD.connect(self.cvGraphics.enableSelection)        
+        self.chambersWidget.signalScaleSelect.connect(self.cvGraphics.selectScale)        
+        self.chambersWidget.signalChamberSelect.connect(self.cvGraphics.selectChamber)
         self.cvGraphics.signalRegionSelected.connect(self.chambersWidget.regionSelected)
         
         self.chambersWidget.signalChamberSelected.connect(

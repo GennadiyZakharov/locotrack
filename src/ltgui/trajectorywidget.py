@@ -5,7 +5,7 @@ Created on 04.02.2012
 '''
 from __future__ import division
 
-from PyQt4 import QtCore,QtGui
+from PyQt4 import QtCore, QtGui
 #from ltcore.actions import LtActions
 from ltgui.analysedialog import AnalyseDialog
 from ltgui.actionbutton import ActionButton
@@ -26,7 +26,7 @@ class TrajectoryWidget(QtGui.QWidget):
         self.analysisProgressDialog.setWindowTitle('Analysing files')
         #
         
-        self.actionAnalyseFromFiles = createAction(self,"&Analyse from files...", "",
+        self.actionAnalyseFromFiles = createAction(self, "&Analyse from files...", "",
                                        "document-open", "Open video file")
         self.actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
         self.actions = (self.actionAnalyseFromFiles,)
@@ -37,18 +37,18 @@ class TrajectoryWidget(QtGui.QWidget):
         self.signalAnalyseFromFile.connect(analyser.analyseFromFiles)
         self.analysisProgressDialog.canceled.connect(analyser.abortAnalysis)
         #
-        layout=QtGui.QGridLayout()
+        layout = QtGui.QGridLayout()
         #
         
         self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
-        layout.addWidget(self.analyseFromFileButton,0,0,1,2)
+        layout.addWidget(self.analyseFromFileButton, 0, 0, 1, 2)
         #
         defaultSettingsLabel = QtGui.QLabel('Default set for:')
-        layout.addWidget(defaultSettingsLabel,1,0)
+        layout.addWidget(defaultSettingsLabel, 1, 0)
         defaultSettigsComboBox = QtGui.QComboBox() 
         defaultSettingsLabel.setBuddy(defaultSettigsComboBox)
-        layout.addWidget(defaultSettigsComboBox,1,1)
-        defaultSettigsComboBox.addItems(['Larva','Imago'])
+        layout.addWidget(defaultSettigsComboBox, 1, 1)
+        defaultSettigsComboBox.addItems(['Larva', 'Imago'])
         defaultSettigsComboBox.currentIndexChanged.connect(self.setDefaultSettings)
         #
         self.errorTresholdSpinBox = QtGui.QDoubleSpinBox()
@@ -128,6 +128,7 @@ class TrajectoryWidget(QtGui.QWidget):
         
         defaultSettigsComboBox.setCurrentIndex(1)
     
+    @QtCore.pyqtSlot(int)
     def setDefaultSettings(self, index):
         if index == 0 :
             # Larva
@@ -140,30 +141,35 @@ class TrajectoryWidget(QtGui.QWidget):
             self.speedThresholdSpinBox.setValue(5)
             self.createImageComboBox.setCurrentIndex(1)
     
+    @QtCore.pyqtSlot(int)
     def setLevelsEnabled(self, index):
         self.imageLevelsSpinBox.setEnabled(index == 1)
-        
+    
+    @QtCore.pyqtSlot(float)
     def errorTresholdChanged(self, value):
         if self.speedThresholdSpinBox.value() > value :
             self.speedThresholdSpinBox.setValue(value)
-           
+    
+    @QtCore.pyqtSlot(int)
     def signalAnalysisStarted(self, count):
         self.analysisProgressDialog.setMaximum(count)
         self.analysisProgressDialog.show()
     
+    @QtCore.pyqtSlot(QtCore.QString, int)
     def signalNextFileAnalysing(self, name, progress):
         self.analysisProgressDialog.setLabelText(name)
         self.analysisProgressDialog.setValue(progress)
     
+    @QtCore.pyqtSlot(int)
     def signalAnalysisFinished(self):
         self.analysisProgressDialog.close()
     
+    @QtCore.pyqtSlot()
     def analyseFromFile(self):
         '''
         '''
         analyseDialog = AnalyseDialog(self)
         if analyseDialog.exec_() :
-            
             self.signalAnalyseFromFile.emit(analyseDialog.analyseFileName, analyseDialog.ltFilesList)
         
     
