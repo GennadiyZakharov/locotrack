@@ -111,7 +111,9 @@ class CvGraphics(QtGui.QGraphicsView):
         chamber is schelded for remove -- must remove gui for it
         '''
         self.selectChamberGui(None)
-        self.scene.removeItem(self.chambersGui[chamber])
+        chambeGui = self.chambersGui[chamber]
+        self.scene.removeItem(chambeGui)
+        del chambeGui
         del self.chambersGui[chamber]
     
     @QtCore.pyqtSlot(bool)

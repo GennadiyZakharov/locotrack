@@ -6,17 +6,17 @@ Created on 13.12.2010
 
 from __future__ import division
 from PyQt4 import QtCore, QtGui
+from ltcore.consts import videoFormats
 from ltcore.ltactions import createAction 
 from ltgui.actionbutton import ActionButton
-import os
 import imagercc
 
 class VideoWidget(QtGui.QWidget):
     '''
-    This class holds GUI for cvPlayer
+    This class holds GUI for cvPlayer 
+    
+    Open vieo file, play, stop run, e.t.c.
     '''
-    speedChanged = QtCore.pyqtSignal(float)
-    videoSeeked = QtCore.pyqtSignal(int)
     signalCaptureFromFile = QtCore.pyqtSignal(QtCore.QString)
     signalCaptureFromCam  = QtCore.pyqtSignal(int)
     
@@ -27,11 +27,9 @@ class VideoWidget(QtGui.QWidget):
         '''
         super(VideoWidget, self).__init__(parent)
         self.player = player
-        player.videoSourceOpened.connect(self.videoCapturing)
-        player.videoSourceClosed.connect(self.videoClosed)
+        player.videoSourceOpened.connect(self.videoSourceOpen)
+        player.videoSourceClosed.connect(self.videoSourceClose)
         player.nextFrame.connect(self.nextFrame)
-        self.videoSeeked.connect(player.seek)
-        self.speedChanged.connect(player.setSpeed)
         self.signalCaptureFromFile.connect(player.captureFromFile)
         self.signalCaptureFromCam.connect(player.captureFromCam)
         # Actions
@@ -64,15 +62,17 @@ class VideoWidget(QtGui.QWidget):
         
         # Video slider and position label
         layout1 = QtGui.QHBoxLayout()
-        self.startFrameSlider = QtGui.QSpinBox()
-        layout1.addWidget(self.startFrameSlider)
-        self.endFrameSlider = QtGui.QSpinBox()
+        self.startFrameSpinBox = QtGui.QSpinBox()
+        layout1.addWidget(self.startFrameSpinBox)
         self.videoSlider = QtGui.QSlider(QtCore.Qt.Horizontal)
         layout1.addWidget(self.videoSlider)
         self.timeLabel = QtGui.QLabel('0')
         layout1.addWidget(self.timeLabel)
-        layout1.addWidget(self.endFrameSlider)
-        self.videoSlider.valueChanged.connect(self.videoSliderMove)       
+        self.endFrameSpinBox = QtGui.QSpinBox()
+        layout1.addWidget(self.endFrameSpinBox)
+        self.videoSlider.valueChanged.connect(self.videoSliderMove)  
+        self.videoSlider.sliderMoved.connect(player.seek)
+        #     
         layout2 = QtGui.QHBoxLayout()
         rewButton = ActionButton(self.actionRew)
         layout2.addWidget(rewButton)
@@ -83,20 +83,17 @@ class VideoWidget(QtGui.QWidget):
         runTroughButton = ActionButton(self.actionRun)
         layout2.addWidget(runTroughButton)
         # Speed
-        
-        #layout3 = QtGui.QVBoxLayout()
         self.speedLabel = QtGui.QLabel('Speed:')
         layout2.addWidget(self.speedLabel)
-        self.speedSlider = QtGui.QDoubleSpinBox()
-        layout2.addWidget(self.speedSlider)
-        self.speedLabel.setBuddy(self.speedSlider)
-        self.speedSlider.valueChanged.connect(player.setSpeed)
-        self.speedSlider.setMinimum(0.2)
-        self.speedSlider.setMaximum(2.0)
-        self.speedSlider.setValue(1.0)
-        #layout2.addLayout(layout3) 
+        self.speedSpinBox = QtGui.QDoubleSpinBox()
+        layout2.addWidget(self.speedSpinBox)
+        self.speedLabel.setBuddy(self.speedSpinBox)
+        self.speedSpinBox.valueChanged.connect(player.setSpeed)
+        self.speedSpinBox.setMinimum(0.2)
+        self.speedSpinBox.setMaximum(2.0)
+        self.speedSpinBox.setValue(1.0) 
         layout2.addStretch()
-        #
+        # Open and capture video buttons
         videoOpenButton = ActionButton(self.actionOpenVideo)
         layout2.addWidget(videoOpenButton)
         videoCaptureButton = ActionButton(self.actionCaptureVideo)
@@ -116,42 +113,42 @@ class VideoWidget(QtGui.QWidget):
         '''
         Open video file
         '''
-        # Setting last user dir
-        directory = os.path.dirname(self.player.videoFileName) \
-            if self.player.videoFileName is not None else "."
+        # Setting last user directory
+        directory = QtCore.QFileInfo(self.player.videoFileName).path() 
         # Creating formats list
         formats = ["*.{}".format(unicode(videoFormat)) \
-                   for videoFormat in ('avi', 'mpg', 'ogg', 'mkv')]
+                   for videoFormat in videoFormats]
         # Executing standard open dialog
         fname = QtGui.QFileDialog.getOpenFileName(self,
                         "Choose video file",
-                        directory, "Video files (%s)" % " ".join(formats))
-        
-        if fname is not None :
+                        directory, "Video files ({})".format(" ".join(formats)))
+        if not fname.isEmpty() :
             self.signalCaptureFromFile.emit(fname)
     
+    @QtCore.pyqtSlot()
     def captureVideo(self):
-        self.signalCaptureFromFile.emit(0)
+        self.signalCaptureFromCam.emit(0)
     
     def setGuiEnabled(self, flag):
         for elem in self.playSet :
             elem.setEnabled(flag)
             
     @QtCore.pyqtSlot(int, float)  
-    def videoCapturing(self, videoLength, frameRate):
+    def videoSourceOpen(self, videoLength, frameRate):
         '''
         Calling this method when video opened
         '''
         if videoLength > 0 :
-            self.startFrameSlider.setValue(0)
-            self.startFrameSlider.setMaximum(videoLength-1)
-            self.endFrameSlider.setMaximum(videoLength)
-            self.endFrameSlider.setValue(videoLength)
+            self.startFrameSpinBox.setValue(0)
+            self.startFrameSpinBox.setMaximum(videoLength-1)
+            self.endFrameSpinBox.setMaximum(videoLength)
+            self.endFrameSpinBox.setValue(videoLength)
             self.videoSlider.setMaximum(videoLength)
             self.videoSlider.setValue(0)
         self.setGuiEnabled(videoLength > 0)
-            
-    def videoClosed(self):
+    
+    @QtCore.pyqtSlot()
+    def videoSourceClose(self):
         self.setGuiEnabled(False)
     
     @QtCore.pyqtSlot(object, int)
@@ -161,4 +158,3 @@ class VideoWidget(QtGui.QWidget):
     @QtCore.pyqtSlot(int)
     def videoSliderMove(self, value):
         self.timeLabel.setText(str(value))
-        self.videoSeeked.emit(value)

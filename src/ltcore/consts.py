@@ -9,9 +9,11 @@ used by other modules
 '''
 
 applicationName = 'LocoTrack'
-organizationName = "I.P. Pavlov Institute of Physiology "
+organizationName = "I.P. Pavlov Institute of Physiology, RAS"
 organizationDomain = "infran.ru"
 applicationVersion = '0.4'
 
 trackExtension = 'lt1'
+
+videoFormats = ('avi', 'mpg', 'mp4', 'ogg', 'mkv')
 

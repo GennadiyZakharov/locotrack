@@ -52,9 +52,10 @@ class TrajectoryWidget(QtGui.QWidget):
         defaultSettigsComboBox.currentIndexChanged.connect(self.setDefaultSettings)
         #
         self.errorTresholdSpinBox = QtGui.QDoubleSpinBox()
-        errorTresholdLabel = QtGui.QLabel('Error threshold (mm/s):')
+        errorTresholdLabel = QtGui.QLabel('Error threshold:')
         errorTresholdLabel.setBuddy(self.errorTresholdSpinBox)
         self.errorTresholdSpinBox.setMaximum(100)
+        self.errorTresholdSpinBox.setSuffix(' mm/s')
         self.errorTresholdSpinBox.setValue(analyser.errorSpeedThreshold)
         self.errorTresholdSpinBox.valueChanged.connect(analyser.setErrorSpeedThreshold)
         self.errorTresholdSpinBox.valueChanged.connect(self.errorTresholdChanged)
@@ -72,6 +73,7 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         maxMissedIntervalDurationLabel = QtGui.QLabel('Max missed duration ')
         maxMissedIntervalDurationSpinBox = QtGui.QDoubleSpinBox()
+        maxMissedIntervalDurationSpinBox.setSuffix(' s')
         maxMissedIntervalDurationLabel.setBuddy(maxMissedIntervalDurationSpinBox)
         maxMissedIntervalDurationSpinBox.setMaximum(10.0)
         maxMissedIntervalDurationSpinBox.setValue(analyser.maxMissedIntervalDuration)
@@ -80,25 +82,36 @@ class TrajectoryWidget(QtGui.QWidget):
         layout.addWidget(maxMissedIntervalDurationSpinBox)
         #
         self.speedThresholdSpinBox = QtGui.QDoubleSpinBox()
-        speedThresholdLabel = QtGui.QLabel('Run threshold (mm/s):')
+        speedThresholdLabel = QtGui.QLabel('Run threshold:')
         speedThresholdLabel.setBuddy(self.speedThresholdSpinBox)
         self.speedThresholdSpinBox.setMaximum(50)
+        self.speedThresholdSpinBox.setSuffix(' mm/s')
         self.speedThresholdSpinBox.setValue(analyser.runRestSpeedThreshold)
         self.speedThresholdSpinBox.valueChanged.connect(analyser.setRunRestSpeedThreshold)
         layout.addWidget(speedThresholdLabel)
         layout.addWidget(self.speedThresholdSpinBox)
-        
-        self.intervalDurationSlider = QtGui.QSpinBox()
-        intervalDurationLabel = QtGui.QLabel('Interval Duration (s):')
-        intervalDurationLabel.setBuddy(self.intervalDurationSlider)
-        self.intervalDurationSlider.setMaximum(1000)
-        self.intervalDurationSlider.setMinimum(50)
-        self.intervalDurationSlider.setValue(analyser.intervalDuration)
-        self.intervalDurationSlider.valueChanged.connect(analyser.setIntervalDuration)
+        #
+        self.intervalDurationSpinBox = QtGui.QSpinBox()
+        intervalDurationLabel = QtGui.QLabel('Interval Duration:')
+        intervalDurationLabel.setBuddy(self.intervalDurationSpinBox)
+        self.intervalDurationSpinBox.setRange(50, 1000)
+        self.intervalDurationSpinBox.setSuffix(' s')
+        self.intervalDurationSpinBox.setValue(analyser.intervalDuration)
+        self.intervalDurationSpinBox.valueChanged.connect(analyser.setIntervalDuration)
         layout.addWidget(intervalDurationLabel)
-        layout.addWidget(self.intervalDurationSlider)
-        
-        createImageLabel = QtGui.QLabel('Image Creation method')
+        layout.addWidget(self.intervalDurationSpinBox)
+        #
+        self.quantDurationSpinBox = QtGui.QDoubleSpinBox()
+        quantDurationLabel = QtGui.QLabel('Quant Duration:')
+        quantDurationLabel.setBuddy(self.intervalDurationSpinBox)
+        self.quantDurationSpinBox.setRange(0,5)
+        self.quantDurationSpinBox.setSuffix(' s')
+        self.quantDurationSpinBox.setValue(analyser.quantDuration)
+        self.quantDurationSpinBox.valueChanged.connect(analyser.setQuantDuration)
+        layout.addWidget(quantDurationLabel)
+        layout.addWidget(self.quantDurationSpinBox)
+        #
+        createImageLabel = QtGui.QLabel('Image creation method')
         layout.addWidget(createImageLabel)
         self.createImageComboBox = QtGui.QComboBox()
         createImageLabel.setBuddy(self.createImageComboBox)
@@ -107,8 +120,8 @@ class TrajectoryWidget(QtGui.QWidget):
         self.createImageComboBox.currentIndexChanged.connect(analyser.setImageCreator)
         self.createImageComboBox.currentIndexChanged.connect(self.setLevelsEnabled)
         layout.addWidget(self.createImageComboBox)
-        
-        imageLevelsLabel = QtGui.QLabel('Accumulate image levels')
+        #
+        imageLevelsLabel = QtGui.QLabel('Accumulate levels')
         layout.addWidget(imageLevelsLabel)
         self.imageLevelsSpinBox = QtGui.QSpinBox()
         createImageLabel.setBuddy(self.imageLevelsSpinBox)
@@ -116,16 +129,15 @@ class TrajectoryWidget(QtGui.QWidget):
         self.imageLevelsSpinBox.setValue(analyser.imageLevels)
         self.imageLevelsSpinBox.valueChanged.connect(analyser.setImageLevelsCount)
         layout.addWidget(self.imageLevelsSpinBox)
-        
+        #
         writeSpeedLabel = QtGui.QLabel('Write speed info')
         layout.addWidget(writeSpeedLabel)
         writeSpeedCheckBox = QtGui.QCheckBox()
         writeSpeedLabel.setBuddy(writeSpeedCheckBox)
         layout.addWidget(writeSpeedCheckBox)
         writeSpeedCheckBox.stateChanged.connect(analyser.setWriteSpeed)
-        
+        #
         self.setLayout(layout)
-        
         defaultSettigsComboBox.setCurrentIndex(1)
     
     @QtCore.pyqtSlot(int)

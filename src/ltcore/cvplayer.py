@@ -13,8 +13,8 @@ class CvPlayer(QtCore.QObject):
     with play, stop, and seek functions
     
     player can be in three states
-     playing : self.timer is not None
-     run     : runTroughFlag == True
+     playing : self.playTimer is not None
+     run     : self.runTimer is not None
      stop    : none of this
      
     '''
@@ -26,7 +26,7 @@ class CvPlayer(QtCore.QObject):
     playing = QtCore.pyqtSignal(bool) # Emits when player starts
     running = QtCore.pyqtSignal(bool) # Emits when running at max speed
     # Video
-    videoSourceOpened = QtCore.pyqtSignal(int, float, str) # video length (in frames) and frame rate
+    videoSourceOpened = QtCore.pyqtSignal(int, float, QtCore.QString) # video length (in frames) and frame rate
     videoSourceClosed = QtCore.pyqtSignal() # Video closed
     videoSourceEnded  = QtCore.pyqtSignal()  # End of file reached
     # Frame process
@@ -38,19 +38,17 @@ class CvPlayer(QtCore.QObject):
         '''
         super(CvPlayer, self).__init__(parent)
         self.playSpeed = 1.0 #
-        self.timer = None    # Timer to extract frames from file or cam
-        self.runTimer = None 
-        self.runTroughFlag = False     # This flag is used to process frames at maximum speed
-        self.frameRate = -1           # Default frameRate      
-        self.videoFileName = ''        # No File opened
+        self.playTimer = None # Timer to extract frames
+        self.runTimer = None # Timer to extract frames at max speed
+        self.frameRate = -1           # frameRate, -1 for none 
+        self.frameNumber = -1         # corent frame Nomber, -1 for none
+        self.videoFileName = QtCore.QString()        # No File opened
         self.captureDevice = None      # No device for capturing
-        self.videoFileLength = -1      # Length of video file
-        self.frameNumber = -1          # No number for current frame
+        self.videoFileLength = -1      # Length of video file, -1 for none
         self.seekInterval = 10         # Default seek interval
         self.leftBorder = 0           # Borders of playing interval 
         self.rightBorder = 0
         
-    
     @classmethod
     def loadFromFile(cls, inputFile):
         '''
@@ -72,20 +70,41 @@ class CvPlayer(QtCore.QObject):
         outputFile.write(str(self.playSpeed) + '\n')
         outputFile.write(str(self.frameNumber) + '\n')
     
+    def isPlaying(self):
+        return self.playTimer is not None
+    
+    def isRunning(self):
+        return self.runTimer is not None
+    
     def startPlayTimer(self):
         '''
-        Start playing timer at current speed, or maximum speed, if maxSpeed setted
+        Start playing playTimer at current speed
         '''
-        self.stopPlayTimer() # Killing active timer, if it exists
-        self.timer = self.startTimer(1000 / (self.frameRate * self.playSpeed))
+        self.stopPlayTimer() # Killing active playTimer, if it exists
+        self.playTimer = self.startTimer(1000 / (self.frameRate * self.playSpeed))
         
     def stopPlayTimer(self):
         '''
-        Killing timer, if it was active
+        Killing playTimer, if it was active
         '''
-        if self.timer is not None :    # We have active timer
-            self.killTimer(self.timer) # Stop timer
-            self.timer = None          # And now we have no timer
+        if self.isPlaying() :    # We have active playTimer
+            self.killTimer(self.playTimer) # Stop playTimer
+            self.playTimer = None          # And now we have no playTimer
+            
+    def startRunTimer(self):
+        '''
+        Start runTimer at maximum speed
+        '''
+        self.stopRunTimer() # Killing active playTimer, if it exists
+        self.runTimer = self.startTimer(0)
+        
+    def stopRunTimer(self):
+        '''
+        Killing playTimer, if it was active
+        '''
+        if self.isRunning() :    # We have active playTimer
+            self.killTimer(self.runTimer) # Stop playTimer
+            self.runTimer = None          # And now we have no playTimer
     
     @QtCore.pyqtSlot(QtCore.QString)
     def captureFromFile(self, fileName):
@@ -98,7 +117,7 @@ class CvPlayer(QtCore.QObject):
             #TODO: error report 
             print "Error opening vide file {}".format(fileName)
             return 
-        self.videoFileName = unicode(fileName) # Store file name
+        self.videoFileName = fileName # Store file name
         # Get video parameters
         self.videoFileLength = int(cv.GetCaptureProperty(self.captureDevice,
                                                      cv.CV_CAP_PROP_FRAME_COUNT))
@@ -111,9 +130,8 @@ class CvPlayer(QtCore.QObject):
         print 'Opened file: ' + self.videoFileName
         print 'File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate) 
         self.timerEvent() # Process first frame
-        self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName)
-        
-    
+        self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName)       
+          
     @QtCore.pyqtSlot(int)
     def captureFromCam(self, camNumber):
         '''
@@ -128,6 +146,8 @@ class CvPlayer(QtCore.QObject):
             return
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
+        self.timerEvent()
+        self.videoSourceOpened.emit(-1, self.frameRate, 'Cam'+str(camNumber))
      
     @QtCore.pyqtSlot()
     def captureClose(self):
@@ -136,14 +156,12 @@ class CvPlayer(QtCore.QObject):
         '''
         if self.captureDevice is None :
             return # Nothing to do               
-        # Reset timer and runTroughFlag
-        self.runTroughFlag = False     # This flag is used to process frames at maximum speed
         self.stopPlayTimer()
-        self.runTimer = None
-        self.videoFileName = ''          # No File opened
-        self.captureDevice = None     # No device for capturing
+        self.stopRunTimer()
+        self.videoFileName = QtCore.QString() # No File opened
+        self.captureDevice = None   # No device for capturing
         self.videoFileLength = -1   # Length of video file
-        self.frameRate = -1
+        self.frameRate = -1         # 
         self.frameNumber = -1       # No number for current frame
         self.setLeftBorder(0)           # Borders of playing interval 
         self.setRightBorder(0)
@@ -153,63 +171,41 @@ class CvPlayer(QtCore.QObject):
     @QtCore.pyqtSlot(bool)   
     def play(self, checked):
         '''
-        Start playing with fixed speed by timer
+        Start playing with fixed speed by playTimer
         '''
-        if (self.timer is not None) == checked : 
+        if self.isPlaying() == checked : 
             return # Nothing to do
         if self.captureDevice is None : # No device to play from
             self.playing.emit(False)    
             return
         self.runTrough(False)
         if checked : # Start playback
-            # Stop runTrough, if it was active
-            
-            # Creating timer
+            # Creating playTimer
             self.startPlayTimer()
         else : # Stop playback
             self.stopPlayTimer()
-        self.playing.emit(self.timer is not None) # Report about playing state
+        self.playing.emit(self.isPlaying()) # Report about playing state
          
     @QtCore.pyqtSlot(bool)      
     def runTrough(self, checked):
         '''
         Play video at maximum speed
         '''
-        if self.runTroughFlag == checked :
+        if self.isRunning() == checked :
             return # Nothing to do
-        if self.videoFileLength == -1 :
-            return
         if self.captureDevice is None : # No device to play from
             self.running.emit(False) 
             return
-        self.runTroughFlag = checked
-        self.play(False) # Stop playing timer, if it was active
-        if self.runTroughFlag :
-            if self.runTimer is None :
-                self.runTimer = self.startTimer(1)
+        if self.videoFileLength == -1 : # Running not allowed on webcam
+            self.running.emit(False)
+            return
+        self.play(False) # Stop playing playTimer, if it was active
+        if checked :
+            self.startRunTimer()
         else :
-            if self.runTimer is not None :
-                self.killTimer(self.runTimer)
-                self.runTimer = None
-        self.running.emit(self.runTroughFlag)
-        '''
-        The next cycle calls timerEvent to extract and process frames at maximum speed
-        processEvents() is called to handle messages from GUI
-        
-        When user press button to stop, processEvents() though signal calls this method one more time
-        (2-nd level of recursion)
-        It sets runTroughFlag to False, and exits 
-        We exit from processEvents() -- and runTroughFlag is False -- leaving while cycle
-        
-        This is looking rather complicated, but it's work fine :)
-        '''
-        '''
-        while self.runTroughFlag: 
-            self.timerEvent() # Capture next frame
-            QtCore.QCoreApplication.processEvents() # Allow system to process signals
-        self.running.emit(False)
-    '''
-        
+            self.stopRunTimer()
+        self.running.emit(self.isRunning())
+
     @QtCore.pyqtSlot()       
     def seekRew(self):
         '''
@@ -228,9 +224,9 @@ class CvPlayer(QtCore.QObject):
     @QtCore.pyqtSlot(int)
     def seek(self, desiredPosition):
         '''
-        Seek to frame frameNumber
+        Seek to frame desiredPosition
         '''
-        if desiredPosition == self.frameNumber : # Already here
+        if desiredPosition == self.frameNumber :
             return
         if self.captureDevice is None : # No device
             # TODO: exception
@@ -251,8 +247,8 @@ class CvPlayer(QtCore.QObject):
         The 1.0 corresponds to normal speed
         '''
         self.playSpeed = speed
-        if self.timer is not None : # Speed changed during playing
-            self.startPlayTimer() # restarting play to set timer to different speed
+        if self.playTimer is not None : # Speed changed during playing
+            self.startPlayTimer() # restarting play to set playTimer to different speed
     
     @QtCore.pyqtSlot(int)
     def setLeftBorder(self, leftBorder):
