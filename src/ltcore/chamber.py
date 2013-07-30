@@ -2,6 +2,7 @@
 Created on 18.03.2011
 @author: Gena
 '''
+from __future__ import print_function
 from __future__ import division
 
 from hashlib import sha512
@@ -9,7 +10,7 @@ from time import time
 from random import randint
 
 from numpy import meshgrid, arange
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore
 from ltcore.lttrajectory import LtTrajectory
 
 class Chamber(QtCore.QObject):
@@ -24,8 +25,9 @@ class Chamber(QtCore.QObject):
     signalPositionUpdated = QtCore.pyqtSignal() # Update chamber position and size
     signalRecalculateChamber = QtCore.pyqtSignal() # Need to redraw chamber and recalculate object position 
     fileCaption = "LocoTrack 1.0\n"
+    trajectoryCaption = 'Trajectory:\n'
     
-    def __init__(self, rect, sampleName='UnknownSample', number=0, parent=None):
+    def __init__(self, rect, sampleName=QtCore.QString(), number=0, parent=None):
         '''
         Constructor
         '''
@@ -51,7 +53,6 @@ class Chamber(QtCore.QObject):
         self.frameNumber = -1
         # No trajectory is recorded
         self.resetTrajectory()
-        self.recordTrajectory = False
         # Individual threshold
         self.threshold = 60
         # Do not show trajectory
@@ -114,7 +115,10 @@ class Chamber(QtCore.QObject):
         '''  
         if self.recordTrajectory == checked:
             return
-        self.recordTrajectory = checked
+        if self.trajectory is not None :
+            self.recordTrajectory = checked
+        else :
+            self.recordTrajectory = False
         self.signalGuiDataUpdated.emit() 
             
     @QtCore.pyqtSlot(bool)
@@ -134,12 +138,13 @@ class Chamber(QtCore.QObject):
         '''
         self.ltObject = ltObject
         self.frameNumber = frameNumber
-        if (self.trajectory is not None) and self.recordTrajectory :
+        if self.recordTrajectory :
             self.trajectory[frameNumber] = ltObject
     
     '''
     Methods handling chamber moving and resizing
     '''   
+    @QtCore.pyqtSlot(QtCore.QPoint)
     def moveTo(self, point):
         '''
         Move top left corner of chamber to point
@@ -147,7 +152,8 @@ class Chamber(QtCore.QObject):
         self.rect.moveTo(point)
         self.signalPositionUpdated.emit()
         self.signalRecalculateChamber.emit()
-            
+    
+    @QtCore.pyqtSlot(int,int)
     def move(self, dirX, dirY):
         '''
         Move chamber by dirX, dirY
@@ -155,7 +161,8 @@ class Chamber(QtCore.QObject):
         self.rect.moveTo(self.rect.left() + dirX, self.rect.top() + dirY)
         self.signalPositionUpdated.emit()
         self.signalRecalculateChamber.emit()
-
+    
+    @QtCore.pyqtSlot(int,int)
     def resize(self, dirX, dirY):
         '''
         Resize chamber by dirX, dirY
@@ -180,6 +187,7 @@ class Chamber(QtCore.QObject):
     '''
     Methods to trajectory manipulation
     '''
+    @QtCore.pyqtSlot(int,int)
     def initTrajectory(self, startFrame, endFrame):
         '''
         Init trajectory from startFrame to EndFrame
@@ -188,13 +196,15 @@ class Chamber(QtCore.QObject):
             self.resetTrajectory()
         # Init trajectory to save frames
         self.trajectory = LtTrajectory(startFrame, endFrame)
-        #self.signalGuiDataUpdated.emit()
+        self.signalGuiDataUpdated.emit()
     
+    @QtCore.pyqtSlot()
     def resetTrajectory(self):
         '''
         Remove stored trajectory
         '''
         self.trajectory = None
+        self.recordTrajectory = False
         self.signalGuiDataUpdated.emit()
     
     @classmethod
@@ -212,10 +222,10 @@ class Chamber(QtCore.QObject):
                 return string[pos + 1:]
             else :
                 return string   
-        print 'Load  chamber from file {}'.format(fileName)
-        trajectoryFile = open(fileName, 'r')
+        trajectoryFile = open(unicode(fileName), 'r')
         if trajectoryFile.readline().strip() != cls.fileCaption.strip() :
-            print 'This is not Trajectory'
+            #TODO: exception
+            print('This is not Trajectory')
             return None
         # Chamber position and size
         x, y = [int(value) for value in stripeq(trajectoryFile.readline()).split()]
@@ -225,9 +235,9 @@ class Chamber(QtCore.QObject):
         # TODO: Reading scale label and frame rate
         scale = float(stripeq(trajectoryFile.readline()))
         frameRate = float(stripeq(trajectoryFile.readline()))
-        chamber.sampleName = stripeq(trajectoryFile.readline()).strip()
+        chamber.sampleName = stripeq(unicode(trajectoryFile.readline()).strip())
         chamber.threshold = float(stripeq(trajectoryFile.readline()))
-        if trajectoryFile.readline().strip() == 'Trajectory:' :
+        if trajectoryFile.readline().strip() == cls.trajectoryCaption.strip() :
             chamber.trajectory = LtTrajectory.loadFromFile(trajectoryFile)
         else :
             chamber.trajectory = None
@@ -242,8 +252,8 @@ class Chamber(QtCore.QObject):
         scale and frameRate must be written in file
         It is used to analyse chambers
         '''
-        fileName = fileNameTemplate.format(self.number)
-        print 'Save chamber for sample {} to file {}'.format(self.sampleName, fileName)
+        fileName = unicode(fileNameTemplate).format(self.number)
+        print('Save chamber for sample {} to file {}'.format(self.sampleName, fileName))
         trajectoryFile = open(fileName, 'w')
         trajectoryFile.write(self.fileCaption)
         trajectoryFile.write('Position = {0} {1}\n'.format(self.left(), self.top()))
@@ -253,9 +263,10 @@ class Chamber(QtCore.QObject):
         trajectoryFile.write('Sample name = {}\n'.format(self.sampleName))
         trajectoryFile.write('Threshold level = {}\n'.format(self.threshold))
         if self.trajectory is not None :
-            trajectoryFile.write('Trajectory:' + "\n")
-            self.trajectory.strip()
-            self.trajectory.saveToFile(trajectoryFile)
+            trajectoryFile.write(self.trajectoryCaption)
+            strippedTrajectory = self.trajectory.clone()
+            strippedTrajectory.strip()
+            strippedTrajectory.saveToFile(trajectoryFile)
         else :
             trajectoryFile.write('No trajectory recorded' + "\n")
         trajectoryFile.close()
@@ -269,5 +280,5 @@ if __name__ == '__main__':
     '''
     trajName = '/home/gena/eclipse37-workspace/locotrack/video/2012-02-22_agn-F-Ad7-N-02_c.avi.lt1'
     chamber = Chamber.loadFromFile(trajName)
-    print chamber.getRect()
-    print chamber.trajectory.bounds()
+    print(chamber.getRect())
+    print(chamber.trajectory.bounds())

@@ -6,6 +6,10 @@ Created on 18.03.2011
 
 from PyQt4 import QtGui
 
+'''
+Some simple procedures to help me deal with actions
+'''
+
 def createAction(target, text, shortcut=None, icon=None,    
                  tip=None, checkable=False):
     '''
@@ -28,9 +32,10 @@ def addActions(target, actions):
     Add all actions to the QObject target
     '''
     for action in actions:
-        if action is None:
-            target.addSeparator()
-        else:
+        if action is not None:
             target.addAction(action)
+        else:
+            target.addSeparator()
+            
 
 

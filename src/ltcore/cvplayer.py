@@ -2,7 +2,7 @@
 Created on 18.03.2011
 @author: Gena
 '''
-
+from __future__ import print_function
 from __future__ import division
 import cv
 from PyQt4 import QtCore
@@ -31,6 +31,9 @@ class CvPlayer(QtCore.QObject):
     videoSourceEnded  = QtCore.pyqtSignal()  # End of file reached
     # Frame process
     nextFrame = QtCore.pyqtSignal(object, int) # Signal carry frame and frame number
+    
+    leftBorderSetted = QtCore.pyqtSignal(int) 
+    rightBorderSetted = QtCore.pyqtSignal(int)
     
     def __init__(self, parent=None):
         '''
@@ -100,7 +103,7 @@ class CvPlayer(QtCore.QObject):
         
     def stopRunTimer(self):
         '''
-        Killing playTimer, if it was active
+        Killing runTimer, if it was active
         '''
         if self.isRunning() :    # We have active playTimer
             self.killTimer(self.runTimer) # Stop playTimer
@@ -115,20 +118,20 @@ class CvPlayer(QtCore.QObject):
         self.captureDevice = cv.CaptureFromFile(unicode(fileName)) # Try to open file
         if self.captureDevice is None : # Error opening file
             #TODO: error report 
-            print "Error opening vide file {}".format(fileName)
+            print("Error opening vide file {}".format(fileName))
             return 
         self.videoFileName = fileName # Store file name
         # Get video parameters
         self.videoFileLength = int(cv.GetCaptureProperty(self.captureDevice,
-                                                     cv.CV_CAP_PROP_FRAME_COUNT))
+                                                     cv.CV_CAP_PROP_FRAME_COUNT))-1
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
         self.seekInterval = self.videoFileLength // 50
         self.setLeftBorder(0)           # Borders of playing interval 
         self.setRightBorder(self.videoFileLength)
         #TODO: do as message
-        print 'Opened file: ' + self.videoFileName
-        print 'File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate) 
+        print('Opened file: ' + self.videoFileName)
+        print('File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate)) 
         self.timerEvent() # Process first frame
         self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName)       
           
@@ -142,7 +145,7 @@ class CvPlayer(QtCore.QObject):
         #TODO: implement
         if self.captureDevice is None :
             #TODO: error report
-            print "Error opening video cam number {}".format(camNumber)
+            print("Error opening video cam number {}".format(camNumber))
             return
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
@@ -205,7 +208,15 @@ class CvPlayer(QtCore.QObject):
         else :
             self.stopRunTimer()
         self.running.emit(self.isRunning())
-
+ 
+    @QtCore.pyqtSlot()
+    def seekToBegin(self):
+        self.seek(self.leftBorder)
+    
+    @QtCore.pyqtSlot()
+    def seekToEnd(self):
+        self.seek(self.rightBorder)
+    
     @QtCore.pyqtSlot()       
     def seekRew(self):
         '''
@@ -226,6 +237,7 @@ class CvPlayer(QtCore.QObject):
         '''
         Seek to frame desiredPosition
         '''
+        print('seek to', desiredPosition)
         if desiredPosition == self.frameNumber :
             return
         if self.captureDevice is None : # No device
@@ -234,11 +246,24 @@ class CvPlayer(QtCore.QObject):
         if desiredPosition < self.leftBorder :
             position = self.leftBorder
         elif desiredPosition > self.rightBorder :
-            position = self.leftBorder
+            position = self.rightBorder
         else :
             position = desiredPosition
-        cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, position)
+        if self.frameNumber < position < self.seekInterval+self.frameNumber:
+            while self.frameNumber < position :
+                cv.QueryFrame(self.captureDevice)
+                self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+        else :      
+            cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, position)
         self.timerEvent()
+    
+    @QtCore.pyqtSlot()
+    def setCurrentToLeftBorder(self):
+        self.setLeftBorder(self.frameNumber)
+    
+    @QtCore.pyqtSlot()    
+    def setCurrentToRightBorder(self):
+        self.setRightBorder(self.frameNumber)
     
     @QtCore.pyqtSlot(float)
     def setSpeed(self, speed):
@@ -255,26 +280,37 @@ class CvPlayer(QtCore.QObject):
         '''
         set left border of playing interval
         '''
+        if leftBorder >= self.rightBorder:
+            return
         self.leftBorder = leftBorder
-        if self.rightBorder < self.leftBorder:
-            self.setRightBorder(self.leftBorder)
+        if self.frameNumber < self.leftBorder :
+            self.seek(self.leftBorder)
+        self.leftBorderSetted.emit(self.leftBorder)      
        
     @QtCore.pyqtSlot(int)
     def setRightBorder(self, rightBorder):
         '''
         set left border of playing interval
         '''
+        if self.leftBorder >= rightBorder :
+            return
         self.rightBorder = rightBorder
-        if self.leftBorder > self.rightBorder :
-            self.setLeftBorder(self.rightBorder)
+        if self.frameNumber > self.rightBorder :
+            self.seek(self.rightBorder)
+        self.rightBorderSetted.emit(self.rightBorder)
+        
        
     def timerEvent(self, event=None) :
         '''
         Capture next frame from video device
         '''    
+        if self.frameNumber == self.rightBorder-1 :
+            self.play(False)
+            self.runTrough(False)
+            self.videoSourceEnded.emit()
         frame = cv.QueryFrame(self.captureDevice)
         if frame is not None : 
-            self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+            self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))-1
             self.nextFrame.emit(frame, self.frameNumber)
         else: # Input file ended
             self.play(False)

@@ -7,7 +7,6 @@ from __future__ import division
 
 import cv
 import os
-from math import sqrt
 from PyQt4 import QtCore,QtGui
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
@@ -26,7 +25,7 @@ class CvProcessor(QtCore.QObject):
     '''
     trajectoryWriting = QtCore.pyqtSignal(bool)
     signalNextFrame = QtCore.pyqtSignal(object)
-    projectOpened = QtCore.pyqtSignal(str)
+    projectOpened = QtCore.pyqtSignal(QtCore.QString)
 
     def __init__(self, parent=None):
         '''
@@ -92,7 +91,7 @@ class CvProcessor(QtCore.QObject):
             QtGui.QApplication.processEvents()  
         if len(self.chambers) > 0 :
             self.scale = scale
-        self.projectOpened.emit(os.path.basename(str(fileName)))
+        self.projectOpened.emit(os.path.basename(unicode(fileName)))
         
     def videoClosed(self):
         self.chambers.clear()
@@ -237,13 +236,13 @@ class CvProcessor(QtCore.QObject):
     def clearChamber(self, chamber):
         self.chambers.removeChamber(chamber)
     
-    @QtCore.pyqtSlot(QtCore.QRect)
-    def setScale(self, rect):
+    @QtCore.pyqtSlot(float)
+    def setScale(self, scale):
         '''
-        set scale according to rect
+        set scale (px/mm)
         '''
-        # TODO: 15mm
-        self.scale = sqrt(rect.width() ** 2 + rect.height() ** 2) / 15
+        print('Set scale',scale)
+        self.scale = scale
         self.processFrame() # Update current frame
     
     @QtCore.pyqtSlot(int)
@@ -274,7 +273,7 @@ class CvProcessor(QtCore.QObject):
         self.recordTrajectory = checked
         if self.recordTrajectory :
             # Init array for trajectory from current location to end of video file
-            self.chambers.initTrajectories(self.frameNumber,self.videoLength+2)
+            self.chambers.initTrajectories(self.cvPlayer.leftBorder,self.cvPlayer.rightBorder+1)
             self.chambers.setRecordTrajectories(True)
         self.trajectoryWriting.emit(self.recordTrajectory)
         self.processFrame()

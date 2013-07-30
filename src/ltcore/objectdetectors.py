@@ -9,6 +9,7 @@ It is done as classes to hold names and parameters
 Each object detector call with frame with already set ROI
 Procedure must return ltObject or None if object was not found
 '''
+from __future__ import print_function
 from __future__ import division
 
 import cv
@@ -34,9 +35,12 @@ class massCenterDetector():
     '''
     This object detector thresholds image and finds mass center of bright
     '''
-    name = 'massCenter'
-    description = 'threshold and center'
-    def detectObject(self, frame, size, matrices, threshold, ellipseCrop, ):
+    name = 'MassCenter'
+    description = 'Threshold and center'
+    
+    def detectObject(self, frame, size, matrices, threshold, ellipseCrop):
+        '''
+        '''
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
         averageVal = cv.Avg(frame)[0]
         if ellipseCrop :
@@ -68,8 +72,8 @@ class massCenterDetector():
         if m00 != 0 :
             m10 = (mat * matrices[0]).sum()
             m01 = (mat * matrices[1]).sum()
-            m20 = (mat * (matrices[0] ** 2) ).sum()
-            m02 = (mat * (matrices[1] ** 2) ).sum()
+            #m20 = (mat * (matrices[0] ** 2) ).sum()
+            #m02 = (mat * (matrices[1] ** 2) ).sum()
             ltObject = LtObject((m10 / m00, m01 / m00))
             return ltObject
         else :

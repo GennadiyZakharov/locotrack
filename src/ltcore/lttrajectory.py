@@ -2,7 +2,7 @@
 Created on 27.04.2011
 @author: Gena
 '''
-
+from __future__ import print_function
 from __future__ import division
 import numpy as np
 from ltcore.ltobject import LtObject
@@ -16,7 +16,7 @@ class LtTrajectory(object):
     None object is represented by (-1, -1) in arrays
     '''
     captionString = "     Frame                  X                  Y\n"
-    formatString = "{:10} {:18.6f} {:18.6f}\n"     # String to format data when save to file
+    formatString = "{:10} {:18.6f} {:18.6f}\n"  # String to format data when save to file
 
     def __init__(self, startFrame, endFrame):
         '''
@@ -49,9 +49,9 @@ class LtTrajectory(object):
         else:
             x, y = self.cpX[self.currentIndex], self.cpY[self.currentIndex]
             self.currentIndex += 1
-            return self.xyToLtObject(x,y)
+            return self.xyToLtObject(x, y)
     
-    def xyToLtObject(self,x,y):
+    def xyToLtObject(self, x, y):
         return LtObject((x, y)) if x >= 0 else None
     
     def ltObjectToXY(self, ltObject):
@@ -63,7 +63,7 @@ class LtTrajectory(object):
         '''
         internalNumber = self.frameToInternal(index)
         x, y = self.cpX[internalNumber], self.cpY[internalNumber] 
-        return self.xyToLtObject(x,y)
+        return self.xyToLtObject(x, y)
     
     def __setitem__(self, index, ltObject):
         '''
@@ -73,18 +73,18 @@ class LtTrajectory(object):
         self.cpX[internalNumber], self.cpY[internalNumber] = self.ltObjectToXY(ltObject)
     
     def minMax(self):
-        maxX, maxY=0,0
-        minX, minY = 1000,1000
+        maxX, maxY = 0, 0
+        minX, minY = 1000, 1000
         for i in xrange(len(self)) :
             x = self.cpX[i]
             y = self.cpY[i]
-            if x == -1 or y==-1 :
+            if x == -1 or y == -1 :
                 continue
-            if x> maxX: maxX=x
-            if x< minX: minX=x
-            if y> maxY: maxY=y
-            if y< minY: minY=y
-        return (minX,minY,maxX,maxY)
+            if x > maxX: maxX = x
+            if x < minX: minX = x
+            if y > maxY: maxY = y
+            if y < minY: minY = y
+        return (minX, minY, maxX, maxY)
        
     def frameToInternal(self, frameNumber):
         '''
@@ -103,7 +103,7 @@ class LtTrajectory(object):
         Strip all none points from end of trajectory 
         '''
         for i in xrange(len(self.cpX) - 1, -1, -1) :
-            if self.cpX[i] >= 0 : # Trim array
+            if self.cpX[i] >= 0 :  # Trim array
                 self.endFrame = self.internalToFrame(i + 1)
                 self.cpX = self.cpX[:i + 1]
                 self.cpY = self.cpY[:i + 1]
@@ -128,6 +128,42 @@ class LtTrajectory(object):
         '''
         self.lstrip()
         self.rstrip()
+        
+    def resize(self, startFrame, endFrame):
+        '''
+        Resize trajectory to new startFrame-endFrame bounds
+        strip old trajectory if nessesary, then expand to new bounds
+        '''
+        arrayLength = endFrame - startFrame
+        # Arrays to store central point
+        newcpX = np.linspace(-1.0, -1.0, self.arrayLength)
+        newcpY = np.linspace(-1.0, -1.0, self.arrayLength)
+        '''
+             self.start                self.end
+        ---------=======================------------ old
+        ----======================------------------ new
+        
+        ---------=======================------------ old
+        ---------------======================------- new
+        
+           start                 end
+        To resize trajectory we just need to find minimum overlapping between two ones
+        '''
+        startOverlap = max(startFrame,self.startFrame)
+        endOverlap = min(endFrame,self.endFrame)
+        '''
+        now we must resize interval to make first index 0
+        startOverlap:endOverlap]=self.cpX[startOverlap:endOverlap]
+        
+        left border is always >= 0, right border <=min(endFrame, self.endFrame)
+        '''
+        newcpX[startOverlap-startFrame:endOverlap-startFrame] = ( 
+            self.cpX[startOverlap-self.startFrame:endOverlap-self.startFrame])
+        self.cpX = newcpX
+        self.startFrame = startFrame
+        self.endFrame = endFrame
+        self.arrayLength = arrayLength
+        
     
     @classmethod
     def loadFromFile(cls, trajectoryFile):
@@ -180,7 +216,7 @@ class LtTrajectory(object):
         '''
         Make the linear smooth for trajectory
         '''
-        self.strip() # Ensure, that first and last frame is not none
+        self.strip()  # Ensure, that first and last frame is not none
         length = len(self)
         # Creating new arrays
         X = np.zeros(length)
@@ -195,7 +231,7 @@ class LtTrajectory(object):
         self.cpX = X
         self.cpY = Y
         
-if __name__ == '__main__': # Small unit tests
+if __name__ == '__main__':  # Small unit tests
     '''
     Self testing
     '''
@@ -203,11 +239,11 @@ if __name__ == '__main__': # Small unit tests
     
     def printTrajectory(trajectory):
         startFrame, endFrame = trajectory.bounds()
-        print 'Bounds: ', startFrame, endFrame 
+        print('Bounds: ', startFrame, endFrame) 
         for i in xrange(startFrame, endFrame) :
             ltObject = trajectory[i]
             obj = (ltObject.center if ltObject is not None else 'None')
-            print '{} - '.format(i), obj
+            print('{} - '.format(i), obj)
         
     trajectory = LtTrajectory(50, 100)
     for i in xrange(58, 95) :
