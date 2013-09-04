@@ -3,7 +3,7 @@ Created on 13.12.2010
 
 @author: gena
 '''
-
+from __future__ import print_function
 from __future__ import division
 from PyQt4 import QtCore, QtGui
 from ltcore.consts import videoFormats
@@ -50,6 +50,13 @@ class VideoWidget(QtGui.QWidget):
                                   "fork", "", True)
         self.actionRun.toggled.connect(player.runTrough)
         player.running.connect(self.actionRun.setChecked)
+        
+        self.actionSeekToBegin= createAction(self,"To &begin", "", 
+                                 "media-skip-backward", "")
+        self.actionSeekToBegin.triggered.connect(player.seekToBegin)
+        self.actionSeekToEnd= createAction(self,"&To end", "", 
+                                 "media-skip-forward", "")
+        self.actionSeekToEnd.triggered.connect(player.seekToEnd)
         self.actionRew = createAction(self,"&Rewind", "", 
                                  "media-seek-backward", "")
         self.actionRew.triggered.connect(player.seekRew)
@@ -58,28 +65,43 @@ class VideoWidget(QtGui.QWidget):
         self.actionFwd.triggered.connect(player.seekFwd)
         self.actions = (self.actionOpenVideo,self.actionCaptureVideo,self.actionCaptureClose,None,
                              self.actionPlay,self.actionRun,None,
-                             self.actionRew, self.actionFwd)
+                             self.actionRew, self.actionFwd,
+                             self.actionSeekToBegin,self.actionSeekToEnd)
         
         # Video slider and position label
         layout1 = QtGui.QHBoxLayout()
+        self.setLeftButton = QtGui.QPushButton('Set Left')
+        layout1.addWidget(self.setLeftButton)
+        self.setLeftButton.clicked.connect(player.setCurrentToLeftBorder)
         self.startFrameSpinBox = QtGui.QSpinBox()
+        player.leftBorderSetted.connect(self.startFrameSpinBox.setValue)
         layout1.addWidget(self.startFrameSpinBox)
+        self.startFrameSpinBox.valueChanged.connect(player.setLeftBorder)
         self.videoSlider = QtGui.QSlider(QtCore.Qt.Horizontal)
         layout1.addWidget(self.videoSlider)
         self.timeLabel = QtGui.QLabel('0')
         layout1.addWidget(self.timeLabel)
         self.endFrameSpinBox = QtGui.QSpinBox()
         layout1.addWidget(self.endFrameSpinBox)
+        self.endFrameSpinBox.valueChanged.connect(player.setRightBorder)
         self.videoSlider.valueChanged.connect(self.videoSliderMove)  
         self.videoSlider.sliderMoved.connect(player.seek)
+        self.setRightButton = QtGui.QPushButton('Set Right')
+        layout1.addWidget(self.setRightButton)
+        self.setRightButton.clicked.connect(player.setCurrentToRightBorder)
+        player.rightBorderSetted.connect(self.endFrameSpinBox.setValue)
         #     
         layout2 = QtGui.QHBoxLayout()
+        seekToBeginButton = ActionButton(self.actionSeekToBegin)
+        layout2.addWidget(seekToBeginButton)
         rewButton = ActionButton(self.actionRew)
         layout2.addWidget(rewButton)
         playButton = ActionButton(self.actionPlay)
         layout2.addWidget(playButton)
         fwdButton = ActionButton(self.actionFwd)
         layout2.addWidget(fwdButton)
+        seekToEndButton = ActionButton(self.actionSeekToEnd)
+        layout2.addWidget(seekToEndButton)
         runTroughButton = ActionButton(self.actionRun)
         layout2.addWidget(runTroughButton)
         # Speed
@@ -105,7 +127,8 @@ class VideoWidget(QtGui.QWidget):
         self.setLayout(layout)
         # Creating sets to enable/disable GUI elements
         self.playSet = set([self.videoSlider, self.actionPlay,
-                           self.actionRew, self.actionFwd, self.actionRun])
+                           self.actionRew, self.actionFwd, self.actionRun, self.actionSeekToBegin,
+                           self.actionSeekToEnd])
         self.setGuiEnabled(False)
     
     @QtCore.pyqtSlot()

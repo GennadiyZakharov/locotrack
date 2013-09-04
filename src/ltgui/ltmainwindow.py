@@ -71,7 +71,9 @@ class LtMainWindow(QtGui.QMainWindow):
         # ---- chambersWidget ----
         self.chambersWidget.signalScaleSelect.connect(self.cvGraphics.selectScale)        
         self.chambersWidget.signalChamberSelect.connect(self.cvGraphics.selectChamber)
-        self.cvGraphics.signalRegionSelected.connect(self.chambersWidget.regionSelected)
+        
+        self.cvGraphics.signalChamberSelected.connect(self.chambersWidget.chamberSelected)
+        self.cvGraphics.signalScaleSelected.connect(self.chambersWidget.scaleSelected)
         
         self.chambersWidget.signalChamberSelected.connect(
             self.cvGraphics.selectChamberGui)
@@ -160,7 +162,7 @@ class LtMainWindow(QtGui.QMainWindow):
     # ==== Slots to handle actions ====
     
     def setProjectName(self, name=''):
-        title = applicationName + ' ' + applicationVersion
+        title = QtCore.QString(applicationName + ' ' + applicationVersion)
         if name != '' :
             title += ' - '+name
         self.setWindowTitle(title)

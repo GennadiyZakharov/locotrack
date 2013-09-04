@@ -20,7 +20,7 @@ class ChambersWidget(QtGui.QWidget):
     
     signalChamberSelected = QtCore.pyqtSignal(object)
     
-    signalSetScale = QtCore.pyqtSignal(QtCore.QRect)
+    signalSetScale = QtCore.pyqtSignal(float)
     signalSetChamber = QtCore.pyqtSignal(QtCore.QRect)
     signalClearChamber = QtCore.pyqtSignal(object) 
 
@@ -118,24 +118,22 @@ class ChambersWidget(QtGui.QWidget):
             return
         self.selectedChamber = chamber
         self.signalChamberSelected.emit(self.selectedChamber)
-        
-    def regionSelected(self, rect):
-        '''
-        This procedure is called, when some region
-        was selected on cvLabel
-        '''
-        if self.scaleButton.isChecked() :
-            # This rect was scale label
-            self.scaleButton.setChecked(False)
-            self.signalSetScale.emit(rect)
-        elif self.setChamberButton.isChecked() :
-            # This rect was chamber selection
-            self.signalSetChamber.emit(rect)
     
+    @QtCore.pyqtSlot(QtCore.QRect)
+    def chamberSelected(self, rect):
+        self.signalSetChamber.emit(rect)      
+    
+    @QtCore.pyqtSlot(float)
+    def scaleSelected(self, scaleFactor):
+        self.actionSetScale.setChecked(False)
+        self.signalSetScale.emit(scaleFactor)
+    
+    @QtCore.pyqtSlot(bool)
     def setScale(self, checked):
         self.actionSetChamber.setChecked(False)
         self.signalScaleSelect.emit(checked)
     
+    @QtCore.pyqtSlot(bool)
     def setChamber(self, checked):
         self.actionSetScale.setChecked(False)
         self.signalChamberSelect.emit(checked)
@@ -183,8 +181,8 @@ class ChambersWidget(QtGui.QWidget):
         thresholdSpinBox.valueChanged.connect(chamber.setThreshold)
         self.chambersList.setCellWidget(number, 1, thresholdSpinBox)
         self.chamberWidgets[chamber] = (sampleName, thresholdSpinBox)
-        chamber.signalGuiDataUpdated.connect(self.updateChamberGui)
-        
+        chamber.signalGuiDataUpdated.connect(self.updateChamberGui)  
+    
     
     def removeChamber(self, chamber):
         '''

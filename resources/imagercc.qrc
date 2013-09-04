@@ -9,6 +9,8 @@
   <file alias="media-playback-start.png">images/media-playback-start.png</file>
   <file alias="media-seek-backward.png">images/media-seek-backward.png</file>
   <file alias="media-seek-forward.png">images/media-seek-forward.png</file>
+  <file alias="media-skip-backward.png">images/media-skip-backward.png</file>
+  <file alias="media-skip-forward.png">images/media-skip-forward.png</file>
   
   <file alias="media-record.png">images/media-record.png</file>
   <file alias="measure.png">images/measure.png</file>

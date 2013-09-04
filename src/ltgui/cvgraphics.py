@@ -5,6 +5,7 @@ Created on 26.05.2012
 from PyQt4 import QtCore, QtGui
 import cv
 from ltgui.chambergui import ChamberGui
+from ltgui.scalegui import ScaleGui
 
 class CvGraphics(QtGui.QGraphicsView):
     '''
@@ -16,9 +17,8 @@ class CvGraphics(QtGui.QGraphicsView):
     initialSize = (320, 200)
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
-    signalChamberSelected = QtCore.pyqtSignal(object)
-    
-    signalRegionSelected = QtCore.pyqtSignal(QtCore.QRect)
+    signalChamberSelected = QtCore.pyqtSignal(QtCore.QRect)
+    signalScaleSelected = QtCore.pyqtSignal(float)    
     
     selectingScale = 1
     selectingChamber = 2
@@ -40,6 +40,7 @@ class CvGraphics(QtGui.QGraphicsView):
         self.pixmapObject = self.scene.addPixmap(self.pixmap)
         self.scene.setSceneRect(self.pixmapObject.boundingRect())
         self.chambersGui = {} # dict to store gui for cahmbers
+        self.scaleGui = None  # May be only one gui for scale label
         self.selectedChamber = None
         self.dragStartPosition = None
         
@@ -116,6 +117,22 @@ class CvGraphics(QtGui.QGraphicsView):
         del chambeGui
         del self.chambersGui[chamber]
     
+    @QtCore.pyqtSlot(QtCore.QRect)
+    def setScaleGui(self, rect):
+        if self.scaleGui is None:
+            self.scaleGui = ScaleGui(rect)
+            self.scaleGui.signalScaleChanged.connect(self.signalScaleSelected.emit)
+            self.scene.addItem(self.scaleGui)
+            self.scaleGui.calculateScaleFactor()
+        else :
+            self.scaleGui.updateRect(rect)
+    
+    @QtCore.pyqtSlot()
+    def delScaleGui(self):
+        if self.scaleGui is not None :
+            self.scene.removeItem(self.scaleGui)
+            self.scaleGui = None
+    
     @QtCore.pyqtSlot(bool)
     def selectScale(self, checked):
         self.selecting = self.selectingScale if checked else None
@@ -138,7 +155,6 @@ class CvGraphics(QtGui.QGraphicsView):
         if not self.isPointAllowed(pos) :
             return
         self.dragStartPosition = pos
-            
 
     def mouseMoveEvent(self, event) :
         if self.selecting is None :
@@ -198,9 +214,9 @@ class CvGraphics(QtGui.QGraphicsView):
         if not self.isPointAllowed(pos):
             return
         # Saving currenly selected rectangle
-        if self.selecting == 1 :
+        if self.selecting == self.selectingScale :
             self.selectedRect.setLine(QtCore.QLineF(self.dragStartPosition, pos))
-        else :
+        elif self.selecting == self.selectingChamber :
             self.selectedRect.setRect(QtCore.QRectF(self.dragStartPosition, pos).normalized())
         #self.scene.update()
     
@@ -218,5 +234,8 @@ class CvGraphics(QtGui.QGraphicsView):
             self.selectedRect = None
             self.dragStartPosition = None
             event.acceptProposedAction()
-            self.signalRegionSelected.emit(rect)
+            if self.selecting == self.selectingChamber :
+                self.signalChamberSelected.emit(rect)
+            elif self.selecting == self.selectingScale :
+                self.setScaleGui(rect)
             

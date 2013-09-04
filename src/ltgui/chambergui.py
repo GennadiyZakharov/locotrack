@@ -2,6 +2,8 @@
 Created on 26.05.2012
 @author: gena
 '''
+from __future__ import print_function
+from __future__ import print_function
 from PyQt4 import QtCore, QtGui
 
 class ltObjectGui((QtGui.QGraphicsObject)):
@@ -99,7 +101,9 @@ class ChamberGui(QtGui.QGraphicsObject):
     def shape(self):
         path = QtGui.QPainterPath()
         path.addRect(QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size())))
-        return path
+        stroker = QtGui.QPainterPathStroker()
+        stroker.setWidth(3)
+        return stroker.createStroke(path);
     
     def paint(self, painter, option, widget=None):
         pen = QtGui.QPen(QtGui.QBrush(self.color), 3)
