@@ -10,6 +10,8 @@ from PyQt4 import QtCore, QtGui
 from ltgui.analysedialog import AnalyseDialog
 from ltgui.actionbutton import ActionButton
 from ltcore.ltactions import createAction
+from ltgui.trajectoryanalyserswidgets import RunRestAnalyserWidget,RatRunAnalyserWidget
+from ltgui.errordetectorwidget import ErrorDetectorWidget
 
 class TrajectoryWidget(QtGui.QWidget):
     '''
@@ -17,11 +19,18 @@ class TrajectoryWidget(QtGui.QWidget):
     '''
     signalAnalyseFromFile = QtCore.pyqtSignal(QtCore.QString, QtCore.QStringList)
 
-    def __init__(self, analyser, parent=None):
+    def __init__(self, trajectoryAnalysis, parent=None):
         '''
         Constructor
         '''
         super(TrajectoryWidget, self).__init__(parent)
+        self.trajectoryAnalysis = trajectoryAnalysis
+        self.trajectoryAnalyserWidgets=[RunRestAnalyserWidget(self.trajectoryAnalysis.analysers[0]),
+                                        RatRunAnalyserWidget(self.trajectoryAnalysis.analysers[1])]
+        self.trajectoryAnalyserCaptions=['RunRest',
+                                          'RatRun']
+        self.errorDetectorWidget = ErrorDetectorWidget(self.trajectoryAnalysis.errorDetector)
+        
         self.analysisProgressDialog = QtGui.QProgressDialog()
         self.analysisProgressDialog.setWindowTitle('Analysing files')
         #
@@ -31,11 +40,10 @@ class TrajectoryWidget(QtGui.QWidget):
         self.actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
         self.actions = (self.actionAnalyseFromFiles,)
         #
-        analyser.signalAnalysisStarted.connect(self.signalAnalysisStarted)             
-        analyser.signalNextFileAnalysing.connect(self.signalNextFileAnalysing)
-        analyser.signalAnalysisFinished.connect(self.signalAnalysisFinished)
-        self.signalAnalyseFromFile.connect(analyser.analyseFromFiles)
-        self.analysisProgressDialog.canceled.connect(analyser.abortAnalysis)
+        self.trajectoryAnalysis.signalAnalysisStarted.connect(self.signalAnalysisStarted)             
+        self.trajectoryAnalysis.signalNextFileAnalysing.connect(self.signalNextFileAnalysing)
+        self.trajectoryAnalysis.signalAnalysisFinished.connect(self.signalAnalysisFinished)
+        
         #
         layout = QtGui.QGridLayout()
         #
@@ -48,120 +56,50 @@ class TrajectoryWidget(QtGui.QWidget):
         defaultSettigsComboBox = QtGui.QComboBox() 
         defaultSettingsLabel.setBuddy(defaultSettigsComboBox)
         layout.addWidget(defaultSettigsComboBox, 1, 1)
-        defaultSettigsComboBox.addItems(['Larva', 'Imago'])
-        defaultSettigsComboBox.currentIndexChanged.connect(self.setDefaultSettings)
-        #
-        self.errorTresholdSpinBox = QtGui.QDoubleSpinBox()
-        errorTresholdLabel = QtGui.QLabel('Error threshold:')
-        errorTresholdLabel.setBuddy(self.errorTresholdSpinBox)
-        self.errorTresholdSpinBox.setMaximum(100)
-        self.errorTresholdSpinBox.setSuffix(' mm/s')
-        self.errorTresholdSpinBox.setValue(analyser.errorSpeedThreshold)
-        self.errorTresholdSpinBox.valueChanged.connect(analyser.setErrorSpeedThreshold)
-        self.errorTresholdSpinBox.valueChanged.connect(self.errorTresholdChanged)
-        layout.addWidget(errorTresholdLabel)
-        layout.addWidget(self.errorTresholdSpinBox)
-        #
-        maxMissedIntervalCountLabel = QtGui.QLabel('Max missed count')
-        maxMissedIntervalCountSpinBox = QtGui.QSpinBox()
-        maxMissedIntervalCountLabel.setBuddy(maxMissedIntervalCountSpinBox)
-        maxMissedIntervalCountSpinBox.setMaximum(10)
-        maxMissedIntervalCountSpinBox.setValue(analyser.maxMissedIntervalCount)
-        maxMissedIntervalCountSpinBox.valueChanged.connect(analyser.setMaxMissedIntervalCount)
-        layout.addWidget(maxMissedIntervalCountLabel)
-        layout.addWidget(maxMissedIntervalCountSpinBox)
-        #
-        maxMissedIntervalDurationLabel = QtGui.QLabel('Max missed duration ')
-        maxMissedIntervalDurationSpinBox = QtGui.QDoubleSpinBox()
-        maxMissedIntervalDurationSpinBox.setSuffix(' s')
-        maxMissedIntervalDurationLabel.setBuddy(maxMissedIntervalDurationSpinBox)
-        maxMissedIntervalDurationSpinBox.setMaximum(10.0)
-        maxMissedIntervalDurationSpinBox.setValue(analyser.maxMissedIntervalDuration)
-        maxMissedIntervalDurationSpinBox.valueChanged.connect(analyser.setMaxMissedIntervalDuration)
-        layout.addWidget(maxMissedIntervalDurationLabel)
-        layout.addWidget(maxMissedIntervalDurationSpinBox)
-        #
-        self.speedThresholdSpinBox = QtGui.QDoubleSpinBox()
-        speedThresholdLabel = QtGui.QLabel('Run threshold:')
-        speedThresholdLabel.setBuddy(self.speedThresholdSpinBox)
-        self.speedThresholdSpinBox.setMaximum(50)
-        self.speedThresholdSpinBox.setSuffix(' mm/s')
-        self.speedThresholdSpinBox.setValue(analyser.runRestSpeedThreshold)
-        self.speedThresholdSpinBox.valueChanged.connect(analyser.setRunRestSpeedThreshold)
-        layout.addWidget(speedThresholdLabel)
-        layout.addWidget(self.speedThresholdSpinBox)
-        #
-        self.intervalDurationSpinBox = QtGui.QSpinBox()
-        intervalDurationLabel = QtGui.QLabel('Interval Duration:')
-        intervalDurationLabel.setBuddy(self.intervalDurationSpinBox)
-        self.intervalDurationSpinBox.setRange(50, 1000)
-        self.intervalDurationSpinBox.setSuffix(' s')
-        self.intervalDurationSpinBox.setValue(analyser.intervalDuration)
-        self.intervalDurationSpinBox.valueChanged.connect(analyser.setIntervalDuration)
-        layout.addWidget(intervalDurationLabel)
-        layout.addWidget(self.intervalDurationSpinBox)
-        #
-        self.quantDurationSpinBox = QtGui.QDoubleSpinBox()
-        quantDurationLabel = QtGui.QLabel('Quant Duration:')
-        quantDurationLabel.setBuddy(self.intervalDurationSpinBox)
-        self.quantDurationSpinBox.setRange(0,5)
-        self.quantDurationSpinBox.setSuffix(' s')
-        self.quantDurationSpinBox.setValue(analyser.quantDuration)
-        self.quantDurationSpinBox.valueChanged.connect(analyser.setQuantDuration)
-        layout.addWidget(quantDurationLabel)
-        layout.addWidget(self.quantDurationSpinBox)
+        defaultSettigsComboBox.addItems(['Imago', 'Larva', 'Rat'])
+        defaultSettigsComboBox.currentIndexChanged.connect(self.setPreset)
         #
         createImageLabel = QtGui.QLabel('Image creation method')
-        layout.addWidget(createImageLabel)
+        layout.addWidget(createImageLabel,2,0)
         self.createImageComboBox = QtGui.QComboBox()
         createImageLabel.setBuddy(self.createImageComboBox)
-        self.createImageComboBox.addItems(analyser.imageCreatorsCaptions)
+        self.createImageComboBox.addItems(self.trajectoryAnalysis.imageCreatorsCaptions)
         self.createImageComboBox.setCurrentIndex(1)
-        self.createImageComboBox.currentIndexChanged.connect(analyser.setImageCreator)
+        self.createImageComboBox.currentIndexChanged.connect(self.trajectoryAnalysis.setImageCreator)
         self.createImageComboBox.currentIndexChanged.connect(self.setLevelsEnabled)
-        layout.addWidget(self.createImageComboBox)
+        layout.addWidget(self.createImageComboBox,2,1)
         #
         imageLevelsLabel = QtGui.QLabel('Accumulate levels')
-        layout.addWidget(imageLevelsLabel)
+        layout.addWidget(imageLevelsLabel,3,0)
         self.imageLevelsSpinBox = QtGui.QSpinBox()
         createImageLabel.setBuddy(self.imageLevelsSpinBox)
         self.imageLevelsSpinBox.setMaximum(10)
-        self.imageLevelsSpinBox.setValue(analyser.imageLevels)
-        self.imageLevelsSpinBox.valueChanged.connect(analyser.setImageLevelsCount)
-        layout.addWidget(self.imageLevelsSpinBox)
+        self.imageLevelsSpinBox.setValue(self.trajectoryAnalysis.imageLevels)
+        self.imageLevelsSpinBox.valueChanged.connect(self.trajectoryAnalysis.setImageLevelsCount)
+        layout.addWidget(self.imageLevelsSpinBox,3,1)
         #
         writeSpeedLabel = QtGui.QLabel('Write speed info')
-        layout.addWidget(writeSpeedLabel)
+        layout.addWidget(writeSpeedLabel,4,0)
         writeSpeedCheckBox = QtGui.QCheckBox()
         writeSpeedLabel.setBuddy(writeSpeedCheckBox)
-        layout.addWidget(writeSpeedCheckBox)
-        writeSpeedCheckBox.stateChanged.connect(analyser.setWriteSpeed)
+        layout.addWidget(writeSpeedCheckBox,4,1)
+        writeSpeedCheckBox.stateChanged.connect(self.trajectoryAnalysis.setWriteSpeed)
         #
+        layout.addWidget(self.errorDetectorWidget,5,0,1,2)
+        
+        self.tabWidget=QtGui.QTabWidget()
+        for i in range(2) :
+            self.tabWidget.addTab(self.trajectoryAnalyserWidgets[i], self.trajectoryAnalyserCaptions[i])
+        self.tabWidget.currentChanged.connect(self.trajectoryAnalysis.setAnalyser)
+        layout.addWidget(self.tabWidget,6,0,1,2)
+        
         self.setLayout(layout)
-        defaultSettigsComboBox.setCurrentIndex(1)
-    
-    @QtCore.pyqtSlot(int)
-    def setDefaultSettings(self, index):
-        if index == 0 :
-            # Larva
-            self.errorTresholdSpinBox.setValue(4.0)
-            self.speedThresholdSpinBox.setValue(0.4)
-            self.createImageComboBox.setCurrentIndex(0)
-        elif index == 1 :
-            # Imago
-            self.errorTresholdSpinBox.setValue(50)
-            self.speedThresholdSpinBox.setValue(5)
-            self.createImageComboBox.setCurrentIndex(1)
+        defaultSettigsComboBox.setCurrentIndex(0)
     
     @QtCore.pyqtSlot(int)
     def setLevelsEnabled(self, index):
         self.imageLevelsSpinBox.setEnabled(index == 1)
-    
-    @QtCore.pyqtSlot(float)
-    def errorTresholdChanged(self, value):
-        if self.speedThresholdSpinBox.value() > value :
-            self.speedThresholdSpinBox.setValue(value)
-    
+        
     @QtCore.pyqtSlot(int)
     def signalAnalysisStarted(self, count):
         self.analysisProgressDialog.setMaximum(count)
@@ -182,6 +120,28 @@ class TrajectoryWidget(QtGui.QWidget):
         '''
         analyseDialog = AnalyseDialog(self)
         if analyseDialog.exec_() :
-            self.signalAnalyseFromFile.emit(analyseDialog.analyseFileName, analyseDialog.ltFilesList)
-        
+            self.trajectoryAnalysis.analyseFromFiles(analyseDialog.analyseFileName, analyseDialog.ltFilesList)
     
+    def abortAnalysis(self):
+        self.trajectoryAnalysis.abortAnalysis()
+        
+    @QtCore.pyqtSlot(int)
+    def setPreset(self, index):
+        self.errorDetectorWidget.setPreset(index)
+        for analyserWidget in self.trajectoryAnalyserWidgets :
+            analyserWidget.setPreset(index)
+        
+        if index == 1 :
+            # Larva
+            self.createImageComboBox.setCurrentIndex(0)
+            self.tabWidget.setCurrentIndex(0)
+        elif index == 0 :
+            # Imago
+            self.createImageComboBox.setCurrentIndex(1)
+            self.tabWidget.setCurrentIndex(0)
+        elif index == 2 :
+            # Rat
+            self.createImageComboBox.setCurrentIndex(0)
+            self.tabWidget.setCurrentIndex(1)
+    
+        

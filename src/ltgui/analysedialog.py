@@ -20,7 +20,8 @@ class AnalyseDialog(QtGui.QDialog):
         '''
         super(AnalyseDialog, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.analyseFileName = '' # File name to save results
+        self.analyseFileName = QtCore.QString() # File name to save results
+        self.lastDirectory = QtCore.QString('.')
         self.ltFilesList = None   # List to store input lt files
         layout = QtGui.QGridLayout()
         # analyseFile elements
@@ -57,11 +58,13 @@ class AnalyseDialog(QtGui.QDialog):
         formats = ["*.%s" % unicode(videoFormat).lower() \
                    for videoFormat in ('txt', 'csv')]
         # Setting last user dir
-        directory =  "."
         # Executing standard open dialog
-        self.analyseFileName = unicode(QtGui.QFileDialog.getSaveFileName(self,
+        self.analyseFileName = QtGui.QFileDialog.getSaveFileName(self,
                         "Choose file to save results",
-                        directory, "Data files (%s)" % " ".join(formats)))        
+                        self.lastDirectory, "Data files (%s)" % " ".join(formats))
+        if not self.analyseFileName.isEmpty() :
+            fileInfo = QtCore.QFileInfo(self.analyseFileName)
+            self.lastDirectory = fileInfo.absolutePath()
         self.analyseFileEdit.setText(self.analyseFileName)
         self.validate()
         
@@ -69,15 +72,18 @@ class AnalyseDialog(QtGui.QDialog):
         '''
         Select list of lt files to analyse
         '''
-        dialog = QtGui.QFileDialog(self)
-        dialog.setWindowTitle('Open input Files')
+        dialog = QtGui.QFileDialog(self, 'Open input Files', 
+                                   self.lastDirectory)
         dialog.setFileMode(QtGui.QFileDialog.ExistingFiles);
         dialog.setNameFilter("Locotrack chamber (*.lt1)")
+        
+                     
         if dialog.exec_() :
             # Display selected list
             self.ltFilesList = dialog.selectedFiles()
             baseNames = [basename(str(fileName)) for fileName in self.ltFilesList]
             self.model.setStringList(baseNames)
+            self.lastDirectory = dialog.directory().absolutePath ()
         else :
             self.ltFilesList = None
         self.validate() 
@@ -86,5 +92,5 @@ class AnalyseDialog(QtGui.QDialog):
         '''
         Validate input data and enable Ok button if all fine
         '''
-        flag = (self.ltFilesList is not None) and (self.analyseFileName != '')
+        flag = (self.ltFilesList is not None) and (not self.analyseFileName.isEmpty())
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(flag)

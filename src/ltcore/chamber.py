@@ -52,7 +52,7 @@ class Chamber(QtCore.QObject):
         self.ltObject = None
         self.frameNumber = -1
         # No trajectory is recorded
-        self.resetTrajectory()
+        self.removeTrajectory()
         # Individual threshold
         self.threshold = 60
         # Do not show trajectory
@@ -193,13 +193,13 @@ class Chamber(QtCore.QObject):
         Init trajectory from startFrame to EndFrame
         '''
         if self.trajectory is not None : # Delete old trajectory
-            self.resetTrajectory()
+            self.removeTrajectory()
         # Init trajectory to save frames
         self.trajectory = LtTrajectory(startFrame, endFrame)
         self.signalGuiDataUpdated.emit()
     
     @QtCore.pyqtSlot()
-    def resetTrajectory(self):
+    def removeTrajectory(self):
         '''
         Remove stored trajectory
         '''

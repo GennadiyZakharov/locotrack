@@ -21,6 +21,7 @@ from ltgui.chamberswidget import ChambersWidget
 from ltgui.cvprocessorwidget import CvProcessorWidget
 from ltgui.trajectorywidget import TrajectoryWidget
 from ltgui.helpwidget import HelpWidget
+from ltgui.presetswidget import PresetsWidget
 
 
 class LtMainWindow(QtGui.QMainWindow):
@@ -72,8 +73,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.chambersWidget.signalScaleSelect.connect(self.cvGraphics.selectScale)        
         self.chambersWidget.signalChamberSelect.connect(self.cvGraphics.selectChamber)
         
-        self.cvGraphics.signalChamberSelected.connect(self.chambersWidget.chamberSelected)
-        self.cvGraphics.signalScaleSelected.connect(self.chambersWidget.scaleSelected)
+        self.cvGraphics.signalChamberSetted.connect(self.chambersWidget.chamberSetted)
+        self.cvGraphics.signalScaleSetted.connect(self.chambersWidget.scaleSetted)
         
         self.chambersWidget.signalChamberSelected.connect(
             self.cvGraphics.selectChamberGui)
@@ -106,18 +107,26 @@ class LtMainWindow(QtGui.QMainWindow):
         cvTrajectoryDockPanel.setAllowedAreas(QtCore.Qt.RightDockWidgetArea)
         cvTrajectoryDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
-        self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.runRestAnalyser) 
+        self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.trajectoryAnalysis) 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
         self.chambersWidget.actionRecordTrajectory.toggled.connect(self.cvProcessor.setRecordTrajectory)
         self.cvProcessor.trajectoryWriting.connect(self.chambersWidget.actionRecordTrajectory.setChecked)
         self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.saveProject)
         
-        
+        self.presetsWidget = PresetsWidget(self)
         # ==== Creating menu ====
         
         projectMenu = self.menuBar().addMenu("&Project")
+        setPresetAction = createAction(self,"Set preset...", '', 
+                                          "", "")
+        projectMenu.addAction(setPresetAction)
+        setPresetAction.triggered.connect(self.presetDialogDisplay)
+        self.presetsWidget.signalSetPreset.connect(self.cvProcessorWidget.setPreset)
+        self.presetsWidget.signalSetPreset.connect(self.cvTrajectoryWidget.setPreset)
+        
         self.quitAction = createAction(self,"Exit...", QtGui.QKeySequence.Quit, 
                                           "application-exit", "Exit program")
+        
         projectMenu.addAction(self.quitAction)
         '''
         projectToolbar = self.addToolBar("Project")
@@ -167,7 +176,10 @@ class LtMainWindow(QtGui.QMainWindow):
             title += ' - '+name
         self.setWindowTitle(title)
     
-    def saveProject(self):
+    def presetDialogDisplay(self):
+        self.presetsWidget.exec_()
+    
+    def saveeProject(self):
         pass
     
     def okToContinue(self):

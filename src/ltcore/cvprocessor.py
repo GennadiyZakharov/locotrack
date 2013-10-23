@@ -10,10 +10,11 @@ import os
 from PyQt4 import QtCore,QtGui
 from ltcore.chamber import Chamber
 from ltcore.cvplayer import CvPlayer
-from ltcore.trajectoryanalysis import NewRunRestAnalyser
+from ltcore.trajectoryanalysis import TrajectoryAnalysis
 from glob import glob
 from ltcore.objectdetectors import maxBrightDetector, massCenterDetector
 from ltcore.chambersmanager import ChambersManager
+
 
 class CvProcessor(QtCore.QObject):
     '''
@@ -61,10 +62,9 @@ class CvProcessor(QtCore.QObject):
         self.maxBrightDetector = maxBrightDetector()
         self.massCenterDetector = massCenterDetector()
         self.objectDetectors = [self.maxBrightDetector, self.massCenterDetector]
-        self.objectDetectorIndex = 0
-        self.runRestAnalyser = NewRunRestAnalyser(self)
-        #self.errorDetector = ErrorDetector()
-        
+        self.objectDetectorIndex = 0   
+        self.trajectoryAnalysis = TrajectoryAnalysis(self)
+           
     def openProject(self, fileName):
         pass
         
@@ -100,7 +100,9 @@ class CvProcessor(QtCore.QObject):
         self.projectOpened.emit('')
         
     def videoEnded(self):
-        self.setRecordTrajectory(False, None)
+        self.setRecordTrajectory(False)
+        self.saveProject()
+        self.chambers.removeTrajectory()
           
     def getNextFrame(self, frame, frameNumber):
         '''

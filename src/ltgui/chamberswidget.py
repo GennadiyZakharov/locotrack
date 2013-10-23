@@ -117,14 +117,14 @@ class ChambersWidget(QtGui.QWidget):
         if chamber is self.selectedChamber :
             return
         self.selectedChamber = chamber
-        self.signalChamberSelected.emit(self.selectedChamber)
+        self.signalChamberSelected.emit(self.selectedChamber)     
     
     @QtCore.pyqtSlot(QtCore.QRect)
-    def chamberSelected(self, rect):
-        self.signalSetChamber.emit(rect)      
+    def chamberSetted(self, rect):
+        self.signalSetChamber.emit(rect)
     
     @QtCore.pyqtSlot(float)
-    def scaleSelected(self, scaleFactor):
+    def scaleSetted(self, scaleFactor):
         self.actionSetScale.setChecked(False)
         self.signalSetScale.emit(scaleFactor)
     

@@ -62,6 +62,7 @@ class VideoWidget(QtGui.QWidget):
         self.actionRew.triggered.connect(player.seekRew)
         self.actionFwd = createAction(self,"&Forward", "", 
                                  "media-seek-forward", "")
+        
         self.actionFwd.triggered.connect(player.seekFwd)
         self.actions = (self.actionOpenVideo,self.actionCaptureVideo,self.actionCaptureClose,None,
                              self.actionPlay,self.actionRun,None,
@@ -114,6 +115,9 @@ class VideoWidget(QtGui.QWidget):
         self.speedSpinBox.setMinimum(0.2)
         self.speedSpinBox.setMaximum(2.0)
         self.speedSpinBox.setValue(1.0) 
+        resetBordersButton = QtGui.QPushButton('Reset borders')
+        resetBordersButton.clicked.connect(player.resetBorders)
+        layout2.addWidget(resetBordersButton)
         layout2.addStretch()
         # Open and capture video buttons
         videoOpenButton = ActionButton(self.actionOpenVideo)

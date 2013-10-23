@@ -17,8 +17,10 @@ class CvGraphics(QtGui.QGraphicsView):
     initialSize = (320, 200)
     chamberMove = QtCore.pyqtSignal(int, int)
     chamberResize = QtCore.pyqtSignal(int, int)
-    signalChamberSelected = QtCore.pyqtSignal(QtCore.QRect)
-    signalScaleSelected = QtCore.pyqtSignal(float)    
+    signalChamberSetted = QtCore.pyqtSignal(QtCore.QRect)
+    signalScaleSetted = QtCore.pyqtSignal(float)  
+    
+    signalChamberSelected = QtCore.pyqtSignal(object)  
     
     selectingScale = 1
     selectingChamber = 2
@@ -121,7 +123,7 @@ class CvGraphics(QtGui.QGraphicsView):
     def setScaleGui(self, rect):
         if self.scaleGui is None:
             self.scaleGui = ScaleGui(rect)
-            self.scaleGui.signalScaleChanged.connect(self.signalScaleSelected.emit)
+            self.scaleGui.signalScaleChanged.connect(self.signalScaleSetted.emit)
             self.scene.addItem(self.scaleGui)
             self.scaleGui.calculateScaleFactor()
         else :
@@ -235,7 +237,7 @@ class CvGraphics(QtGui.QGraphicsView):
             self.dragStartPosition = None
             event.acceptProposedAction()
             if self.selecting == self.selectingChamber :
-                self.signalChamberSelected.emit(rect)
+                self.signalChamberSetted.emit(rect)
             elif self.selecting == self.selectingScale :
                 self.setScaleGui(rect)
             

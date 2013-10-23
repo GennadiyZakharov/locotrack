@@ -111,6 +111,11 @@ class ChambersManager(QtCore.QObject):
         for chamber in self.chambers :
             chamber.initTrajectory(startFrame, endFrame)
     
+    @QtCore.pyqtSlot()
+    def removeTrajectory(self):
+        for chamber in self.chambers :
+            chamber.removeTrajectory()
+    
     @QtCore.pyqtSlot(bool)
     def setRecordTrajectories(self, checked):
         for chamber in self.chambers :

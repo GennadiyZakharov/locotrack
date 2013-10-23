@@ -66,3 +66,15 @@ class CvProcessorWidget(QtGui.QWidget):
     def enableThreshold(self, index):
         self.thresholdSlider.setEnabled(index == 1)
         
+    @QtCore.pyqtSlot(int)
+    def setPreset(self, index):
+        if index == 1 :
+            # Larva
+            self.ObjectDetectorsComboBox.setCurrentIndex(1)
+        elif index == 0 :
+            # Imago
+            self.ObjectDetectorsComboBox.setCurrentIndex(0)
+        elif index == 2 :
+            # Rat
+            self.ObjectDetectorsComboBox.setCurrentIndex(1)
+        

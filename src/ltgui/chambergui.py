@@ -3,7 +3,7 @@ Created on 26.05.2012
 @author: gena
 '''
 from __future__ import print_function
-from __future__ import print_function
+from __future__ import division
 from PyQt4 import QtCore, QtGui
 
 class ltObjectGui((QtGui.QGraphicsObject)):
@@ -92,6 +92,7 @@ class ChamberGui(QtGui.QGraphicsObject):
             self.setPos(QtCore.QPointF(self.chamber.rect.topLeft()))
     
     def focusInEvent(self, event):
+        print('selecting', self.chamber)
         self.signalSelected.emit(self.chamber)
         return QtGui.QGraphicsObject.focusInEvent(self, event)  
     # Painting procedures
@@ -109,6 +110,7 @@ class ChamberGui(QtGui.QGraphicsObject):
         pen = QtGui.QPen(QtGui.QBrush(self.color), 3)
         painter.setPen(pen)
         painter.setBrush(QtGui.QBrush(QtCore.Qt.NoBrush))
+        sizeX,sizeY = self.chamber.size().width(),self.chamber.size().height()
         painter.drawRect(QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size())))
         painter.drawEllipse(QtCore.QRectF(QtCore.QPointF(0, 0), QtCore.QSizeF(self.chamber.size())))
         pen = QtGui.QPen(QtGui.QBrush(self.selectedColor), 3)
@@ -116,33 +118,9 @@ class ChamberGui(QtGui.QGraphicsObject):
         painter.setFont(QtGui.QFont('Times', 15, QtGui.QFont.DemiBold))
         rect = QtCore.QRectF(0, 0, 15, 20)
         painter.drawText(rect, QtCore.Qt.AlignCenter, str(self.chamber.number));
-        #painter.drawText(QtCore.QPointF(0,0), str(self.chamber.number))
         if self.chamber.showTrajectory and (self.chamber.trajectoryImage is not None):
             painter.drawImage(QtCore.QPointF(0, 0), self.chamber.trajectoryImage)
-        
-        '''
-        painter.setFont(QtGui.QFont('Arial', pointSize=16))
-        painter.drawText(self.NameRect, QtCore.Qt.AlignCenter, self.node.name) 
-        painter.setFont(QtGui.QFont('Arial', pointSize=12))
-        if self.currentPlayer in self.node.viewers:
-            infoText = 'Storage: {0}/{1}\n '.format(len(self.node.storage),self.node.storageCapacity)
-            demandsText = []
-            demandsDict = self.node.getDemands()
-            if demandsDict != {} :
-                for name,count in demandsDict.items() :
-                    demandsText.append('{0} - {1} '.format(name, count))
-                infoText+='\nDemands:\n'+'\n'.join(demandsText)
-            painter.drawText(self.InfoRect, QtCore.Qt.AlignCenter, infoText)
-            if len(self.node.entered) != 0 :
-                painter.setBrush(QtGui.QBrush(self.SelectColor))
-                painter.setPen(QtGui.QPen(QtGui.QBrush(self.SelectColor), 3))
-                painter.drawEllipse(self.Rect.bottomRight()-QtCore.QPointF(15, 15),10,10)
-        if self.hasFocus() :
-            painter.setBrush(QtCore.Qt.NoBrush)
-            painter.setPen(QtGui.QPen(QtGui.QBrush(self.SelectColor), 3))
-            painter.drawRect(self.Rect.adjusted(2, 2, -2, -2))
-        if self.node.owner != self.currentPlayer:
-            painter.setBrush(QtCore.Qt.NoBrush)
-            painter.setPen(QtGui.QPen(QtGui.QBrush(self.InactiveColor), 3))
-            painter.drawRect(self.Rect.adjusted(2, 2, -2, -2))
-        '''
+        pen = QtGui.QPen(QtGui.QBrush(self.color), 1)
+        painter.setPen(pen)
+        painter.drawLine(0,sizeY//2,sizeX,sizeY//2)
+        painter.drawLine(sizeX//2,0,sizeX//2,sizeY)

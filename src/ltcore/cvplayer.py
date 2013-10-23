@@ -127,8 +127,7 @@ class CvPlayer(QtCore.QObject):
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
         self.seekInterval = self.videoFileLength // 50
-        self.setLeftBorder(0)           # Borders of playing interval 
-        self.setRightBorder(self.videoFileLength)
+        self.resetBorders()
         #TODO: do as message
         print('Opened file: ' + self.videoFileName)
         print('File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate)) 
@@ -237,7 +236,6 @@ class CvPlayer(QtCore.QObject):
         '''
         Seek to frame desiredPosition
         '''
-        print('seek to', desiredPosition)
         if desiredPosition == self.frameNumber :
             return
         if self.captureDevice is None : # No device
@@ -264,6 +262,11 @@ class CvPlayer(QtCore.QObject):
     @QtCore.pyqtSlot()    
     def setCurrentToRightBorder(self):
         self.setRightBorder(self.frameNumber)
+    
+    @QtCore.pyqtSlot()
+    def resetBorders(self):
+        self.setLeftBorder(0)
+        self.setRightBorder(self.videoFileLength)
     
     @QtCore.pyqtSlot(float)
     def setSpeed(self, speed):
