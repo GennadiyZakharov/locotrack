@@ -27,6 +27,7 @@ class CvProcessor(QtCore.QObject):
     trajectoryWriting = QtCore.pyqtSignal(bool)
     signalNextFrame = QtCore.pyqtSignal(object)
     projectOpened = QtCore.pyqtSignal(QtCore.QString)
+    projectClosed = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         '''
@@ -98,6 +99,7 @@ class CvProcessor(QtCore.QObject):
         self.videoLength = -1
         self.frameRate = -1
         self.projectOpened.emit('')
+        self.projectClosed.emit()
         
     def videoEnded(self):
         self.setRecordTrajectory(False)
@@ -171,10 +173,10 @@ class CvProcessor(QtCore.QObject):
         if self.objectDetectorIndex == 0 :
             ltObject = self.maxBrightDetector.detectObject(frame)
         elif  self.objectDetectorIndex == 1 :
-            ltObject = self.massCenterDetector.detectObject(frame, (chamber.width(), chamber.height()),
-                                                  chamber.matrices(), chamber.threshold, self.ellipseCrop)
+            ltObject = self.massCenterDetector.detectObject(frame, chamber, self.ellipseCrop)
         else:
             raise
+        chamber.oldLtObject = chamber.ltObject
         chamber.setLtObject(ltObject, self.frameNumber)
         # Reset area selection
         cv.ResetImageROI(frame)

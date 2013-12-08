@@ -35,6 +35,7 @@ class ErrorDetectorWidget(QtGui.QWidget):
         objectLengthTresholdLabel = QtGui.QLabel('Object length threshold:')
         objectLengthTresholdLabel.setBuddy(self.errorTresholdSpinBox)
         self.objectLengthTresholdSpinBox.setSuffix(' mm')
+        self.objectLengthTresholdSpinBox.setMaximum(500)
         self.objectLengthTresholdSpinBox.setValue(errorDetector.objectLengthThreshold)
         self.objectLengthTresholdSpinBox.valueChanged.connect(errorDetector.setObjectLengthThreshold)
         layout.addWidget(objectLengthTresholdLabel)
@@ -70,3 +71,5 @@ class ErrorDetectorWidget(QtGui.QWidget):
         elif index == 2 :
             # Rat
             self.errorTresholdSpinBox.setValue(500)
+            self.objectLengthTresholdSpinBox.setValue(200)
+            

@@ -50,6 +50,7 @@ class Chamber(QtCore.QObject):
         self.sampleName = sampleName
         self.number = number
         self.ltObject = None
+        self.oldLtObject = None
         self.frameNumber = -1
         # No trajectory is recorded
         self.removeTrajectory()

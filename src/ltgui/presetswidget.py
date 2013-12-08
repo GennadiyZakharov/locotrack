@@ -25,16 +25,20 @@ class PresetsWidget(QtGui.QDialog):
         layout = QtGui.QVBoxLayout()
         presetsLabel = QtGui.QLabel('Set default Parameters for:')
         layout.addWidget(presetsLabel)
-        presetsComboBox = QtGui.QComboBox() 
-        presetsLabel.setBuddy(presetsComboBox)
-        layout.addWidget(presetsComboBox)
-        presetsComboBox.addItems(presets)
-        presetsComboBox.currentIndexChanged.connect(self.setPreset)
+        self.presetsComboBox = QtGui.QComboBox() 
+        presetsLabel.setBuddy(self.presetsComboBox)
+        layout.addWidget(self.presetsComboBox)
+        self.presetsComboBox.addItems(presets)
+        self.presetsComboBox.currentIndexChanged.connect(self.setPreset)
         # Ok/Close buttonbox
         self.buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Close,
                                            rejected=self.reject)
-        
+        layout.addWidget(self.buttonBox)
         self.setLayout(layout)
         
+    def currentPreset(self):
+        return self.presetsComboBox.currentIndex()
+        
     def setPreset(self, index):
+        self.presetsComboBox.setCurrentIndex(index)
         self.signalSetPreset.emit(index)

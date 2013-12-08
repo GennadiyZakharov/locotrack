@@ -130,9 +130,10 @@ class CvPlayer(QtCore.QObject):
         self.resetBorders()
         #TODO: do as message
         print('Opened file: ' + self.videoFileName)
-        print('File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate)) 
+        print('File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate))
+        self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName) 
         self.timerEvent() # Process first frame
-        self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName)       
+               
           
     @QtCore.pyqtSlot(int)
     def captureFromCam(self, camNumber):
@@ -148,8 +149,9 @@ class CvPlayer(QtCore.QObject):
             return
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
-        self.timerEvent()
         self.videoSourceOpened.emit(-1, self.frameRate, 'Cam'+str(camNumber))
+        self.timerEvent()
+        
      
     @QtCore.pyqtSlot()
     def captureClose(self):

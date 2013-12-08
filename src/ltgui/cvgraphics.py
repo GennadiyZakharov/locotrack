@@ -71,6 +71,10 @@ class CvGraphics(QtGui.QGraphicsView):
             return 
         self.updateImage()
     
+    def setNullImage(self):
+        self.frame = QtGui.QImage(320, 200, QtGui.QImage.Format_RGB888)
+        self.updateImage()
+    
     def updateImage(self):
         '''
         Display frame and draw selected region

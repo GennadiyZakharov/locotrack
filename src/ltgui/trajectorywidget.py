@@ -53,11 +53,11 @@ class TrajectoryWidget(QtGui.QWidget):
         #
         defaultSettingsLabel = QtGui.QLabel('Default set for:')
         layout.addWidget(defaultSettingsLabel, 1, 0)
-        defaultSettigsComboBox = QtGui.QComboBox() 
-        defaultSettingsLabel.setBuddy(defaultSettigsComboBox)
-        layout.addWidget(defaultSettigsComboBox, 1, 1)
-        defaultSettigsComboBox.addItems(['Imago', 'Larva', 'Rat'])
-        defaultSettigsComboBox.currentIndexChanged.connect(self.setPreset)
+        self.defaultSettigsComboBox = QtGui.QComboBox() 
+        defaultSettingsLabel.setBuddy(self.defaultSettigsComboBox)
+        layout.addWidget(self.defaultSettigsComboBox, 1, 1)
+        self.defaultSettigsComboBox.addItems(['Imago', 'Larva', 'Rat'])
+        self.defaultSettigsComboBox.currentIndexChanged.connect(self.setPreset)
         #
         createImageLabel = QtGui.QLabel('Image creation method')
         layout.addWidget(createImageLabel,2,0)
@@ -94,7 +94,7 @@ class TrajectoryWidget(QtGui.QWidget):
         layout.addWidget(self.tabWidget,6,0,1,2)
         
         self.setLayout(layout)
-        defaultSettigsComboBox.setCurrentIndex(0)
+        self.defaultSettigsComboBox.setCurrentIndex(0)
     
     @QtCore.pyqtSlot(int)
     def setLevelsEnabled(self, index):
@@ -127,6 +127,7 @@ class TrajectoryWidget(QtGui.QWidget):
         
     @QtCore.pyqtSlot(int)
     def setPreset(self, index):
+        self.defaultSettigsComboBox.setCurrentIndex(index)
         self.errorDetectorWidget.setPreset(index)
         for analyserWidget in self.trajectoryAnalyserWidgets :
             analyserWidget.setPreset(index)

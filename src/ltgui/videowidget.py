@@ -26,7 +26,9 @@ class VideoWidget(QtGui.QWidget):
         player is an cvPlayer object to construct all signals
         '''
         super(VideoWidget, self).__init__(parent)
+        self.lastDirectory = QtCore.QString('.')
         self.player = player
+        
         player.videoSourceOpened.connect(self.videoSourceOpen)
         player.videoSourceClosed.connect(self.videoSourceClose)
         player.nextFrame.connect(self.nextFrame)
@@ -39,7 +41,7 @@ class VideoWidget(QtGui.QWidget):
         self.actionCaptureVideo = createAction(self,"&Capture...", "",
                                           "camera-web", "")
         self.actionCaptureVideo.triggered.connect(self.captureVideo)
-        self.actionCaptureClose = createAction(self,"Close video", "",
+        self.actionCaptureClose = createAction(self,"Close", "",
                                           "dialog-close", "")
         self.actionCaptureClose.triggered.connect(player.captureClose)
         self.actionPlay = createAction(self,"&Play", "", 
@@ -124,6 +126,8 @@ class VideoWidget(QtGui.QWidget):
         layout2.addWidget(videoOpenButton)
         videoCaptureButton = ActionButton(self.actionCaptureVideo)
         layout2.addWidget(videoCaptureButton)
+        videoCloseButton = ActionButton(self.actionCaptureClose)
+        layout2.addWidget(videoCloseButton)
         # Main Layout
         layout = QtGui.QVBoxLayout()
         layout.addLayout(layout1)
@@ -139,17 +143,16 @@ class VideoWidget(QtGui.QWidget):
     def openVideoFile(self):
         '''
         Open video file
-        '''
-        # Setting last user directory
-        directory = QtCore.QFileInfo(self.player.videoFileName).path() 
+        ''' 
         # Creating formats list
         formats = ["*.{}".format(unicode(videoFormat)) \
                    for videoFormat in videoFormats]
         # Executing standard open dialog
         fname = QtGui.QFileDialog.getOpenFileName(self,
                         "Choose video file",
-                        directory, "Video files ({})".format(" ".join(formats)))
+                        self.lastDirectory, "Video files ({})".format(" ".join(formats)))
         if not fname.isEmpty() :
+            self.lastDirectory=QtCore.QFileInfo(fname).absolutePath()
             self.signalCaptureFromFile.emit(fname)
     
     @QtCore.pyqtSlot()

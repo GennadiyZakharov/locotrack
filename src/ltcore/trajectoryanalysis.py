@@ -140,7 +140,9 @@ class TrajectoryAnalysis(QtCore.QObject):
                 print('Too long missed interval; {};\n'.format(aviName))
             else :
                 # Create image and analyse   
-                self.analyser.analyseChamber(trajectory, chamber.sampleName, scale, frameRate, aviName)
+                sizeX = chamber.width()
+                sizeY = chamber.height()
+                self.analyser.analyseChamber(trajectory, chamber.sampleName, sizeX, sizeY, scale, frameRate, aviName)
                 image = self.imageCreator(trajectory)
                 image.save(name + '.png')          
                     

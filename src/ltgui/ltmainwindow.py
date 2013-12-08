@@ -50,6 +50,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.cvGraphics)
         self.cvProcessor.signalNextFrame.connect(self.cvGraphics.putImage)
         self.cvProcessor.projectOpened.connect(self.setProjectName)
+        self.cvProcessor.projectClosed.connect(self.cvGraphics.setNullImage)
         
         # ---- Creating dock panel for video player ----
         videoDockPanel = QtGui.QDockWidget("Video Control", self)
@@ -167,6 +168,10 @@ class LtMainWindow(QtGui.QMainWindow):
         settings = QtCore.QSettings()
         self.restoreGeometry(settings.value("ltMainWindow/Geometry").toByteArray())
         self.restoreState(settings.value("ltMainWindow/State").toByteArray())
+        preset,isInt = settings.value("ltMainWindow/Preset").toInt()
+        self.videoWidget.lastDirectory = settings.value("ltVideoWidget/lastDirectory").toString()
+        print 'load preset',preset
+        self.presetsWidget.setPreset(preset)
         
     # ==== Slots to handle actions ====
     
@@ -179,7 +184,7 @@ class LtMainWindow(QtGui.QMainWindow):
     def presetDialogDisplay(self):
         self.presetsWidget.exec_()
     
-    def saveeProject(self):
+    def saveProject(self):
         pass
     
     def okToContinue(self):
@@ -214,6 +219,11 @@ class LtMainWindow(QtGui.QMainWindow):
                           QtCore.QVariant(self.saveGeometry()))
         settings.setValue("ltMainWindow/State", 
                           QtCore.QVariant(self.saveState()))
+        settings.setValue("ltMainWindow/Preset", 
+                          QtCore.QVariant(self.presetsWidget.currentPreset()))
+        settings.setValue("ltVideoWidget/lastDirectory", 
+                          QtCore.QVariant(self.videoWidget.lastDirectory))
+        
         
     def helpAbout(self):
         QtGui.QMessageBox.about(self, "About LocoTrack",

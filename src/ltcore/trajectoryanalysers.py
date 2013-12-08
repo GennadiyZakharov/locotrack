@@ -3,6 +3,7 @@ Created on 10.10.2013
 
 @author: gena
 '''
+from __future__ import division
 from math import sqrt
 from PyQt4 import QtCore, QtGui
 
@@ -192,7 +193,7 @@ class RunRestAnalyser(QtCore.QObject):
         self.resultsFile.write(self.outString.format(sampleName, totalRunDuration / totalTime,
                                             totalLength / totalTime, (totalRunCount/totalTime)*100, fileName))
 
-    def analyseChamber(self, trajectory, sampleName, scale, frameRate, fileName):
+    def analyseChamber(self, trajectory, sampleName, sizeX, sizeY, scale, frameRate, fileName):
         '''
         Analysing chamber using Run-Rest and frequency 
         Don-t use interval statistics -- output all intervals as is
@@ -265,7 +266,7 @@ class RunRestAnalyser(QtCore.QObject):
                                             totalLength / totalTime, (totalRunCount/totalTime)*100, fileName))
 class RatRunAnalyser(QtCore.QObject):
     #            sample name 
-    outString = '{:>25}; {:18.6f}; {:18.6f};  {:6.2f}; {:6.2f}; {:6.2f}; {:6.2f};  {:7.2f}; {:7.2f}; {:7.2f}; {:7.2f};\n'
+    outString = '{:>25}; {:18.6f}; {:18.6f};  {:6.2f}; {:6.2f}; {:6.2f}; {:6.2f};  {:10.2f}; {:10.2f}; {:10.2f}; {:10.2f}; {};\n'
     #
     
     def __init__(self, errorDetector, parent=None):
@@ -277,7 +278,7 @@ class RatRunAnalyser(QtCore.QObject):
     @QtCore.pyqtSlot(QtCore.QString)
     def prepareFiles(self, resultsFileName):
         self.resultsFile = open(unicode(resultsFileName), 'w')
-        captionString = '                  Sample ;           Activity;             Speed ;       Frequency*100;    FileName;\n'
+        captionString = '                  Sample ;  Record total time;  Total run length ;Time:[0,0];[0,1];  [1,0];  [1,1]; Lenght:[0,0];     [0,1];      [1,0];      [1,1];    FileName;\n'
         self.resultsFile.write(captionString)
 
       
@@ -285,7 +286,7 @@ class RatRunAnalyser(QtCore.QObject):
         self.resultsFile.close()
         self.resultsFile = None
 
-    def analyseChamber(self, trajectory, sampleName, sizeX, sizeY, scale, frameRate, resultsFile):
+    def analyseChamber(self, trajectory, sampleName, sizeX, sizeY, scale, frameRate, aviName):
         '''
         Analysing chamber
         '''
@@ -346,6 +347,6 @@ class RatRunAnalyser(QtCore.QObject):
         # total output
         self.resultsFile.write(self.outString.format(sampleName, totalTime, totalLength,
              quadrantTime[0][0],quadrantTime[0][1],quadrantTime[1][0], quadrantTime[1][1], 
-             quadrantLength[0][0], quadrantLength[0][1], quadrantLength[1][0], quadrantLength[1][1]))
+             quadrantLength[0][0], quadrantLength[0][1], quadrantLength[1][0], quadrantLength[1][1],aviName))
         
         

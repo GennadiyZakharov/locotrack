@@ -15,3 +15,6 @@ class LtObject(object):
         self.center = center      # Mass center of objects 
         self.contour = contour  # Objects contour, if present
         
+    def intCenter(self):
+        return int(self.center[0]),int(self.center[1])
+        
