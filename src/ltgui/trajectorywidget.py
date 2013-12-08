@@ -31,6 +31,7 @@ class TrajectoryWidget(QtGui.QWidget):
                                           'RatRun']
         self.errorDetectorWidget = ErrorDetectorWidget(self.trajectoryAnalysis.errorDetector)
         
+        self.analyseDialog = AnalyseDialog(self)
         self.analysisProgressDialog = QtGui.QProgressDialog()
         self.analysisProgressDialog.setWindowTitle('Analysing files')
         #
@@ -118,9 +119,9 @@ class TrajectoryWidget(QtGui.QWidget):
     def analyseFromFile(self):
         '''
         '''
-        analyseDialog = AnalyseDialog(self)
-        if analyseDialog.exec_() :
-            self.trajectoryAnalysis.analyseFromFiles(analyseDialog.analyseFileName, analyseDialog.ltFilesList)
+        self.analyseDialog.clearData()
+        if self.analyseDialog.exec_() :
+            self.trajectoryAnalysis.analyseFromFiles(self.analyseDialog.analyseFileName, self.analyseDialog.ltFilesList)
     
     def abortAnalysis(self):
         self.trajectoryAnalysis.abortAnalysis()

@@ -56,7 +56,7 @@ class TrajectoryAnalysis(QtCore.QObject):
     def ltObjectToPoint(self, ltObject, displace):
         return QtCore.QPointF(*ltObject.center).toPoint()+displace
     
-    def createImageDots(self, trajectory):
+    def createImageDots(self, chamber, trajectory):
         '''
         Create trajectory image in dots representation
         '''
@@ -77,17 +77,23 @@ class TrajectoryAnalysis(QtCore.QObject):
             QtGui.QApplication.processEvents()
         return trajectoryImage
     
-    def createImageLines(self, trajectory):
+    def createImageLines(self, chamber, trajectory):
         '''
         Create trajectory image in lines representation
         '''   
-        minX,minY,maxX,maxY = trajectory.minMax()
-        displace = QtCore.QPoint(self.imageMargin-minX,self.imageMargin-minY)
-        trajectoryImage = QtGui.QImage(maxX-minX + self.imageMargin * 2,
-            maxY-minY + self.imageMargin * 2, QtGui.QImage.Format_ARGB32_Premultiplied)
-        trajectoryPainter = QtGui.QPainter(trajectoryImage)
-        trajectoryPainter.setPen(QtCore.Qt.black)
+        width,height = chamber.width(), chamber.height()
+        
+        trajectoryImage = QtGui.QImage(width + self.imageMargin * 2,
+            height + self.imageMargin * 2, QtGui.QImage.Format_ARGB32_Premultiplied)
         trajectoryImage.fill(QtCore.Qt.white)
+        trajectoryPainter = QtGui.QPainter(trajectoryImage)
+        #Draw chamber
+        trajectoryPainter.setPen(QtCore.Qt.black)
+        chamberRect = QtCore.QRectF(self.imageMargin,self.imageMargin,width,height)
+        trajectoryPainter.drawRect(chamberRect)
+        trajectoryPainter.drawEllipse(chamberRect)
+        trajectoryPainter.setPen(QtCore.Qt.green)
+        displace = QtCore.QPoint(self.imageMargin,self.imageMargin)
         ltObject1 = None
         for ltObject2 in trajectory :
             if ltObject2 is None : continue
@@ -143,7 +149,7 @@ class TrajectoryAnalysis(QtCore.QObject):
                 sizeX = chamber.width()
                 sizeY = chamber.height()
                 self.analyser.analyseChamber(trajectory, chamber.sampleName, sizeX, sizeY, scale, frameRate, aviName)
-                image = self.imageCreator(trajectory)
+                image = self.imageCreator(chamber, trajectory)
                 image.save(name + '.png')          
                     
         self.analyser.closeFiles()

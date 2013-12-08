@@ -19,7 +19,6 @@ class AnalyseDialog(QtGui.QDialog):
         Constructor
         '''
         super(AnalyseDialog, self).__init__(parent)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.analyseFileName = QtCore.QString() # File name to save results
         self.lastDirectory = QtCore.QString('.')
         self.ltFilesList = None   # List to store input lt files
@@ -50,7 +49,12 @@ class AnalyseDialog(QtGui.QDialog):
         self.validate() # 
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
-        
+    
+    def clearData(self):
+        self.analyseFileEdit.clear()
+        self.ltFilesList = None
+        self.validate()
+    
     def browseAnalyseFile(self):
         '''
         Select one file to save analyse results
@@ -75,13 +79,11 @@ class AnalyseDialog(QtGui.QDialog):
         dialog = QtGui.QFileDialog(self, 'Open input Files', 
                                    self.lastDirectory)
         dialog.setFileMode(QtGui.QFileDialog.ExistingFiles);
-        dialog.setNameFilter("Locotrack chamber (*.lt1)")
-        
-                     
+        dialog.setNameFilter("Locotrack chamber (*.lt1)")          
         if dialog.exec_() :
             # Display selected list
             self.ltFilesList = dialog.selectedFiles()
-            baseNames = [basename(str(fileName)) for fileName in self.ltFilesList]
+            baseNames = [basename(unicode(fileName)) for fileName in self.ltFilesList]
             self.model.setStringList(baseNames)
             self.lastDirectory = dialog.directory().absolutePath ()
         else :

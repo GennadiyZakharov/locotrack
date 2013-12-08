@@ -278,7 +278,7 @@ class RatRunAnalyser(QtCore.QObject):
     @QtCore.pyqtSlot(QtCore.QString)
     def prepareFiles(self, resultsFileName):
         self.resultsFile = open(unicode(resultsFileName), 'w')
-        captionString = '                  Sample ;  Record total time;  Total run length ;Time:[0,0];[0,1];  [1,0];  [1,1]; Lenght:[0,0];     [0,1];      [1,0];      [1,1];    FileName;\n'
+        captionString = '                  Sample ;Record total time,s; Avg run speed,mm/s;Time:[0,0]; [0,1];  [1,0];  [1,1]; Length:[0,0];     [0,1];      [1,0];      [1,1];    FileName;\n'
         self.resultsFile.write(captionString)
 
       
@@ -345,7 +345,7 @@ class RatRunAnalyser(QtCore.QObject):
         quadrantTime[1][0]= quadrantTime[1][0]/totalFrames
         quadrantTime[1][1]= quadrantTime[1][1]/totalFrames      
         # total output
-        self.resultsFile.write(self.outString.format(sampleName, totalTime, totalLength,
+        self.resultsFile.write(self.outString.format(sampleName, totalTime, totalLength/totalTime,
              quadrantTime[0][0],quadrantTime[0][1],quadrantTime[1][0], quadrantTime[1][1], 
              quadrantLength[0][0], quadrantLength[0][1], quadrantLength[1][0], quadrantLength[1][1],aviName))
         
