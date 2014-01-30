@@ -129,10 +129,7 @@ class TrajectoryWidget(QtGui.QWidget):
     @QtCore.pyqtSlot(int)
     def setPreset(self, index):
         self.defaultSettigsComboBox.setCurrentIndex(index)
-        self.errorDetectorWidget.setPreset(index)
-        for analyserWidget in self.trajectoryAnalyserWidgets :
-            analyserWidget.setPreset(index)
-        
+        self.errorDetectorWidget.setPreset(index)       
         if index == 1 :
             # Larva
             self.createImageComboBox.setCurrentIndex(0)
@@ -144,6 +141,8 @@ class TrajectoryWidget(QtGui.QWidget):
         elif index == 2 :
             # Rat
             self.createImageComboBox.setCurrentIndex(0)
-            self.tabWidget.setCurrentIndex(1)
+            self.tabWidget.setCurrentIndex(0)
+
+        self.tabWidget.currentWidget().setPreset(index)
     
         

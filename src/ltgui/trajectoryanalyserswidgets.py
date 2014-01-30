@@ -22,9 +22,9 @@ class RunRestAnalyserWidget(QtGui.QWidget):
         
         layout=QtGui.QGridLayout()
         self.speedThresholdSpinBox = QtGui.QDoubleSpinBox()
-        speedThresholdLabel = QtGui.QLabel('Run threshold:')
+        speedThresholdLabel = QtGui.QLabel('Run Speed threshold:')
         speedThresholdLabel.setBuddy(self.speedThresholdSpinBox)
-        self.speedThresholdSpinBox.setMaximum(50)
+        self.speedThresholdSpinBox.setMaximum(200)
         self.speedThresholdSpinBox.setSuffix(' mm/s')
         self.speedThresholdSpinBox.setValue(runRestAnalyser.runRestSpeedThreshold)
         self.speedThresholdSpinBox.valueChanged.connect(runRestAnalyser.setRunRestSpeedThreshold)
@@ -59,18 +59,16 @@ class RunRestAnalyserWidget(QtGui.QWidget):
             self.speedThresholdSpinBox.setValue(0.4)
         elif index == 0 :
             # Imago
-            self.speedThresholdSpinBox.setValue(5)
+            self.speedThresholdSpinBox.setValue(5.0)
         elif index == 2 :
             # Rat
-            pass
+            self.speedThresholdSpinBox.setValue(40.0)
     
     
 class RatRunAnalyserWidget(QtGui.QWidget):
     '''
     classdocs
     '''
-
-
     def __init__(self, ratRunAnalyser, parent=None):
         '''
         Constructor
