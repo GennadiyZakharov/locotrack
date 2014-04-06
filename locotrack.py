@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 '''
 Created on 13.12.2010
 @author: gena
@@ -8,12 +9,15 @@ Created on 13.12.2010
 '''
 This is main run file for locotrack program
 '''
+
 import sys
+print("Locotrack software starting")
+print("Loading PyQt4")
 from PyQt4.QtGui import QApplication, QIcon
-from os.path import join, abspath, pardir
+from os.path import join, abspath, curdir
 # Add src and resources to python path
-sys.path.append(abspath(join(pardir, 'src')))
-sys.path.append(abspath(join(pardir, 'resources')))
+sys.path.append(abspath(join(curdir, 'src')))
+sys.path.append(abspath(join(curdir, 'resources')))
 # Import locotrack modules
 from ltcore.consts import applicationName, applicationVersion, \
     organizationName, organizationDomain

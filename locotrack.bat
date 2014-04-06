@@ -1,2 +1,1 @@
-cd bin
-locotrack.py
+python locotrack.py
