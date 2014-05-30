@@ -2,6 +2,8 @@
 Created on 18.03.2011
 @author: Gena
 '''
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 from __future__ import division
 
@@ -32,8 +34,8 @@ class Chamber(QtCore.QObject):
         Constructor
         '''
         super(Chamber, self).__init__(parent)
-        # Create hash number
-        self.hashValue = int(sha512(str(time() + randint(0, 100))).hexdigest(), 16)
+        # Create random hash number
+        self._hashValue = int(sha512(str(time() + randint(0, 100))).hexdigest(), 16)
         # Creating QRect to store chamber position
         self.rect = QtCore.QRect(rect.normalized())
         # Creating links to QRect Methods
@@ -65,7 +67,7 @@ class Chamber(QtCore.QObject):
         '''
         Return hash value to store chambers in dictionary or set
         '''
-        return self.hashValue
+        return self._hashValue
         
     def initMatrices(self):
         '''
