@@ -3,6 +3,8 @@ Created on 18.12.2010
 
 @author: gena
 '''
+from __future__ import print_function
+from __future__ import division
 
 from PyQt4 import QtCore, QtGui
 from ltcore.ltactions import createAction

@@ -14,6 +14,7 @@ from ltcore.trajectoryanalysis import TrajectoryAnalysis
 from glob import glob
 from ltcore.objectdetectors import maxBrightDetector, massCenterDetector
 from ltcore.chambersmanager import ChambersManager
+from ltcore.project import Project
 
 
 class CvProcessor(QtCore.QObject):
@@ -39,6 +40,8 @@ class CvProcessor(QtCore.QObject):
         self.cvPlayer.nextFrame.connect(self.getNextFrame)
         self.cvPlayer.videoSourceOpened.connect(self.videoOpened)
         self.cvPlayer.videoSourceClosed.connect(self.videoClosed)
+        # One project
+        self.project = Project('/')
         # Chamber list
         self.chambers = ChambersManager()
         self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
