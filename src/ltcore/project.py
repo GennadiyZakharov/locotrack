@@ -22,7 +22,7 @@ class Project(QtCore.QObject):
         Constructor
         '''
         super(Project, self).__init__(parent)
-        self.projectFolder = projectFolder
+        self.projectFolder = QtCore.QDir(projectFolder)
         self.videos = []
         self.loadProject()
         
