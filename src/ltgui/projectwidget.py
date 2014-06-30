@@ -19,8 +19,8 @@ class ProjectWidget(QtGui.QTreeWidget):
         Constructor
         '''
         super(ProjectWidget, self).__init__(parent)
-        self.project = project = '.'
-        self.lastDirectory
+        self.project = project 
+        self.lastDirectory = '.'
         self.actionOpenProject = createAction(self,"&Open...", "",
                                        "document-open", "Open project")
         self.actionOpenProject.triggered.connect(self.openProject)
@@ -30,9 +30,10 @@ class ProjectWidget(QtGui.QTreeWidget):
         self.actionCloseProject = createAction(self,"&Close...", "",
                                        "document-open", "Close project")
         self.actionCloseProject.triggered.connect(self.closeProject)
-        self.projectActions = (self.actionOpenProject,self.actionSaveProject,self.actionCloseProject)
+        self.actions = (self.actionOpenProject,self.actionSaveProject,self.actionCloseProject)
         
         self.setColumnCount(1)
+        self.setHeaderLabel('Video Files')
      
     @QtCore.pyqtSlot()
     def openProject(self):

@@ -16,6 +16,7 @@ import imagercc
 
 #from ltgui.cvlabel import CvLabel
 from ltgui.cvgraphics import CvGraphics
+from ltgui.projectwidget import ProjectWidget
 from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
 from ltgui.cvprocessorwidget import CvProcessorWidget
@@ -61,13 +62,22 @@ class LtMainWindow(QtGui.QMainWindow):
         self.videoWidget = VideoWidget(self.cvProcessor.cvPlayer) 
         videoDockPanel.setWidget(self.videoWidget)
         
+        # ---- Creating dock panel for project ----
+        projectDockPanel = QtGui.QDockWidget('Project', self) # Created and set caption
+        projectDockPanel.setObjectName('projectDockWidget')
+        projectDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
+        projectDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, projectDockPanel)
+        self.projectWidget = ProjectWidget(self.cvProcessor.project)
+        projectDockPanel.setWidget(self.projectWidget)
+        
         # ---- Creating dock panel for chambers ---- 
         chambersDockPanel = QtGui.QDockWidget("Chambers", self) # Created and set caption
         chambersDockPanel.setObjectName("chambersDockWidget")
         chambersDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         chambersDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, chambersDockPanel)
-        self.chambersWidget = ChambersWidget(self.cvProcessor.chambers) 
+        self.chambersWidget = ChambersWidget() 
         #self.chambersWidget.analysisMethod.stateChanged.connect(self.cvProcessor.setAnalysisMethod)
         chambersDockPanel.setWidget(self.chambersWidget)
         # ---- chambersWidget ----
@@ -77,21 +87,15 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvGraphics.signalChamberSetted.connect(self.chambersWidget.chamberSetted)
         self.cvGraphics.signalScaleSetted.connect(self.chambersWidget.scaleSetted)
         
-        self.chambersWidget.signalChamberSelected.connect(
-            self.cvGraphics.selectChamberGui)
+        self.chambersWidget.signalChamberSelected.connect(self.cvGraphics.selectChamberGui)
         self.chambersWidget.signalSetScale.connect(self.cvProcessor.setScale)
         
-        self.cvGraphics.signalChamberSelected.connect(
-            self.chambersWidget.selectChamber)
+        self.cvGraphics.signalChamberSelected.connect(self.chambersWidget.selectChamber)
         
-        self.cvProcessor.chambers.signalChamberAdded.connect(
-            self.chambersWidget.addChamber)
-        self.cvProcessor.chambers.signalChamberAdded.connect(
-            self.cvGraphics.addChamberGui)
-        self.cvProcessor.chambers.signalChamberDeleted.connect(
-            self.chambersWidget.removeChamber)
-        self.cvProcessor.chambers.signalChamberDeleted.connect(
-            self.cvGraphics.delChamberGui)
+        #self.cvProcessor.chambers.signalChamberAdded.connect(self.chambersWidget.addChamber)
+        #self.cvProcessor.chambers.signalChamberAdded.connect(self.cvGraphics.addChamberGui)
+        #self.cvProcessor.chambers.signalChamberDeleted.connect(self.chambersWidget.removeChamber)
+        #self.cvProcessor.chambers.signalChamberDeleted.connect(self.cvGraphics.delChamberGui)
 
         
         # ---- Creating dock panel for image processing ---- 
@@ -112,7 +116,7 @@ class LtMainWindow(QtGui.QMainWindow):
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
         self.chambersWidget.actionRecordTrajectory.toggled.connect(self.cvProcessor.setRecordTrajectory)
         self.cvProcessor.trajectoryWriting.connect(self.chambersWidget.actionRecordTrajectory.setChecked)
-        self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.saveProject)
+        self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.project.saveProject)
         
         self.presetsWidget = PresetsWidget(self)
         # ==== Creating menu ====
@@ -125,9 +129,11 @@ class LtMainWindow(QtGui.QMainWindow):
         self.presetsWidget.signalSetPreset.connect(self.cvProcessorWidget.setPreset)
         self.presetsWidget.signalSetPreset.connect(self.cvTrajectoryWidget.setPreset)
         
+        
         self.quitAction = createAction(self,"Exit...", QtGui.QKeySequence.Quit, 
                                           "application-exit", "Exit program")
-        
+        addActions(projectMenu, self.projectWidget.actions)
+        projectMenu.addSeparator()
         projectMenu.addAction(self.quitAction)
         '''
         projectToolbar = self.addToolBar("Project")
@@ -137,7 +143,7 @@ class LtMainWindow(QtGui.QMainWindow):
         videoMenu = self.menuBar().addMenu("&Video")
         addActions(videoMenu, self.videoWidget.actions)
         chamberMenu = self.menuBar().addMenu("&Chamber")
-        addActions(chamberMenu, self.chambersWidget.actions)
+        #addActions(chamberMenu, self.chambersWidget.actions)
         trajectoryMenu = self.menuBar().addMenu("&Trajectory")
         addActions(trajectoryMenu, self.cvTrajectoryWidget.actions)
         

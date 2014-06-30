@@ -26,15 +26,12 @@ class ChambersWidget(QtGui.QWidget):
     signalSetChamber = QtCore.pyqtSignal(QtCore.QRect)
     signalClearChamber = QtCore.pyqtSignal(object) 
 
-    def __init__(self, chambersManager, parent=None):
+    def __init__(self, parent=None):
         '''
         Constructor
         '''
         super(ChambersWidget, self).__init__(parent)
-        self.chambersManager = chambersManager
-        
-        self.signalSetChamber.connect(chambersManager.createChamber)
-        self.signalClearChamber.connect(chambersManager.removeChamber)
+        self.chambersManager = None
         # self.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
         # Creating GUI elements
         layout = QtGui.QGridLayout()
@@ -72,11 +69,11 @@ class ChambersWidget(QtGui.QWidget):
                         self.actionRecordTrajectory, self.actionSaveTrajectory)
         # Sample name label and edit
         sampleNameLabel = QtGui.QLabel('Sample name:')
-        sampleNameEdit = QtGui.QLineEdit()
-        sampleNameLabel.setBuddy(sampleNameEdit)
-        sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)
+        self.sampleNameEdit = QtGui.QLineEdit()
+        sampleNameLabel.setBuddy(self.sampleNameEdit)
+        
         layout.addWidget(sampleNameLabel, 2, 0)
-        layout.addWidget(sampleNameEdit, 2, 1)
+        layout.addWidget(self.sampleNameEdit, 2, 1)
         # Add chamber button    
         self.setChamberButton = ActionButton(self.actionSetChamber)
         layout.addWidget(self.setChamberButton, 3, 0)
@@ -93,6 +90,29 @@ class ChambersWidget(QtGui.QWidget):
         self.saveTrajectoryButton = ActionButton(self.actionSaveTrajectory)
         layout.addWidget(self.saveTrajectoryButton, 5, 1)
         self.setLayout(layout)
+        self.setEnabledActions()
+    
+    def setChambersManager(self, chambersManager):
+        if self.chambersManager is not None :
+            self.signalSetChamber.disconnect(self.chambersManager.createChamber)
+            self.signalClearChamber.disconnect(self.chambersManager.removeChamber)
+            self.sampleNameEdit.textChanged.disconnect(self.chambersManager.setSampleName)
+            self.chamberWidgets = {} #
+            self.selectedChamber = None 
+            self.chambersList.clear()
+            
+        self.chambersManager = chambersManager
+        if self.chambersManager is not None :
+            self.signalSetChamber.connect(self.chambersManager.createChamber)
+            self.signalClearChamber.connect(self.chambersManager.removeChamber)
+            self.sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)
+        self.setEnabledActions()
+        
+    def setEnabledActions(self):
+        flag = self.chambersManager is not None
+        for action in self.actions :
+            if action is not None :
+                action.setEnabled(flag)
     
     def getChamberByNumber(self, number):
         for chamber in self.chamberWidgets.keys():
