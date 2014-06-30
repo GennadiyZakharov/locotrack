@@ -19,8 +19,38 @@ class ProjectWidget(QtGui.QTreeWidget):
         Constructor
         '''
         super(ProjectWidget, self).__init__(parent)
-        self.project = project
+        self.project = project = '.'
+        self.lastDirectory
+        self.actionOpenProject = createAction(self,"&Open...", "",
+                                       "document-open", "Open project")
+        self.actionOpenProject.triggered.connect(self.openProject)
+        self.actionSaveProject = createAction(self,"&Save...", "",
+                                       "document-open", "Save project")
+        self.actionSaveProject.triggered.connect(self.saveProject)
+        self.actionCloseProject = createAction(self,"&Close...", "",
+                                       "document-open", "Close project")
+        self.actionCloseProject.triggered.connect(self.closeProject)
+        self.projectActions = (self.actionOpenProject,self.actionSaveProject,self.actionCloseProject)
+        
         self.setColumnCount(1)
+     
+    @QtCore.pyqtSlot()
+    def openProject(self):
+        # Creating formats list
+        formats = ["*.ltp"]
+        # Executing standard open dialog
+        projectName = QtGui.QFileDialog.getOpenFileName(self,
+                        "Choose project file",
+                        self.lastDirectory, "Video files ({})".format(" ".join(formats)))
+        if not projectName.isEmpty() :
+            self.lastDirectory=QtCore.QFileInfo(projectName).absolutePath()
+            self.project.openProject(projectName)
+            
+    def saveProject(self):
+        pass
+    
+    def closeProject(self):
+        self.project.closeProject()
         
     @QtCore.pyqtSlot()
     def updateProject(self):

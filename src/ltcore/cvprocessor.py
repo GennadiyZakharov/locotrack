@@ -7,13 +7,11 @@ from __future__ import division
 
 import cv
 import os
-from PyQt4 import QtCore,QtGui
-from ltcore.chamber import Chamber
+from PyQt4 import QtCore
 from ltcore.cvplayer import CvPlayer
 from ltcore.trajectoryanalysis import TrajectoryAnalysis
-from glob import glob
+
 from ltcore.objectdetectors import maxBrightDetector, massCenterDetector
-from ltcore.chambersmanager import ChambersManager
 from ltcore.project import Project
 
 
@@ -41,11 +39,9 @@ class CvProcessor(QtCore.QObject):
         self.cvPlayer.videoSourceOpened.connect(self.videoOpened)
         self.cvPlayer.videoSourceClosed.connect(self.videoClosed)
         # One project
-        self.project = Project('/')
+        self.project = Project()
         # Chamber list
-        self.chambers = ChambersManager()
-        self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
-        self.scale = None
+        #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
         self.frame = None
         # Parameters
         self.invertImage = False
@@ -68,39 +64,22 @@ class CvProcessor(QtCore.QObject):
         self.objectDetectors = [self.maxBrightDetector, self.massCenterDetector]
         self.objectDetectorIndex = 0   
         self.trajectoryAnalysis = TrajectoryAnalysis(self)
-           
-    def openProject(self, fileName):
-        pass
-        
-    def saveProject(self):
-        '''
-        Save data for all chambers and trajectories
-        '''
-        print 'Saving project'
-        for chamber in self.chambers :
-            chamber.saveToFile(self.cvPlayer.videoFileName + ".ch{0:02d}.lt1",
-                                         self.scale, self.cvPlayer.frameRate)
 
     def videoOpened(self, length, frameRate, fileName):
         '''
         Get length and frame rate of opened video file
         '''
+        
         self.videoClosed()
-        self.videoLength = length
-        self.frameRate = frameRate
-        for name in sorted(glob(str(fileName) + '*.lt1')) :
-            print "Opening chamber ", name
-            chamber,scale,frameRate = Chamber.loadFromFile(name)
-            self.chambers.addChamber(chamber) 
-            QtGui.QApplication.processEvents()  
-        if len(self.chambers) > 0 :
-            self.scale = scale
+        #self.videoLength = length
+        #self.frameRate = frameRate
+        
         self.projectOpened.emit(os.path.basename(unicode(fileName)))
         
     def videoClosed(self):
-        self.chambers.clear()
-        self.videoLength = -1
-        self.frameRate = -1
+        #self.chambers.clear()
+        #self.videoLength = -1
+        #self.frameRate = -1
         self.projectOpened.emit('')
         self.projectClosed.emit()
         
@@ -238,10 +217,10 @@ class CvProcessor(QtCore.QObject):
         '''
         Create chamber from rect 
         '''
-        self.chambers.createChamber(rect)
+        self.project.activeVideo().chambers.createChamber(rect)
     
     def clearChamber(self, chamber):
-        self.chambers.removeChamber(chamber)
+        self.project.activeVideo().chambers.removeChamber(chamber)
     
     @QtCore.pyqtSlot(float)
     def setScale(self, scale):
@@ -249,7 +228,7 @@ class CvProcessor(QtCore.QObject):
         set scale (px/mm)
         '''
         print('Set scale',scale)
-        self.scale = scale
+        self.project.setScale(scale)
         self.processFrame() # Update current frame
     
     @QtCore.pyqtSlot(int)
@@ -262,7 +241,7 @@ class CvProcessor(QtCore.QObject):
         '''
         Set theshold value (in percents)
         '''
-        self.chambers.setThreshold(value)
+        self.project.activeVideo().chambers.setThreshold(value)
     
     @QtCore.pyqtSlot(bool)
     def setRecordTrajectory(self, checked):
@@ -290,5 +269,5 @@ class CvProcessor(QtCore.QObject):
         self.processFrame()      
     
     def createTrajectoryImages(self):
-        self.chambers.createTrajectoryImages()          
+        pass#self.chambers.createTrajectoryImages()          
         

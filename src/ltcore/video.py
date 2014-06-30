@@ -26,31 +26,26 @@ class Video(QtCore.QObject):
         self.chambers = ChambersManager(self)
         self.scale = -1
         self.frameRate = -1
+        self.loadChambers()
         
     def loadChambers(self):
-        
-        fileInfo = QtCore.QFileInfo(self.videoFileName)
-        directory = fileInfo.absoluteDir()
-        files = directory.entryList(QtCore.QStringList(self.videoFileName+'*.lt1'),
-                                  QtCore.QDir.Files | QtCore.QDir.NoSymLinks)
-        if not files.isEmpty():
-            for name in files:
-                print("Opening chamber "+name)
-                chamber,scale,frameRate = Chamber.loadFromFile(name)
-                self.chambers.addChamber(chamber) 
-                QtGui.QApplication.processEvents()
-            if len(self.chambers) > 0 :
-                self.scale = scale
-                self.frameRate = frameRate
-                
-            '''
         for name in sorted(glob(str(self.videoFileName) + '*.lt1')) :
-            print("Opening chamber "+name)
+            print("Opening chamber ", name)
             chamber,scale,frameRate = Chamber.loadFromFile(name)
             self.chambers.addChamber(chamber) 
-            QtGui.QApplication.processEvents()
-            '''  
-        
+            QtGui.QApplication.processEvents()  
+        if len(self.chambers) > 0 :
+            self.scale = scale
+            self.frameRate = frameRate
+            
+    def saveChambers(self):
+        print('Saving chamber for ',self.videoFileName)
+        for chamber in self.chambers :
+            chamber.saveToFile(self.videoFileName + ".ch{0:02d}.lt1",
+                                         self.scale, self.frameRate)
+            
+    def setScale(self, scale):
+        self.scale=scale
         
         
         
