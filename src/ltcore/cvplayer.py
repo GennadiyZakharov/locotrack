@@ -84,7 +84,7 @@ class CvPlayer(QtCore.QObject):
         Start playing playTimer at current speed
         '''
         self.stopPlayTimer() # Killing active playTimer, if it exists
-        self.playTimer = self.startTimer(1000 / (self.frameRate * self.playSpeed))
+        self.playTimer = self.startTimer(int(1000 / (self.frameRate * self.playSpeed)))
         
     def stopPlayTimer(self):
         '''

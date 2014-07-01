@@ -10,6 +10,8 @@ from glob import glob
 from PyQt4 import QtCore
 from ltcore.consts import videoFormats
 from ltcore.video import Video
+from ltcore.chamber import Chamber
+from ltcore.chambersmanager import ChambersManager
 
 class Project(QtCore.QObject):
     '''
@@ -19,7 +21,12 @@ class Project(QtCore.QObject):
     signalProjectOpened  = QtCore.pyqtSignal(QtCore.QString)
     signalProjectClosed  = QtCore.pyqtSignal()
     signalProjectUpdated = QtCore.pyqtSignal()
+    
     signalVideoSelected  = QtCore.pyqtSignal(QtCore.QString)
+    signalChambersMangerChanged = QtCore.pyqtSignal(ChambersManager)
+    
+    signalChamberAdded = QtCore.pyqtSignal(Chamber)   # New chamber added to list
+    signalChamberDeleted = QtCore.pyqtSignal(Chamber) # Chamber removed from list 
 
     def __init__(self, parent=None):
         '''
@@ -54,10 +61,15 @@ class Project(QtCore.QObject):
         
     
     def addVideo(self, fileName):
+        print('Opened video file ' + fileName)
         video = Video(fileName)
         self.videos[fileName] = video
-        self.activeVideo = fileName
+        self.activeVideoName = fileName
+        video.chambers.signalChamberAdded.connect(self.signalChamberAdded)
+        video.chambers.signalChamberDeleted.connect(self.signalChamberDeleted)
         self.signalProjectUpdated.emit()
+        self.signalChambersMangerChanged.emit(video.chambers)
+        self.signalVideoSelected.emit(fileName)
         
     def deleteVideo(self, fileName):
         if fileName in self.videos.keys():
@@ -71,9 +83,9 @@ class Project(QtCore.QObject):
         self.signalVideoSelected.emit(self)
         
     def activeVideo(self):
-        if not self.videoFileName in self.videos.keys() :
+        if not self.activeVideoName in self.videos.keys() :
             return None
-        self.videos[self.videoFileName]
+        return self.videos[self.activeVideoName]
         
     def setScale(self, scale):
         self.activeVideo().setScale(scale)

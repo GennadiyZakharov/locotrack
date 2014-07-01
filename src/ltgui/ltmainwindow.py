@@ -38,7 +38,6 @@ class LtMainWindow(QtGui.QMainWindow):
         self.setProjectName()
         self.setObjectName("ltMainWindow")      
         # ==== Creating core functional units ====
-        #self.ltActions = LtActions(self) # Actions
         self.cvProcessor = CvProcessor(self)                
         # ==== Creating GUI ====
         #status = self.statusBar()
@@ -92,11 +91,14 @@ class LtMainWindow(QtGui.QMainWindow):
         
         self.cvGraphics.signalChamberSelected.connect(self.chambersWidget.selectChamber)
         
-        #self.cvProcessor.chambers.signalChamberAdded.connect(self.chambersWidget.addChamber)
-        #self.cvProcessor.chambers.signalChamberAdded.connect(self.cvGraphics.addChamberGui)
-        #self.cvProcessor.chambers.signalChamberDeleted.connect(self.chambersWidget.removeChamber)
-        #self.cvProcessor.chambers.signalChamberDeleted.connect(self.cvGraphics.delChamberGui)
-
+        self.cvProcessor.project.signalChamberAdded.connect(self.chambersWidget.addChamber)
+        self.cvProcessor.project.signalChamberAdded.connect(self.cvGraphics.addChamberGui)
+        self.cvProcessor.project.signalChamberDeleted.connect(self.chambersWidget.removeChamber)
+        self.cvProcessor.project.signalChamberDeleted.connect(self.cvGraphics.delChamberGui)
+        
+        #TODO:
+        #self.cvProcessor.project.signalVideoSelected.connect(self.chambersWidget.)
+        self.cvProcessor.project.signalChambersMangerChanged.connect(self.chambersWidget.setChambersManager)
         
         # ---- Creating dock panel for image processing ---- 
         cvProcessorDockPanel = QtGui.QDockWidget("Image processor", self) # Created and set caption

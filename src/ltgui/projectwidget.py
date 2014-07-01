@@ -34,6 +34,8 @@ class ProjectWidget(QtGui.QTreeWidget):
         
         self.setColumnCount(1)
         self.setHeaderLabel('Video Files')
+        
+        self.project.signalProjectUpdated.connect(self.updateProject)
      
     @QtCore.pyqtSlot()
     def openProject(self):
@@ -55,17 +57,21 @@ class ProjectWidget(QtGui.QTreeWidget):
         
     @QtCore.pyqtSlot()
     def updateProject(self):
-        videoItems = []
-        for video in self.project.videos:
-            videoCaption = video.videoFilePath
-            videoItem = QtGui.QTreeWidgetItem(videoCaption)
-            if len(video.chambersManager) > 0 :
-                chamberItems = []
-                for chamber in video.chambersManager :
-                    chamberItem = QtGui.QTreeWidgetItem('Chamber {}'.format(chamber.number))
-                    chamberItems.append(chamberItem)
-                videoItem.addChildren(chamberItems)
-            videoItems.append(videoItem)
-        self.insertTopLevelItems(videoItems) 
+        for videoFileName,video in self.project.videos.items() :
+            
+            videoItem = QtGui.QTreeWidgetItem()
+            caption = QtCore.QFileInfo(videoFileName).baseName()
+            videoItem.setText(0,caption)
+            self.addTopLevelItem(videoItem)
+            
+            if len(video.chambers) > 0 :
+                chamberItems = {}
+                for chamber in video.chambers :
+                    chamberItem = QtGui.QTreeWidgetItem()
+                    chamberItem.setText(0,'Chamber {}'.format(chamber.number))
+                    chamberItems[chamber.number]=chamberItem
+                videoItem.addChildren(chamberItems.values())
+                self.expandItem(videoItem)
+
             
         

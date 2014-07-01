@@ -71,8 +71,9 @@ class CvProcessor(QtCore.QObject):
         '''
         
         self.videoClosed()
-        #self.videoLength = length
+        self.videoLength = length
         #self.frameRate = frameRate
+        self.project.addVideo(fileName)
         
         self.projectOpened.emit(os.path.basename(unicode(fileName)))
         
@@ -80,6 +81,7 @@ class CvProcessor(QtCore.QObject):
         #self.chambers.clear()
         #self.videoLength = -1
         #self.frameRate = -1
+        self.project.deleteVideo('')
         self.projectOpened.emit('')
         self.projectClosed.emit()
         
@@ -108,7 +110,7 @@ class CvProcessor(QtCore.QObject):
         # Preprocessing -- negative, gray etc
         grayFrame = self.preProcess(frame)       
         # Processing all chambersGui
-        for chamber in self.chambers :
+        for chamber in self.project.activeVideo().chambers :
             self.processChamber(grayFrame, chamber)
         # Converting processed image to 3-channel form to display
         # (cvLabel can draw only in RGB mode)
@@ -129,7 +131,7 @@ class CvProcessor(QtCore.QObject):
             cv.Not(frame, frame)
         # Crop
         if self.ellipseCrop :
-            for chamber in self.chambers :
+            for chamber in self.project.activeVideo().chambers :
                 cv.SetImageROI(frame, chamber.getRect())
                 center = (int(chamber.width() / 2), int(chamber.height() / 2))
                 th = int(max(center) / 2)
@@ -168,13 +170,14 @@ class CvProcessor(QtCore.QObject):
         Draw chambersGui, object position, scale label, etc
         '''
         # Draw scale label
-        if self.scale is not None :
+        scale = self.project.activeVideo().scale
+        if scale >= 0  :
             # TODO: 15mm
-            cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + self.scale * 15), self.scaleLabelPosition[1]),
+            cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + scale * 15), self.scaleLabelPosition[1]),
                     self.chamberColor, 2)
         # Drawing chambersGui Numbers
         # TODO: move to gChamber
-        for chamber in self.chambers :   
+        for chamber in self.project.activeVideo().chambers :   
             if chamber.ltObject is None : # No object to draw
                 return
             # Draw object
