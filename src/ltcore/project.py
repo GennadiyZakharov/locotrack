@@ -64,23 +64,34 @@ class Project(QtCore.QObject):
         print('Opened video file ' + fileName)
         video = Video(fileName)
         self.videos[fileName] = video
-        self.activeVideoName = fileName
-        video.chambers.signalChamberAdded.connect(self.signalChamberAdded)
-        video.chambers.signalChamberDeleted.connect(self.signalChamberDeleted)
+        video.loadChambers()
         self.signalProjectUpdated.emit()
-        self.signalChambersMangerChanged.emit(video.chambers)
-        self.signalVideoSelected.emit(fileName)
+        #self.setActiveVideo(fileName)
         
     def deleteVideo(self, fileName):
         if fileName in self.videos.keys():
+            
             del self.videos[fileName]
             self.signalProjectUpdated.emit()
+            self.signalChambersMangerChanged.emit(None)
             
     def setActiveVideo(self, videoFileName):
         if self.activeVideoName == videoFileName :
             return
+        video = self.activeVideo()
+        if video is not None :
+            video.chambers.signalChamberAdded.disconnect(self.chamberAdded)
+            video.chambers.signalChamberDeleted.disconnect(self.chamberDeleted)
+            for chamber in video.chambers :
+                self.signalChamberDeleted.emit(chamber)
         self.activeVideoName = videoFileName
-        self.signalVideoSelected.emit(self)
+        self.signalVideoSelected.emit(self.activeVideoName)
+        self.signalChambersMangerChanged.emit(self.activeVideo().chambers)
+        video = self.activeVideo()
+        video.chambers.signalChamberAdded.connect(self.chamberAdded)
+        video.chambers.signalChamberDeleted.connect(self.chamberDeleted)
+        for chamber in video.chambers :
+            self.signalChamberAdded.emit(chamber)
         
     def activeVideo(self):
         if not self.activeVideoName in self.videos.keys() :
@@ -89,6 +100,12 @@ class Project(QtCore.QObject):
         
     def setScale(self, scale):
         self.activeVideo().setScale(scale)
+        
+    def chamberAdded(self, chamber):
+        self.signalChamberAdded.emit(chamber)
+        
+    def chamberDeleted(self, chamber):
+        self.signalChamberDeleted.emit(chamber)
         
         
         

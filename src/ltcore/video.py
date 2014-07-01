@@ -26,7 +26,6 @@ class Video(QtCore.QObject):
         self.chambers = ChambersManager(self)
         self.scale = -1
         self.frameRate = -1
-        self.loadChambers()
         
     def loadChambers(self):
         for name in sorted(glob(str(self.videoFileName) + '*.lt1')) :

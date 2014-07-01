@@ -13,7 +13,6 @@ class ProjectWidget(QtGui.QTreeWidget):
     classdocs
     '''
 
-
     def __init__(self, project, parent=None):
         '''
         Constructor
@@ -34,8 +33,12 @@ class ProjectWidget(QtGui.QTreeWidget):
         
         self.setColumnCount(1)
         self.setHeaderLabel('Video Files')
+        self.videoItems = {}
         
         self.project.signalProjectUpdated.connect(self.updateProject)
+        self.project.signalVideoSelected.connect(self.selectVideo)
+        self.currentItemChanged.connect(self.changeItem)
+        
      
     @QtCore.pyqtSlot()
     def openProject(self):
@@ -57,13 +60,16 @@ class ProjectWidget(QtGui.QTreeWidget):
         
     @QtCore.pyqtSlot()
     def updateProject(self):
+        self.videoItems = {}
+        self.clear()
         for videoFileName,video in self.project.videos.items() :
-            
             videoItem = QtGui.QTreeWidgetItem()
+            self.videoItems[videoFileName] = videoItem
             caption = QtCore.QFileInfo(videoFileName).baseName()
             videoItem.setText(0,caption)
+            videoItem.videoFileName = videoFileName
             self.addTopLevelItem(videoItem)
-            
+            '''
             if len(video.chambers) > 0 :
                 chamberItems = {}
                 for chamber in video.chambers :
@@ -72,6 +78,15 @@ class ProjectWidget(QtGui.QTreeWidget):
                     chamberItems[chamber.number]=chamberItem
                 videoItem.addChildren(chamberItems.values())
                 self.expandItem(videoItem)
-
+            '''
+    def changeItem(self, current, previous):
+        fileName = current.videoFileName
+        self.project.setActiveVideo(fileName)
+        
+    def selectVideo(self, videoFileName):
+        self.SelectItem
+        
+        
+    
             
         
