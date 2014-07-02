@@ -40,6 +40,7 @@ class CvProcessor(QtCore.QObject):
         self.cvPlayer.videoSourceClosed.connect(self.videoClosed)
         # One project
         self.project = Project()
+        self.project.signalVideoSelected.connect(self.videoSelected)
         # Chamber list
         #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
         self.frame = None
@@ -283,5 +284,8 @@ class CvProcessor(QtCore.QObject):
         self.processFrame()      
     
     def createTrajectoryImages(self):
-        pass#self.chambers.createTrajectoryImages()          
+        pass#self.chambers.createTrajectoryImages() 
+    
+    def videoSelected(self, fileName):
+        self.cvPlayer.captureFromFile(fileName)         
         

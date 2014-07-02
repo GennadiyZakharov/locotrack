@@ -32,6 +32,7 @@ class ProjectWidget(QtGui.QTreeWidget):
         self.actions = (self.actionOpenProject,self.actionSaveProject,self.actionCloseProject)
         
         self.setColumnCount(1)
+        self.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
         self.setHeaderLabel('Video Files')
         self.videoItems = {}
         
@@ -80,11 +81,17 @@ class ProjectWidget(QtGui.QTreeWidget):
                 self.expandItem(videoItem)
             '''
     def changeItem(self, current, previous):
+        if current is None :
+            return
         fileName = current.videoFileName
         self.project.setActiveVideo(fileName)
         
     def selectVideo(self, videoFileName):
-        self.SelectItem
+        item = self.videoItems[videoFileName]
+        if item in self.selectedItems() :
+            return
+        self.setCurrentItem(item)
+        
         
         
     
