@@ -5,6 +5,7 @@ Created on 18.03.2011
 from __future__ import print_function
 from __future__ import division
 import cv
+from math import isnan
 from PyQt4 import QtCore
 
 class CvPlayer(QtCore.QObject):
@@ -84,6 +85,7 @@ class CvPlayer(QtCore.QObject):
         Start playing playTimer at current speed
         '''
         self.stopPlayTimer() # Killing active playTimer, if it exists
+        print(self.frameRate)
         self.playTimer = self.startTimer(int(1000 / (self.frameRate * self.playSpeed)))
         
     def stopPlayTimer(self):
@@ -126,6 +128,9 @@ class CvPlayer(QtCore.QObject):
                                                      cv.CV_CAP_PROP_FRAME_COUNT))-1
         self.frameRate = cv.GetCaptureProperty(self.captureDevice,
                                                cv.CV_CAP_PROP_FPS)
+        # Workaround over openCV bug 
+        if isnan(self.frameRate) :
+            self.frameRate = 30
         self.seekInterval = self.videoFileLength // 50
         self.resetBorders()
         #TODO: do as message

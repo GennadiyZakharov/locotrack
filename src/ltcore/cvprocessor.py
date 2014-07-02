@@ -180,10 +180,10 @@ class CvProcessor(QtCore.QObject):
         activeVideo = self.project.activeVideo()
         if activeVideo is not None: 
             scale = self.project.activeVideo().scale
-        if scale >= 0  :
-            # TODO: 15mm
-            cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + scale * 15), self.scaleLabelPosition[1]),
-                    self.chamberColor, 2)
+            if scale >= 0  :
+                # TODO: 15mm
+                cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + scale * 15), self.scaleLabelPosition[1]),
+                        self.chamberColor, 2)
         # Drawing chambersGui Numbers
         # TODO: move to gChamber
         activeVideo = self.project.activeVideo()
