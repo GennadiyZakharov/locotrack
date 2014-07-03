@@ -42,6 +42,7 @@ class CvProcessor(QtCore.QObject):
         self.project = Project()
         self.project.signalVideoSelected.connect(self.videoSelected)
         # Chamber list
+        #TODO:
         #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
         self.frame = None
         # Parameters
@@ -79,9 +80,6 @@ class CvProcessor(QtCore.QObject):
         self.projectOpened.emit(os.path.basename(unicode(fileName)))
         
     def videoClosed(self):
-        #self.chambers.clear()
-        #self.videoLength = -1
-        #self.frameRate = -1
         self.project.deleteVideo('')
         self.projectOpened.emit('')
         self.projectClosed.emit()
@@ -265,7 +263,8 @@ class CvProcessor(QtCore.QObject):
         '''
         if self.recordTrajectory == checked :
             return
-        if self.scale is None :
+        activeVideo = self.project.activeVideo() 
+        if activeVideo.scale < 0 :
             #TODO:
             print 'Cannot save chambers: no scale present'
             self.recordTrajectory = False
@@ -274,8 +273,8 @@ class CvProcessor(QtCore.QObject):
         self.recordTrajectory = checked
         if self.recordTrajectory :
             # Init array for trajectory from current location to end of video file
-            self.chambers.initTrajectories(self.cvPlayer.leftBorder,self.cvPlayer.rightBorder+1)
-            self.chambers.setRecordTrajectories(True)
+            activeVideo.chambers.initTrajectories(self.cvPlayer.leftBorder,self.cvPlayer.rightBorder+1)
+            activeVideo.chambers.setRecordTrajectories(True)
         self.trajectoryWriting.emit(self.recordTrajectory)
         self.processFrame()
     
@@ -284,8 +283,9 @@ class CvProcessor(QtCore.QObject):
         self.processFrame()      
     
     def createTrajectoryImages(self):
-        pass#self.chambers.createTrajectoryImages() 
+        self.project.activeVideo().chambers.createTrajectoryImages() 
     
     def videoSelected(self, fileName):
-        self.cvPlayer.captureFromFile(fileName)         
+        self.cvPlayer.captureFromFile(fileName)
+                 
         

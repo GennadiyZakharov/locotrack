@@ -96,8 +96,6 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvProcessor.project.signalChamberDeleted.connect(self.chambersWidget.removeChamber)
         self.cvProcessor.project.signalChamberDeleted.connect(self.cvGraphics.delChamberGui)
         
-        #TODO:
-        #self.cvProcessor.project.signalVideoSelected.connect(self.chambersWidget.)
         self.cvProcessor.project.signalChambersMangerChanged.connect(self.chambersWidget.setChambersManager)
         
         # ---- Creating dock panel for image processing ---- 
