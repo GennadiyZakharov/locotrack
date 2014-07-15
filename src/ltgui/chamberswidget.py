@@ -100,9 +100,11 @@ class ChambersWidget(QtGui.QWidget):
             self.chamberWidgets = {} #
             self.selectedChamber = None 
             self.chambersList.clear()
+            self.chambersList.setHorizontalHeaderLabels(['Sample name', 'Threshold'])
             
         self.chambersManager = chambersManager
         if self.chambersManager is not None :
+            
             self.signalSetChamber.connect(self.chambersManager.createChamber)
             self.signalClearChamber.connect(self.chambersManager.removeChamber)
             self.sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)

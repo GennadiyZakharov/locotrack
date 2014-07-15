@@ -139,6 +139,10 @@ class Chamber(QtCore.QObject):
         '''
         Set object for chamber and save it to trajectory, if setRecordTrajectory enabled
         '''
+        if self.frameNumber+1 == frameNumber :
+            self.oldLtObject = self.ltObject 
+        else :
+            self.oldLtObject = None
         self.ltObject = ltObject
         self.frameNumber = frameNumber
         if self.recordTrajectory :

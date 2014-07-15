@@ -50,7 +50,7 @@ class Project(QtCore.QObject):
                 self.addVideo(videoFile)
               
     def saveProject(self):
-        for video in self.videos :
+        for video in self.videos.values() :
             video.saveChambers()
             
     def closeProject(self):
@@ -104,7 +104,8 @@ class Project(QtCore.QObject):
         return self.videos[self.activeVideoName]
         
     def setScale(self, scale):
-        self.activeVideo().setScale(scale)
+        if not self.activeVideoName.isEmpty():
+            self.activeVideo().setScale(scale)
         
     def chamberAdded(self, chamber):
         self.signalChamberAdded.emit(chamber)

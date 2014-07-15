@@ -176,9 +176,10 @@ class LtMainWindow(QtGui.QMainWindow):
         self.restoreGeometry(settings.value("ltMainWindow/Geometry").toByteArray())
         self.restoreState(settings.value("ltMainWindow/State").toByteArray())
         preset,isInt = settings.value("ltMainWindow/Preset").toInt()
-        self.videoWidget.lastDirectory = settings.value("ltVideoWidget/lastDirectory").toString()
         self.cvTrajectoryWidget.analyseDialog.lastDirectory = settings.value(
             "ltTrajectoryWidget/lastDirectory").toString()
+        self.projectWidget.lastDirectory = settings.value(
+            "ltProjectWidget/lastDirectory").toString()
             
         print 'load preset',preset
         self.presetsWidget.setPreset(preset)
@@ -231,10 +232,10 @@ class LtMainWindow(QtGui.QMainWindow):
                           QtCore.QVariant(self.saveState()))
         settings.setValue("ltMainWindow/Preset", 
                           QtCore.QVariant(self.presetsWidget.currentPreset()))
-        settings.setValue("ltVideoWidget/lastDirectory", 
-                          QtCore.QVariant(self.videoWidget.lastDirectory))
         settings.setValue("ltTrajectoryWidget/lastDirectory",
                           QtCore.QVariant(self.cvTrajectoryWidget.analyseDialog.lastDirectory))
+        settings.setValue("ltProjectWidget/lastDirectory",
+                          QtCore.QVariant(self.projectWidget.lastDirectory))
         
         
     def helpAbout(self):

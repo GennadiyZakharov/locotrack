@@ -84,7 +84,11 @@ class ProjectWidget(QtGui.QWidget):
             self.project.openProject(projectName)
             
     def saveProject(self):
-        pass
+        '''
+        if self.project.projectFolderName.isEmpty():
+            return
+        '''
+        self.project.saveProject()
     
     def closeProject(self):
         self.project.closeProject()

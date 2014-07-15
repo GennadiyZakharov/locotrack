@@ -71,7 +71,6 @@ class CvProcessor(QtCore.QObject):
         Get length and frame rate of opened video file
         '''
         self.videoLength = length
-        #self.projectOpened.emit(os.path.basename(unicode(fileName)))
         
     def videoSourceClosed(self):
         pass
@@ -80,7 +79,6 @@ class CvProcessor(QtCore.QObject):
         #TODO:
         self.setRecordTrajectory(False)
         self.saveProject()
-        self.chambers.removeTrajectory()
           
     def getNextFrame(self, frame, frameNumber):
         '''

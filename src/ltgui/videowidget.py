@@ -14,18 +14,16 @@ class VideoWidget(QtGui.QWidget):
     '''
     This class holds GUI for cvPlayer 
     
-    Open vieo file, play, stop run, e.t.c.
+    play, stop run, e.t.c.
     '''
     signalCaptureFromFile = QtCore.pyqtSignal(QtCore.QString)
     signalCaptureFromCam  = QtCore.pyqtSignal(int)
     
     def __init__(self, player, parent=None):
         '''
-        Constructor
         player is an cvPlayer object to construct all signals
         '''
         super(VideoWidget, self).__init__(parent)
-        self.lastDirectory = QtCore.QString('.')
         self.player = player
         
         player.videoSourceOpened.connect(self.videoSourceOpen)
