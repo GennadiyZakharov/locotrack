@@ -49,8 +49,9 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvGraphics.setObjectName("cvGraphics")
         self.setCentralWidget(self.cvGraphics)
         self.cvProcessor.signalNextFrame.connect(self.cvGraphics.putImage)
-        self.cvProcessor.projectOpened.connect(self.setProjectName)
-        self.cvProcessor.projectClosed.connect(self.cvGraphics.setNullImage)
+        self.cvProcessor.signalClearFrame.connect(self.cvGraphics.setNullImage)
+        #self.cvProcessor.projectOpened.connect(self.setProjectName)
+        #self.cvProcessor.projectClosed.connect(self.cvGraphics.setNullImage)
         
         # ---- Creating dock panel for video player ----
         videoDockPanel = QtGui.QDockWidget("Video Control", self)

@@ -6,7 +6,6 @@ Created on 13.12.2010
 from __future__ import print_function
 from __future__ import division
 from PyQt4 import QtCore, QtGui
-from ltcore.consts import videoFormats
 from ltcore.ltactions import createAction 
 from ltgui.actionbutton import ActionButton
 import imagercc
@@ -35,15 +34,6 @@ class VideoWidget(QtGui.QWidget):
         self.signalCaptureFromFile.connect(player.captureFromFile)
         self.signalCaptureFromCam.connect(player.captureFromCam)
         # Actions
-        self.actionOpenVideo = createAction(self,"&Open...", "",
-                                       "document-open", "Open video file")
-        self.actionOpenVideo.triggered.connect(self.openVideoFile)
-        self.actionCaptureVideo = createAction(self,"&Capture...", "",
-                                          "camera-web", "")
-        self.actionCaptureVideo.triggered.connect(self.captureVideo)
-        self.actionCaptureClose = createAction(self,"Close", "",
-                                          "dialog-close", "")
-        self.actionCaptureClose.triggered.connect(player.captureClose)
         self.actionPlay = createAction(self,"&Play", "", 
                                   "media-playback-start", "", True)
         self.actionPlay.toggled.connect(player.play)
@@ -66,8 +56,7 @@ class VideoWidget(QtGui.QWidget):
                                  "media-seek-forward", "")
         
         self.actionFwd.triggered.connect(player.seekFwd)
-        self.actions = (self.actionOpenVideo,self.actionCaptureVideo,self.actionCaptureClose,None,
-                             self.actionPlay,self.actionRun,None,
+        self.actions = (self.actionPlay,self.actionRun,None,
                              self.actionRew, self.actionFwd,
                              self.actionSeekToBegin,self.actionSeekToEnd)
         
@@ -121,13 +110,7 @@ class VideoWidget(QtGui.QWidget):
         resetBordersButton.clicked.connect(player.resetBorders)
         layout2.addWidget(resetBordersButton)
         layout2.addStretch()
-        # Open and capture video buttons
-        videoOpenButton = ActionButton(self.actionOpenVideo)
-        layout2.addWidget(videoOpenButton)
-        videoCaptureButton = ActionButton(self.actionCaptureVideo)
-        layout2.addWidget(videoCaptureButton)
-        videoCloseButton = ActionButton(self.actionCaptureClose)
-        layout2.addWidget(videoCloseButton)
+        
         # Main Layout
         layout = QtGui.QVBoxLayout()
         layout.addLayout(layout1)
@@ -138,26 +121,6 @@ class VideoWidget(QtGui.QWidget):
                            self.actionRew, self.actionFwd, self.actionRun, self.actionSeekToBegin,
                            self.actionSeekToEnd])
         self.setGuiEnabled(False)
-    
-    @QtCore.pyqtSlot()
-    def openVideoFile(self):
-        '''
-        Open video file
-        ''' 
-        # Creating formats list
-        formats = ["*.{}".format(unicode(videoFormat)) \
-                   for videoFormat in videoFormats]
-        # Executing standard open dialog
-        fname = QtGui.QFileDialog.getOpenFileName(self,
-                        "Choose video file",
-                        self.lastDirectory, "Video files ({})".format(" ".join(formats)))
-        if not fname.isEmpty() :
-            self.lastDirectory=QtCore.QFileInfo(fname).absolutePath()
-            self.signalCaptureFromFile.emit(fname)
-    
-    @QtCore.pyqtSlot()
-    def captureVideo(self):
-        self.signalCaptureFromCam.emit(0)
     
     def setGuiEnabled(self, flag):
         for elem in self.playSet :

@@ -25,8 +25,7 @@ class CvProcessor(QtCore.QObject):
     '''
     trajectoryWriting = QtCore.pyqtSignal(bool)
     signalNextFrame = QtCore.pyqtSignal(object)
-    projectOpened = QtCore.pyqtSignal(QtCore.QString)
-    projectClosed = QtCore.pyqtSignal()
+    signalClearFrame = QtCore.pyqtSignal()
 
     def __init__(self, parent=None):
         '''
@@ -36,8 +35,8 @@ class CvProcessor(QtCore.QObject):
         # Video Player
         self.cvPlayer = CvPlayer(self)
         self.cvPlayer.nextFrame.connect(self.getNextFrame)
-        self.cvPlayer.videoSourceOpened.connect(self.videoOpened)
-        self.cvPlayer.videoSourceClosed.connect(self.videoClosed)
+        self.cvPlayer.videoSourceOpened.connect(self.videoSourceOpened)
+        self.cvPlayer.videoSourceClosed.connect(self.videoSourceClosed)
         # One project
         self.project = Project()
         self.project.signalVideoSelected.connect(self.videoSelected)
@@ -67,24 +66,18 @@ class CvProcessor(QtCore.QObject):
         self.objectDetectorIndex = 0   
         self.trajectoryAnalysis = TrajectoryAnalysis(self)
 
-    def videoOpened(self, length, frameRate, fileName):
+    def videoSourceOpened(self, length, frameRate, fileName):
         '''
         Get length and frame rate of opened video file
         '''
-        
-        self.videoClosed()
         self.videoLength = length
-        #self.frameRate = frameRate
-        self.project.addVideo(fileName)
+        #self.projectOpened.emit(os.path.basename(unicode(fileName)))
         
-        self.projectOpened.emit(os.path.basename(unicode(fileName)))
-        
-    def videoClosed(self):
-        self.project.deleteVideo('')
-        self.projectOpened.emit('')
-        self.projectClosed.emit()
+    def videoSourceClosed(self):
+        pass
         
     def videoEnded(self):
+        #TODO:
         self.setRecordTrajectory(False)
         self.saveProject()
         self.chambers.removeTrajectory()
@@ -286,6 +279,11 @@ class CvProcessor(QtCore.QObject):
         self.project.activeVideo().chambers.createTrajectoryImages() 
     
     def videoSelected(self, fileName):
-        self.cvPlayer.captureFromFile(fileName)
+        if fileName.isEmpty() :
+            self.cvPlayer.captureClose()
+            self.signalClearFrame.emit()
+        else:
+            self.cvPlayer.captureFromFile(fileName)
+            
                  
         
