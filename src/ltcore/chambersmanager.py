@@ -135,10 +135,10 @@ class ChambersManager(QtCore.QObject):
     @QtCore.pyqtSlot(float)   
     def setScale(self, scale):
         self.scale = scale
+        self.signalRecalculateChambers.emit()
         
     def setVideoLength(self, length):
         self.videoLength = length
-        
         
     @QtCore.pyqtSlot(bool)
     def setRecordTrajectory(self, checked):

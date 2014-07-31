@@ -114,9 +114,7 @@ class ChambersWidget(QtGui.QWidget):
             self.sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)
             for chamber in self.chambersManager:
                 self.addChamber(chamber)
-        self.setEnabledActions()
-        
-        
+        self.setEnabledActions()     
         
     def setEnabledActions(self):
         flag = self.chambersManager is not None

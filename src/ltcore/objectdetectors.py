@@ -57,6 +57,7 @@ class massCenterDetector():
             averageVal *= 4 / pi
         #size = 
         # Tresholding image
+        print("making threshold")
         tresholdVal = (maxVal - averageVal) * (chamber.threshold / 100) + averageVal 
         cv.Threshold(frame, frame, tresholdVal, 255, cv.CV_THRESH_TOZERO)
         # Calculating mass center

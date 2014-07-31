@@ -39,6 +39,7 @@ class CvProcessor(QtCore.QObject):
         # One project
         self.project = Project()
         self.project.signalVideoSelected.connect(self.videoSelected)
+        self.project.signalRecalculateChambers.connect(self.processFrame)
         # Chamber list
         #TODO:
         #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
@@ -151,9 +152,12 @@ class CvProcessor(QtCore.QObject):
         if self.objectDetectorIndex == 0 :
             ltObject = self.maxBrightDetector.detectObject(frame)
         elif  self.objectDetectorIndex == 1 :
+            print('detecting mass center object')
             ltObject = self.massCenterDetector.detectObject(frame, chamber, self.ellipseCrop)
+            print('LtObject detected')
         else:
             raise
+        
         chamber.oldLtObject = chamber.ltObject
         chamber.setLtObject(ltObject, self.frameNumber)
         # Reset area selection

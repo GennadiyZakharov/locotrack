@@ -29,6 +29,8 @@ class Project(QtCore.QObject):
     
     signalChamberAdded = QtCore.pyqtSignal(Chamber)   # New chamber added to list
     signalChamberDeleted = QtCore.pyqtSignal(Chamber) # Chamber removed from list 
+    
+    signalRecalculateChambers = QtCore.pyqtSignal()   # Need to recalculate object position
 
     def __init__(self, parent=None):
         '''
@@ -64,6 +66,7 @@ class Project(QtCore.QObject):
         print('Opening video file ' + videoFileName)
         video = Video(videoFileName)
         self.videos[videoFileName] = video
+        video.chambers.signalRecalculateChambers.connect(self.recalculateChambers)
         video.loadChambers()
         self.signalVideoAdded.emit(videoFileName)
         self.setActiveVideo(videoFileName)
@@ -112,6 +115,10 @@ class Project(QtCore.QObject):
         
     def chamberDeleted(self, chamber):
         self.signalChamberDeleted.emit(chamber)
+        
+    def recalculateChambers(self):
+        self.signalRecalculateChambers.emit()
+        
         
         
         
