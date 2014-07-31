@@ -194,15 +194,15 @@ class Chamber(QtCore.QObject):
     '''
     Methods to trajectory manipulation
     '''
-    @QtCore.pyqtSlot(int,int)
-    def initTrajectory(self, startFrame, endFrame):
+    @QtCore.pyqtSlot(int)
+    def initTrajectory(self, length):
         '''
         Init trajectory from startFrame to EndFrame
         '''
         if self.trajectory is not None : # Delete old trajectory
             self.removeTrajectory()
         # Init trajectory to save frames
-        self.trajectory = LtTrajectory(startFrame, endFrame)
+        self.trajectory = LtTrajectory(length)
         self.signalGuiDataUpdated.emit()
     
     @QtCore.pyqtSlot()
@@ -247,7 +247,8 @@ class Chamber(QtCore.QObject):
         if trajectoryFile.readline().strip() == cls.trajectoryCaption.strip() :
             chamber.trajectory = LtTrajectory.loadFromFile(trajectoryFile)
         else :
-            chamber.trajectory = None
+            print("Error loading trajectory")
+            raise
         trajectoryFile.close()
         return chamber, scale, frameRate
     
@@ -271,9 +272,7 @@ class Chamber(QtCore.QObject):
         trajectoryFile.write('Threshold level = {}\n'.format(self.threshold))
         if self.trajectory is not None :
             trajectoryFile.write(self.trajectoryCaption)
-            strippedTrajectory = self.trajectory.clone()
-            strippedTrajectory.strip()
-            strippedTrajectory.saveToFile(trajectoryFile)
+            self.trajectory.saveToFile(trajectoryFile)
         else :
             trajectoryFile.write('No trajectory recorded' + "\n")
         trajectoryFile.close()

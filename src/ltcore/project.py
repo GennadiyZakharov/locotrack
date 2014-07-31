@@ -96,17 +96,17 @@ class Project(QtCore.QObject):
             for chamber in video.chambers :
                 self.signalChamberAdded.emit(chamber)
         self.signalVideoSelected.emit(self.activeVideoName)
-            
-        
+                
     def activeVideo(self):
         if not self.activeVideoName in self.videos.keys() :
             return None
         return self.videos[self.activeVideoName]
-        
+    '''
+    @QtCore.pyqtSlot(float)
     def setScale(self, scale):
         if not self.activeVideoName.isEmpty():
             self.activeVideo().setScale(scale)
-        
+    ''' 
     def chamberAdded(self, chamber):
         self.signalChamberAdded.emit(chamber)
         

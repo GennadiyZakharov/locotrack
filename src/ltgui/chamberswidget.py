@@ -62,6 +62,7 @@ class ChambersWidget(QtGui.QWidget):
         self.actionSetScale.toggled.connect(self.setScale)
         self.actionRecordTrajectory = createAction(self, "&Record trajectory", "",
                                  "media-record", "", True)
+        self.actionRecordTrajectory.toggled.connect(self.setRecordTrajectory)
         self.actionSaveTrajectory = createAction(self, "Save trajectory", "",
                                  "document-save", "")
         self.actions = (self.actionSetChamber, self.actionClearChamber, None,
@@ -96,6 +97,8 @@ class ChambersWidget(QtGui.QWidget):
         if self.chambersManager is not None :
             self.signalSetChamber.disconnect(self.chambersManager.createChamber)
             self.signalClearChamber.disconnect(self.chambersManager.removeChamber)
+            self.signalSetScale.disconnect(self.chambersManager.setScale)
+            self.chambersManager.signalTrajectoryWriting.disconnect(self.actionRecordTrajectory.setChecked)
             self.sampleNameEdit.textChanged.disconnect(self.chambersManager.setSampleName)
             self.chamberWidgets = {} #
             self.selectedChamber = None 
@@ -104,9 +107,10 @@ class ChambersWidget(QtGui.QWidget):
             
         self.chambersManager = chambersManager
         if self.chambersManager is not None :
-            
             self.signalSetChamber.connect(self.chambersManager.createChamber)
             self.signalClearChamber.connect(self.chambersManager.removeChamber)
+            self.signalSetScale.connect(self.chambersManager.setScale)
+            self.chambersManager.signalTrajectoryWriting.connect(self.actionRecordTrajectory.setChecked)
             self.sampleNameEdit.textChanged.connect(self.chambersManager.setSampleName)
             for chamber in self.chambersManager:
                 self.addChamber(chamber)
@@ -226,5 +230,9 @@ class ChambersWidget(QtGui.QWidget):
                 if i < chamber.number :
                     i = chamber.number
             self.chambersList.setRowCount(i)
+            
+    def setRecordTrajectory(self, checked):
+        if self.chambersManager is not None :
+            self.chambersManager.setRecordTrajectory(checked)
                     
         

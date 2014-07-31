@@ -23,7 +23,6 @@ class CvProcessor(QtCore.QObject):
     
     Also this class process video and writes data to chamber
     '''
-    trajectoryWriting = QtCore.pyqtSignal(bool)
     signalNextFrame = QtCore.pyqtSignal(object)
     signalClearFrame = QtCore.pyqtSignal()
 
@@ -52,7 +51,6 @@ class CvProcessor(QtCore.QObject):
         self.analyseFromFilesRunning = False
         # Reset Trajectory
         self.recordTrajectory = False
-        self.videoLength = None
         # Visual Parameters
         self.scaleLabelPosition = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -168,7 +166,7 @@ class CvProcessor(QtCore.QObject):
         # Draw scale label
         activeVideo = self.project.activeVideo()
         if activeVideo is not None: 
-            scale = self.project.activeVideo().scale
+            scale = self.project.activeVideo().chambers.scale
             if scale >= 0  :
                 # TODO: 15mm
                 cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + scale * 15), self.scaleLabelPosition[1]),
@@ -226,15 +224,6 @@ class CvProcessor(QtCore.QObject):
     def clearChamber(self, chamber):
         self.project.activeVideo().chambers.removeChamber(chamber)
     
-    @QtCore.pyqtSlot(float)
-    def setScale(self, scale):
-        '''
-        set scale (px/mm)
-        '''
-        print('Set scale',scale)
-        self.project.setScale(scale)
-        self.processFrame() # Update current frame
-    
     @QtCore.pyqtSlot(int)
     def setEllipseCrop(self, value):
         self.ellipseCrop = (value == QtCore.Qt.Checked)
@@ -246,29 +235,7 @@ class CvProcessor(QtCore.QObject):
         Set theshold value (in percents)
         '''
         self.project.activeVideo().chambers.setThreshold(value)
-    
-    @QtCore.pyqtSlot(bool)
-    def setRecordTrajectory(self, checked):
-        '''
-        Enable/Disable trajectory saving
-        '''
-        if self.recordTrajectory == checked :
-            return
-        activeVideo = self.project.activeVideo() 
-        if activeVideo.scale < 0 :
-            #TODO:
-            print 'Cannot save chambers: no scale present'
-            self.recordTrajectory = False
-            self.trajectoryWriting.emit(False)
-            return
-        self.recordTrajectory = checked
-        if self.recordTrajectory :
-            # Init array for trajectory from current location to end of video file
-            activeVideo.chambers.initTrajectories(self.cvPlayer.leftBorder,self.cvPlayer.rightBorder+1)
-            activeVideo.chambers.setRecordTrajectories(True)
-        self.trajectoryWriting.emit(self.recordTrajectory)
-        self.processFrame()
-    
+       
     @QtCore.pyqtSlot()
     def chambersDataUpdated(self):
         self.processFrame()      

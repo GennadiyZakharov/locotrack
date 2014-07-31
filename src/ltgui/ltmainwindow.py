@@ -88,7 +88,6 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvGraphics.signalScaleSetted.connect(self.chambersWidget.scaleSetted)
         
         self.chambersWidget.signalChamberSelected.connect(self.cvGraphics.selectChamberGui)
-        self.chambersWidget.signalSetScale.connect(self.cvProcessor.setScale)
         
         self.cvGraphics.signalChamberSelected.connect(self.chambersWidget.selectChamber)
         
@@ -115,8 +114,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
         self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.trajectoryAnalysis) 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
-        self.chambersWidget.actionRecordTrajectory.toggled.connect(self.cvProcessor.setRecordTrajectory)
-        self.cvProcessor.trajectoryWriting.connect(self.chambersWidget.actionRecordTrajectory.setChecked)
+        
         self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.project.saveProject)
         
         self.presetsWidget = PresetsWidget(self)

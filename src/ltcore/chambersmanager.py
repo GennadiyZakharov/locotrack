@@ -16,7 +16,8 @@ class ChambersManager(QtCore.QObject):
     signalChamberAdded = QtCore.pyqtSignal(Chamber)   # New chamber added to list
     signalChamberDeleted = QtCore.pyqtSignal(Chamber) # Chamber removed from list
     signalRecalculateChambers = QtCore.pyqtSignal()   # Need to recalculate object position
-    signalThresholdChanged = QtCore.pyqtSignal(int)   #    
+    signalThresholdChanged = QtCore.pyqtSignal(int)   #  
+    signalTrajectoryWriting = QtCore.pyqtSignal(bool)  
 
     def __init__(self, parent=None):
         '''
@@ -27,6 +28,9 @@ class ChambersManager(QtCore.QObject):
         self.numbers = set()  # Set to store used numbers
         self.threshold = 60 # Default threshold 
         self.sampleName = QtCore.QString('UnknownSample') # Default sample name
+        self.recordTrajectory=False
+        self.videoLength = -1
+        self.scale = -1
     
     # Standard methods to use ChambersManager as iterator
     def next(self):
@@ -61,6 +65,8 @@ class ChambersManager(QtCore.QObject):
             i += 1
         chamber.setNumber(i)
         self.numbers.add(i)
+        if self.videoLength >0 :
+            chamber.initTrajectory(self.videoLength)
         self.signalChamberAdded.emit(chamber)
         self.signalRecalculateChambers.emit()
     
@@ -107,9 +113,9 @@ class ChambersManager(QtCore.QObject):
             chamber.setSampleName(sampleName)
     
     @QtCore.pyqtSlot(int,int)
-    def initTrajectories(self, startFrame, endFrame):
+    def initTrajectories(self, length):
         for chamber in self.chambers :
-            chamber.initTrajectory(startFrame, endFrame)
+            chamber.initTrajectory(length)
     
     @QtCore.pyqtSlot()
     def removeTrajectory(self):
@@ -125,3 +131,23 @@ class ChambersManager(QtCore.QObject):
     def setShowTrajectories(self, checked):
         for chamber in self.chambers :
             chamber.setShowTrajectory(checked)
+         
+    @QtCore.pyqtSlot(float)   
+    def setScale(self, scale):
+        self.scale = scale
+        
+    def setVideoLength(self, length):
+        self.videoLength = length
+        
+        
+    @QtCore.pyqtSlot(bool)
+    def setRecordTrajectory(self, checked):
+        '''
+        Enable/Disable trajectory saving
+        '''
+        if self.recordTrajectory == checked :
+            return
+        self.recordTrajectory = checked
+        if self.recordTrajectory :
+            self.setRecordTrajectories(True)
+        self.signalTrajectoryWriting.emit(self.recordTrajectory)

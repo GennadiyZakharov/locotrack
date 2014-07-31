@@ -112,14 +112,16 @@ class LtTrajectory(object):
         self.cpY=newcpY
         self.length = length
     """ 
-    
-    def loadFromFile(self, trajectoryFile):
+    @classmethod
+    def loadFromFile(cls, trajectoryFile):
         '''
         Load trajectory from text file, opened for reading
         ''' 
         # Reading start and end frame numbers
+        length = int(trajectoryFile.readline())
+        trajectory = cls(length)
         leftBound,rightBound = (int(value) for value in trajectoryFile.readline().split())
-        self.setBounds(leftBound,rightBound)
+        trajectory.setBounds(leftBound,rightBound)
         # Reading trajectory
         trajectoryFile.readline()
         for i in xrange(leftBound,rightBound) :
@@ -132,7 +134,7 @@ class LtTrajectory(object):
             # Save data in trajectory
             x = float(values[1])
             y = float(values[2])
-            self.cpX[frameNumber], self.cpY[frameNumber] = x, y       
+            trajectory.cpX[frameNumber], trajectory.cpY[frameNumber] = x, y       
     
     def saveToFile(self, trajectoryFile):
         '''
@@ -140,10 +142,10 @@ class LtTrajectory(object):
         '''
         # Writing caption
         trajectoryFile.write("{}\n".format(self.length))
-        trajectoryFile.write("{} {}\n".format(self.startFrame, self.endFrame))
+        trajectoryFile.write("{} {}\n".format(self.leftBorder, self.rightBorder))
         trajectoryFile.write(self.captionString)
         
-        for i in xrange(self.leftBound,self.rightBound+1) :
+        for i in xrange(self.leftBorder,self.rightBorder+1) :
             
             fileString = self.formatString.format(i,self.cpX[i],self.cpY[i])
             trajectoryFile.write(fileString)
