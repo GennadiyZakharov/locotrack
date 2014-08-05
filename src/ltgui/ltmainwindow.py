@@ -115,8 +115,6 @@ class LtMainWindow(QtGui.QMainWindow):
         self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.trajectoryAnalysis) 
         cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
         
-        self.chambersWidget.actionSaveTrajectory.triggered.connect(self.cvProcessor.project.saveProject)
-        
         self.presetsWidget = PresetsWidget(self)
         # ==== Creating menu ====
         

@@ -15,6 +15,7 @@
   <file alias="media-record.png">images/media-record.png</file>
   <file alias="measure.png">images/measure.png</file>
   <file alias="document-save.png">images/document-save.png</file>
+  <file alias="document-save-as.png">images/document-save-as.png</file>
   <file alias="process-stop.png">images/process-stop.png</file>
   <file alias="distribute-horizontal-center.png">images/distribute-horizontal-center.png</file>
   
@@ -22,6 +23,10 @@
   <file alias="help-contents.png">images/help-contents.png</file>
   <file alias="back.png">images/back.png</file>
   <file alias="home.png">images/home.png</file>
+  
+  <file alias="project-open.png">images/project-open.png</file>
+  <file alias="project-development-close.png">images/project-development-close.png</file>
+  
   <file>help/index.html</file>
   
 </qresource>

@@ -31,13 +31,16 @@ class ProjectWidget(QtGui.QWidget):
         layout1.addWidget(self.videoList)
         self.setLayout(layout1)
         self.actionOpenProject = createAction(self,"&Open...", "",
-                                       "document-open", "Open project")
+                                       "project-open", "Open project")
         self.actionOpenProject.triggered.connect(self.openProject)
-        self.actionSaveProject = createAction(self,"&Save...", "",
-                                       "document-open", "Save project")
+        self.actionSaveProject = createAction(self,"&Save", "",
+                                       "document-save", "Save project")
         self.actionSaveProject.triggered.connect(self.saveProject)
-        self.actionCloseProject = createAction(self,"&Close...", "",
-                                       "document-open", "Close project")
+        self.actionSaveProjectAs = createAction(self,"Save &as...", "",
+                                       "document-save-as", "Save project as")
+        self.actionSaveProjectAs.triggered.connect(self.saveProjectAs)
+        self.actionCloseProject = createAction(self,"&Close", "",
+                                       "project-development-close", "Close project")
         self.actionCloseProject.triggered.connect(self.closeProject)
         self.actionAddVideo = createAction(self,"&Add video...", "",
                                        "document-open", "Add video file to project")
@@ -48,7 +51,7 @@ class ProjectWidget(QtGui.QWidget):
         self.actionRemoveVideo = createAction(self,"Remove video", "",
                                           "dialog-close", "")
         self.actionRemoveVideo.triggered.connect(self.removeVideo)
-        self.actions = (self.actionOpenProject,self.actionSaveProject,self.actionCloseProject,None,
+        self.actions = (self.actionOpenProject,self.actionSaveProject,self.actionSaveProjectAs,self.actionCloseProject,None,
                         self.actionAddVideo,self.actionRemoveVideo)
         
         
@@ -78,17 +81,25 @@ class ProjectWidget(QtGui.QWidget):
         # Executing standard open dialog
         projectName = QtGui.QFileDialog.getOpenFileName(self,
                         "Choose project file",
-                        self.lastDirectory, "Video files ({})".format(" ".join(formats)))
+                        self.lastDirectory, "Locotrack project file ({})".format(" ".join(formats)))
         if not projectName.isEmpty() :
             self.lastDirectory=QtCore.QFileInfo(projectName).absolutePath()
             self.project.openProject(projectName)
             
     def saveProject(self):
-        '''
-        if self.project.projectFolderName.isEmpty():
-            return
-        '''
-        self.project.saveProject()
+        if self.project.projectFileName.isEmpty():
+            self.saveProjectAs()
+        else:
+            self.project.saveProject()
+    
+    def saveProjectAs(self):
+        formats = ["*.ltp"]
+        projectName = QtGui.QFileDialog.getSaveFileName(self,
+                        "Choose project file",
+                        self.lastDirectory, "Locotrack project file ({})".format(" ".join(formats)))
+        if not projectName.isEmpty() :
+            self.lastDirectory=QtCore.QFileInfo(projectName).absolutePath()
+            self.project.saveProject(projectName)
     
     def closeProject(self):
         self.project.closeProject()

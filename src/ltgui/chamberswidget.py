@@ -63,11 +63,15 @@ class ChambersWidget(QtGui.QWidget):
         self.actionRecordTrajectory = createAction(self, "&Record trajectory", "",
                                  "media-record", "", True)
         self.actionRecordTrajectory.toggled.connect(self.setRecordTrajectory)
-        self.actionSaveTrajectory = createAction(self, "Save trajectory", "",
+        '''
+        self.actionSaveTrajectory = createAction(self, "Save chambers", "",
                                  "document-save", "")
+        
+        self.actionSaveTrajectory.toggled.connect(self.saveChambers)
+        '''
         self.actions = (self.actionSetChamber, self.actionClearChamber, None,
                         self.actionSetScale, None,
-                        self.actionRecordTrajectory, self.actionSaveTrajectory)
+                        self.actionRecordTrajectory, )#self.actionSaveTrajectory)
         # Sample name label and edit
         sampleNameLabel = QtGui.QLabel('Sample name:')
         self.sampleNameEdit = QtGui.QLineEdit()
@@ -88,8 +92,10 @@ class ChambersWidget(QtGui.QWidget):
 
         self.recordTrajectoryButton = ActionButton(self.actionRecordTrajectory)
         layout.addWidget(self.recordTrajectoryButton, 5, 0)
+        '''
         self.saveTrajectoryButton = ActionButton(self.actionSaveTrajectory)
         layout.addWidget(self.saveTrajectoryButton, 5, 1)
+        '''
         self.setLayout(layout)
         self.setEnabledActions()
     
@@ -218,6 +224,7 @@ class ChambersWidget(QtGui.QWidget):
         '''
         Remove GUI for chamber 
         '''
+        print('Removing chamber',chamber)
         self.selectedChamber = None
         self.chambersList.removeCellWidget(chamber.number - 1, 0)
         self.chambersList.removeCellWidget(chamber.number - 1, 1)
@@ -232,5 +239,10 @@ class ChambersWidget(QtGui.QWidget):
     def setRecordTrajectory(self, checked):
         if self.chambersManager is not None :
             self.chambersManager.setRecordTrajectory(checked)
+            
+    def saveChambers(self):
+        if self.chambersManager is not None :
+            print('Saving chambers')
+            self.chambersManager.saveChambers()
                     
         
