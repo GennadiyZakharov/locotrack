@@ -72,8 +72,8 @@ class Project(QtCore.QObject):
         projectFile.close()
             
     def closeProject(self):
-        self.setActiveVideo(QtCore.QString())
-        for videoFileName in self.videos.keys():
+        videoNames = self.videos.keys()[:]
+        for videoFileName in videoNames:
             self.removeVideo(videoFileName)
     
     def addVideo(self, videoFileName):
@@ -91,13 +91,14 @@ class Project(QtCore.QObject):
                 self.setActiveVideo(QtCore.QString())
             del self.videos[videoFileName]
             self.signalVideoRemoved.emit(videoFileName)
+            print('Video removed from project: ',videoFileName)
             
     def setActiveVideo(self, videoFileName):
         if self.activeVideoName == videoFileName :
             return
         video = self.activeVideo()
         if video is not None :
-            print('Deselecting video',self.activeVideoName)
+            print('Deselecting video: ',self.activeVideoName)
             video.chambers.signalChamberAdded.disconnect(self.chamberAdded)
             video.chambers.signalChamberDeleted.disconnect(self.chamberDeleted)
             #signal to remove chambers to cvGraphics
@@ -107,6 +108,7 @@ class Project(QtCore.QObject):
             
         self.activeVideoName = videoFileName
         if not self.activeVideoName.isEmpty():
+            print('Selecting video: ',self.activeVideoName)
             self.signalChambersMangerChanged.emit(self.activeVideo().chambers)
             video = self.activeVideo()
             video.chambers.signalChamberAdded.connect(self.chamberAdded)

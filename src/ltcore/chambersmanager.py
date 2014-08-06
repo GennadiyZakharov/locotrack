@@ -13,10 +13,10 @@ class ChambersManager(QtCore.QObject):
     and all default settings for chambers
     It also has methods to set data to all chambers
     '''
-    signalChamberAdded = QtCore.pyqtSignal(Chamber)   # New chamber added to list
-    signalChamberDeleted = QtCore.pyqtSignal(Chamber) # Chamber removed from list
-    signalRecalculateChambers = QtCore.pyqtSignal()   # Need to recalculate object position
-    signalThresholdChanged = QtCore.pyqtSignal(int)   #  
+    signalChamberAdded = QtCore.pyqtSignal(Chamber)  # New chamber added to list
+    signalChamberDeleted = QtCore.pyqtSignal(Chamber)  # Chamber removed from list
+    signalRecalculateChambers = QtCore.pyqtSignal()  # Need to recalculate object position
+    signalThresholdChanged = QtCore.pyqtSignal(int)  #  
     signalTrajectoryWriting = QtCore.pyqtSignal(bool)  
 
     def __init__(self, parent=None):
@@ -24,11 +24,11 @@ class ChambersManager(QtCore.QObject):
         Constructor
         '''
         super(ChambersManager, self).__init__(parent)
-        self.chambers = set() # Set to store chambersGui
+        self.chambers = set()  # Set to store chambersGui
         self.numbers = set()  # Set to store used numbers
-        self.threshold = 60 # Default threshold 
-        self.sampleName = QtCore.QString('UnknownSample') # Default sample name
-        self.recordTrajectory=False
+        self.threshold = 60  # Default threshold 
+        self.sampleName = QtCore.QString('UnknownSample')  # Default sample name
+        self.recordTrajectory = False
         self.videoLength = -1
         self.scale = -1
     
@@ -65,9 +65,8 @@ class ChambersManager(QtCore.QObject):
             i += 1
         chamber.setNumber(i)
         self.numbers.add(i)
-        if self.videoLength >0 :
+        if self.videoLength > 0 :
             chamber.initTrajectory(self.videoLength)
-        print('Chamber opened')
         self.signalChamberAdded.emit(chamber)
         self.signalRecalculateChambers.emit()
     
@@ -76,7 +75,7 @@ class ChambersManager(QtCore.QObject):
         '''
         Removes chamber from chambers list
         '''
-        self.signalChamberDeleted.emit(chamber) # Remove all Gui first
+        self.signalChamberDeleted.emit(chamber)  # Remove all Gui first
         self.chambers.remove(chamber)
         self.numbers.remove(chamber.number)
         self.signalRecalculateChambers.emit()
@@ -113,7 +112,7 @@ class ChambersManager(QtCore.QObject):
         for chamber in self.chambers :
             chamber.setSampleName(sampleName)
     
-    @QtCore.pyqtSlot(int,int)
+    @QtCore.pyqtSlot(int, int)
     def initTrajectories(self, length):
         for chamber in self.chambers :
             chamber.initTrajectory(length)

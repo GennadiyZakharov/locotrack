@@ -51,7 +51,7 @@ class CvProcessor(QtCore.QObject):
         self.ellipseCrop = True
         self.analyseFromFilesRunning = False
         # Reset Trajectory
-        self.recordTrajectory = False
+        #self.recordTrajectory = False
         # Visual Parameters
         self.scaleLabelPosition = (20, 20)
         self.chamberColor = cv.CV_RGB(0, 255, 0)
@@ -250,7 +250,9 @@ class CvProcessor(QtCore.QObject):
     def videoSelected(self, fileName):
         if fileName.isEmpty() :
             self.cvPlayer.captureClose()
+            self.frame=None
             self.signalClearFrame.emit()
+            self.analyseFromFilesRunning = False
         else:
             self.cvPlayer.captureFromFile(fileName)
             

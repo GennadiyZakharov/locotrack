@@ -224,7 +224,6 @@ class ChambersWidget(QtGui.QWidget):
         '''
         Remove GUI for chamber 
         '''
-        print('Removing chamber',chamber)
         self.selectedChamber = None
         self.chambersList.removeCellWidget(chamber.number - 1, 0)
         self.chambersList.removeCellWidget(chamber.number - 1, 1)
