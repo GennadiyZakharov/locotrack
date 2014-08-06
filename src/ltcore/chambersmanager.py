@@ -67,6 +67,7 @@ class ChambersManager(QtCore.QObject):
         self.numbers.add(i)
         if self.videoLength >0 :
             chamber.initTrajectory(self.videoLength)
+        print('Chamber opened')
         self.signalChamberAdded.emit(chamber)
         self.signalRecalculateChambers.emit()
     

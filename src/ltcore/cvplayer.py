@@ -134,7 +134,7 @@ class CvPlayer(QtCore.QObject):
         self.seekInterval = self.videoFileLength // 50
         self.resetBorders()
         #TODO: do as message
-        print('Opened file: ' + self.videoFileName)
+        print('File prepared for video capture: ' + self.videoFileName)
         print('File length {} frames, {:5.2f} fps'.format(self.videoFileLength, self.frameRate))
         self.videoSourceOpened.emit(self.videoFileLength, self.frameRate, self.videoFileName) 
         self.timerEvent() # Process first frame

@@ -46,9 +46,7 @@ class Video(QtCore.QObject):
             if frameRate<>self.frameRate and self.frameRate>0 and frameRate >0 :
                 print("Chamber framerate {} not equal to video file one {}".format(frameRate,self.frameRate))
             else :
-                self.chambers.addChamber(chamber)
-                    
-                
+                self.chambers.addChamber(chamber) 
             QtGui.QApplication.processEvents()  
         if len(self.chambers) > 0 :
             self.chambers.setScale(scale)

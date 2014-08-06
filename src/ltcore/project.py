@@ -72,13 +72,12 @@ class Project(QtCore.QObject):
         projectFile.close()
             
     def closeProject(self):
-        self.projectFolderName = QtCore.QString()
-        self.videos = {}
-        self.activeVideoName = QtCore.QString()
-        #self.signalProjectUpdated.emit()
+        self.setActiveVideo(QtCore.QString())
+        for videoFileName in self.videos.keys():
+            self.removeVideo(videoFileName)
     
     def addVideo(self, videoFileName):
-        print('Opening video file ' + videoFileName)
+        print('Adding video file to project: ' + videoFileName)
         video = Video(videoFileName)
         self.videos[videoFileName] = video
         video.chambers.signalRecalculateChambers.connect(self.recalculateChambers)

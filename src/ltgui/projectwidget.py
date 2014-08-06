@@ -6,7 +6,7 @@ Created on Jun 20, 2014
 from __future__ import division,print_function
 
 from PyQt4 import QtCore, QtGui
-from ltcore.consts import videoFormats
+from ltcore.consts import videoFormats,projectExtension
 from ltcore.ltactions import createAction
 from ltgui.actionbutton import ActionButton
 import imagercc
@@ -76,12 +76,10 @@ class ProjectWidget(QtGui.QWidget):
         
     @QtCore.pyqtSlot()
     def openProject(self):
-        # Creating formats list
-        formats = ["*.ltp"]
         # Executing standard open dialog
         projectName = QtGui.QFileDialog.getOpenFileName(self,
                         "Choose project file",
-                        self.lastDirectory, "Locotrack project file ({})".format(" ".join(formats)))
+                        self.lastDirectory, "Locotrack project file ({})".format("*."+projectExtension))
         if not projectName.isEmpty() :
             self.lastDirectory=QtCore.QFileInfo(projectName).absolutePath()
             self.project.openProject(projectName)
