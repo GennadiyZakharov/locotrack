@@ -50,8 +50,8 @@ class LtMainWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.cvGraphics)
         self.cvProcessor.signalNextFrame.connect(self.cvGraphics.putImage)
         self.cvProcessor.signalClearFrame.connect(self.cvGraphics.setNullImage)
-        #self.cvProcessor.projectOpened.connect(self.setProjectName)
-        #self.cvProcessor.projectClosed.connect(self.cvGraphics.setNullImage)
+        self.cvProcessor.project.signalProjectOpened.connect(self.setProjectName)
+        self.cvProcessor.project.signalProjectClosed.connect(self.setProjectName)
         
         # ---- Creating dock panel for video player ----
         videoDockPanel = QtGui.QDockWidget("Video Control", self)
@@ -183,17 +183,12 @@ class LtMainWindow(QtGui.QMainWindow):
         
     # ==== Slots to handle actions ====
     
-    def setProjectName(self, name=''):
-        title = QtCore.QString(applicationName + ' ' + applicationVersion)
-        if name != '' :
-            title += ' - '+name
+    def setProjectName(self, name=QtCore.QString('untitled')):
+        title = QtCore.QString(applicationName + ' ' + applicationVersion)+' - '+name
         self.setWindowTitle(title)
     
     def presetDialogDisplay(self):
         self.presetsWidget.exec_()
-    
-    def saveProject(self):
-        pass
     
     def okToContinue(self):
         if False:

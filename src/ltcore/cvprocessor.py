@@ -35,11 +35,12 @@ class CvProcessor(QtCore.QObject):
         self.cvPlayer = CvPlayer(self)
         self.cvPlayer.nextFrame.connect(self.getNextFrame)
         self.cvPlayer.videoSourceOpened.connect(self.videoSourceOpened)
-        self.cvPlayer.videoSourceClosed.connect(self.videoSourceClosed)
+        #self.cvPlayer.videoSourceClosed.connect(self.videoSourceClosed)
         # One project
         self.project = Project()
         self.project.signalVideoSelected.connect(self.videoSelected)
         self.project.signalRecalculateChambers.connect(self.processFrame)
+        self.cvPlayer.videoSourceEnded.connect(self.project.videoEnded)
         # Chamber list
         #TODO:
         #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
@@ -70,14 +71,6 @@ class CvProcessor(QtCore.QObject):
         Get length and frame rate of opened video file
         '''
         self.videoLength = length
-        
-    def videoSourceClosed(self):
-        pass
-        
-    def videoEnded(self):
-        #TODO:
-        self.setRecordTrajectory(False)
-        self.saveProject()
           
     def getNextFrame(self, frame, frameNumber):
         '''

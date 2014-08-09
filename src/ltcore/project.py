@@ -53,16 +53,18 @@ class Project(QtCore.QObject):
             print('This is not a locotrack project')
             return
         videoFiles = projectFile.readlines()
-        print(videoFiles)
         #videoFiles = self.projectFolder.entryList(['*.'+videoFormat for videoFormat in videoFormats], QtCore.QDir.Files | QtCore.QDir.NoSymLinks)
         if not videoFiles == []:
             self.projectFileName=projectFileName
             for videoFile in videoFiles :
+                
                 self.addVideo(QtCore.QString(videoFile.strip()))
+        self.signalProjectOpened.emit(QtCore.QFileInfo(self.projectFileName).baseName())
               
     def saveProject(self, projectFileName=QtCore.QString()):
         if not projectFileName.isEmpty():
             self.projectFileName = projectFileName
+            self.signalProjectOpened.emit(QtCore.QFileInfo(self.projectFileName).baseName())
         print('Saving project {}'.format(self.projectFileName))
         projectFile = open(unicode(self.projectFileName), 'w')
         projectFile.write(self.projectCaption)
@@ -75,6 +77,7 @@ class Project(QtCore.QObject):
         videoNames = self.videos.keys()[:]
         for videoFileName in videoNames:
             self.removeVideo(videoFileName)
+        self.signalProjectClosed.emit()
     
     def addVideo(self, videoFileName):
         print('Adding video file to project: ' + videoFileName)
@@ -130,6 +133,11 @@ class Project(QtCore.QObject):
         if not self.activeVideoName.isEmpty():
             self.activeVideo().setScale(scale)
     ''' 
+        
+    def videoEnded(self):
+        video = self.activeVideo()
+        video.saveChambers()
+   
     def chamberAdded(self, chamber):
         self.signalChamberAdded.emit(chamber)
         
