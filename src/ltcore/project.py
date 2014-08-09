@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import division
 
 from glob import glob
+import os
 from PyQt4 import QtCore
 from ltcore.consts import videoFormats
 from ltcore.video import Video
@@ -57,8 +58,8 @@ class Project(QtCore.QObject):
         if not videoFiles == []:
             self.projectFileName=projectFileName
             for videoFile in videoFiles :
-                
-                self.addVideo(QtCore.QString(videoFile.strip()))
+                if os.path.exists(videoFile.strip()):
+                    self.addVideo(QtCore.QString(videoFile.strip()))
         self.signalProjectOpened.emit(QtCore.QFileInfo(self.projectFileName).baseName())
               
     def saveProject(self, projectFileName=QtCore.QString()):
