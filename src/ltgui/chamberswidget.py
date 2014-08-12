@@ -63,15 +63,9 @@ class ChambersWidget(QtGui.QWidget):
         self.actionRecordTrajectory = createAction(self, "&Record trajectory", "",
                                  "media-record", "", True)
         self.actionRecordTrajectory.toggled.connect(self.setRecordTrajectory)
-        '''
-        self.actionSaveTrajectory = createAction(self, "Save chambers", "",
-                                 "document-save", "")
-        
-        self.actionSaveTrajectory.toggled.connect(self.saveChambers)
-        '''
         self.actions = (self.actionSetChamber, self.actionClearChamber, None,
                         self.actionSetScale, None,
-                        self.actionRecordTrajectory, )#self.actionSaveTrajectory)
+                        self.actionRecordTrajectory)
         # Sample name label and edit
         sampleNameLabel = QtGui.QLabel('Sample name:')
         self.sampleNameEdit = QtGui.QLineEdit()
@@ -101,6 +95,7 @@ class ChambersWidget(QtGui.QWidget):
     
     def setChambersManager(self, chambersManager):
         if self.chambersManager is not None :
+            self.actionRecordTrajectory.setChecked(False)
             self.signalSetChamber.disconnect(self.chambersManager.createChamber)
             self.signalClearChamber.disconnect(self.chambersManager.removeChamber)
             self.signalSetScale.disconnect(self.chambersManager.setScale)
@@ -236,6 +231,7 @@ class ChambersWidget(QtGui.QWidget):
             self.chambersList.setRowCount(i)
             
     def setRecordTrajectory(self, checked):
+        print('set record trajectory',checked)
         if self.chambersManager is not None :
             self.chambersManager.setRecordTrajectory(checked)
             

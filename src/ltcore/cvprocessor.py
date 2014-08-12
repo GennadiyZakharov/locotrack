@@ -145,9 +145,7 @@ class CvProcessor(QtCore.QObject):
         if self.objectDetectorIndex == 0 :
             ltObject = self.maxBrightDetector.detectObject(frame)
         elif  self.objectDetectorIndex == 1 :
-            print('detecting mass center object')
             ltObject = self.massCenterDetector.detectObject(frame, chamber, self.ellipseCrop)
-            print('LtObject detected')
         else:
             raise
         

@@ -141,6 +141,7 @@ class Project(QtCore.QObject):
     def videoEnded(self):
         video = self.activeVideo()
         video.saveChambers()
+        video.chambers.setRecordTrajectory(False)
    
     def chamberAdded(self, chamber):
         self.signalChamberAdded.emit(chamber)

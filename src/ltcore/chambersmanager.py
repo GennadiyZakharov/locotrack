@@ -124,8 +124,12 @@ class ChambersManager(QtCore.QObject):
     
     @QtCore.pyqtSlot(bool)
     def setRecordTrajectories(self, checked):
+        if checked == self.recordTrajectory :
+            return
+        self.recordTrajectory = checked
         for chamber in self.chambers :
-            chamber.setRecordTrajectory(checked)
+            chamber.setRecordTrajectory(self.recordTrajectory)
+        self.signalTrajectoryWriting.emit(self.recordTrajectory)
     
     @QtCore.pyqtSlot(bool) 
     def setShowTrajectories(self, checked):
