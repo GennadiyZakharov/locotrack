@@ -62,7 +62,7 @@ class ProjectWidget(QtGui.QWidget):
         self.project.signalVideoRemoved.connect(self.videoRemoved)
         #self.project.signalProjectUpdated.connect(self.updateProject)
         self.project.signalVideoSelected.connect(self.selectVideo)
-        self.videoList.currentItemChanged.connect(self.changeItem)
+        self.videoList.itemClicked.connect(self.changeItem)
         
         # Open and capture video buttons
         layout2=QtGui.QHBoxLayout()
@@ -164,10 +164,10 @@ class ProjectWidget(QtGui.QWidget):
                 self.expandItem(videoItem)
             '''
         
-    def changeItem(self, current, previous):
-        if current is None :
+    def changeItem(self, item, column):
+        if item is None :
             return
-        fileName = current.videoFileName
+        fileName = item.videoFileName
         self.project.setActiveVideo(fileName)
         
         

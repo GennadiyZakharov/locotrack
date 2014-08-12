@@ -90,12 +90,15 @@ class Project(QtCore.QObject):
         self.setActiveVideo(videoFileName)
         
     def removeVideo(self, videoFileName):
-        if videoFileName in self.videos.keys():
-            if videoFileName == self.activeVideoName :
-                self.setActiveVideo(QtCore.QString())
-            del self.videos[videoFileName]
-            self.signalVideoRemoved.emit(videoFileName)
-            print('Video removed from project: ',videoFileName)
+        if not videoFileName in self.videos.keys():
+            return
+        if videoFileName == self.activeVideoName :
+            self.setActiveVideo(QtCore.QString())
+        del self.videos[videoFileName]
+        self.signalVideoRemoved.emit(videoFileName)
+        print('Video removed from project: ',videoFileName)
+        if self.videos != {} :
+            self.setActiveVideo(self.videos.keys()[0])
             
     def setActiveVideo(self, videoFileName):
         if self.activeVideoName == videoFileName :
