@@ -113,8 +113,8 @@ class LtMainWindow(QtGui.QMainWindow):
         cvTrajectoryDockPanel.setAllowedAreas(QtCore.Qt.RightDockWidgetArea)
         cvTrajectoryDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvTrajectoryDockPanel)
-        self.cvTrajectoryWidget = TrajectoryWidget(self.cvProcessor.trajectoryAnalysis) 
-        cvTrajectoryDockPanel.setWidget(self.cvTrajectoryWidget)
+        self.trajectoryWidget = TrajectoryWidget(self.cvProcessor.project.trajectoryAnalysis) 
+        cvTrajectoryDockPanel.setWidget(self.trajectoryWidget)
         
         self.presetsWidget = PresetsWidget(self)
         # ==== Creating menu ====
@@ -125,7 +125,7 @@ class LtMainWindow(QtGui.QMainWindow):
         projectMenu.addAction(setPresetAction)
         setPresetAction.triggered.connect(self.presetDialogDisplay)
         self.presetsWidget.signalSetPreset.connect(self.cvProcessorWidget.setPreset)
-        self.presetsWidget.signalSetPreset.connect(self.cvTrajectoryWidget.setPreset)
+        self.presetsWidget.signalSetPreset.connect(self.trajectoryWidget.setPreset)
         
         
         self.quitAction = createAction(self,"Exit...", QtGui.QKeySequence.Quit, 
@@ -143,7 +143,7 @@ class LtMainWindow(QtGui.QMainWindow):
         chamberMenu = self.menuBar().addMenu("&Chamber")
         #addActions(chamberMenu, self.chambersWidget.actions)
         trajectoryMenu = self.menuBar().addMenu("&Trajectory")
-        addActions(trajectoryMenu, self.cvTrajectoryWidget.actions)
+        addActions(trajectoryMenu, self.trajectoryWidget.actions)
         
         helpMenu = self.menuBar().addMenu("&Help")
         helpAboutAction = createAction(self,"&About LocoTrack",'',
@@ -173,7 +173,7 @@ class LtMainWindow(QtGui.QMainWindow):
         self.restoreGeometry(settings.value("ltMainWindow/Geometry").toByteArray())
         self.restoreState(settings.value("ltMainWindow/State").toByteArray())
         preset,isInt = settings.value("ltMainWindow/Preset").toInt()
-        self.cvTrajectoryWidget.analyseDialog.lastDirectory = settings.value(
+        self.trajectoryWidget.analyseDialog.lastDirectory = settings.value(
             "ltTrajectoryWidget/lastDirectory").toString()
         self.projectWidget.lastDirectory = settings.value(
             "ltProjectWidget/lastDirectory").toString()
@@ -225,7 +225,7 @@ class LtMainWindow(QtGui.QMainWindow):
         settings.setValue("ltMainWindow/Preset", 
                           QtCore.QVariant(self.presetsWidget.currentPreset()))
         settings.setValue("ltTrajectoryWidget/lastDirectory",
-                          QtCore.QVariant(self.cvTrajectoryWidget.analyseDialog.lastDirectory))
+                          QtCore.QVariant(self.trajectoryWidget.analyseDialog.lastDirectory))
         settings.setValue("ltProjectWidget/lastDirectory",
                           QtCore.QVariant(self.projectWidget.lastDirectory))
         

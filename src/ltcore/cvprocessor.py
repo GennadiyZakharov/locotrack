@@ -9,7 +9,6 @@ import cv
 import os
 from PyQt4 import QtCore
 from ltcore.cvplayer import CvPlayer
-from ltcore.trajectoryanalysis import TrajectoryAnalysis
 
 from ltcore.objectdetectors import maxBrightDetector, massCenterDetector
 from ltcore.project import Project
@@ -64,7 +63,6 @@ class CvProcessor(QtCore.QObject):
         self.massCenterDetector = massCenterDetector()
         self.objectDetectors = [self.maxBrightDetector, self.massCenterDetector]
         self.objectDetectorIndex = 0   
-        self.trajectoryAnalysis = TrajectoryAnalysis(self)
 
     def videoSourceOpened(self, length, frameRate, fileName):
         '''
@@ -234,9 +232,6 @@ class CvProcessor(QtCore.QObject):
     @QtCore.pyqtSlot()
     def chambersDataUpdated(self):
         self.processFrame()      
-    
-    def createTrajectoryImages(self):
-        self.project.activeVideo().chambers.createTrajectoryImages() 
     
     def videoSelected(self, fileName):
         if fileName.isEmpty() :

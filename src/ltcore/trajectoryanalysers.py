@@ -62,7 +62,9 @@ class RunRestAnalyser(QtCore.QObject):
         self.resultsFile = None
         self.resultFileRuns = None
 
-    def analyseChamber(self, trajectory, sampleName, sizeX, sizeY, scale, frameRate, aviName):
+    
+
+    def analyseChamber(self, chamber, scale, frameRate, aviName):
         '''
         Analysing chamber using Run-Rest and frequency 
         Don-t use interval statistics -- output all intervals as is
@@ -71,8 +73,10 @@ class RunRestAnalyser(QtCore.QObject):
         def frameToTime(frame):
             return frame/frameRate
         
-        meanX = sizeX/2
-        meanY = sizeY/2
+        totalReport = []
+        meanX = chamber.width()/2
+        meanY = chamber.height()/2
+        trajectory = chamber.trajectory
         startFrame, endFrame = trajectory.bounds()
         # Total values
         totalTime = frameToTime(endFrame - startFrame) # total time in seconds
@@ -146,9 +150,9 @@ class RunRestAnalyser(QtCore.QObject):
                     #
                     currentTime = frameToTime(frame2-startFrame)
                     interval = int(currentTime/self.intervalDuration)+1
-                    s = self.outStringRuns.format(sampleName, interval, runDuration, 
+                    s = self.outStringRuns.format(chamber.sampleName, interval, runDuration, 
                                                   runLength/runDuration, aviName)
-                    self.resultFileRuns.write(s)
+                    #self.resultFileRuns.write(s)
                             
             ltObject1 = ltObject2
             frame1 = frame2
@@ -159,11 +163,11 @@ class RunRestAnalyser(QtCore.QObject):
         quadrantTime[1][0]= quadrantTime[1][0]/totalTime
         quadrantTime[1][1]= quadrantTime[1][1]/totalTime
         # total output
-        self.resultsFile.write(self.outString.format(sampleName, totalRunDuration / totalTime, # Sample name, Activity index
+        return self.outString.format(chamber.sampleName, totalRunDuration / totalTime, # Sample name, Activity index
                                 totalLength / totalTime, totalRunLength/totalRunDuration, (totalRunCount/totalTime)*100,        # Total mean speed, Run mean speed, Run Frequency
                                 quadrantTime[0][0],quadrantTime[0][1],quadrantTime[1][0], quadrantTime[1][1], # Time % spend in quadrants
                                 quadrantLength[0][0], quadrantLength[0][1], quadrantLength[1][0], quadrantLength[1][1], # Lenth in quadrants      
-                                             aviName))
+                                             aviName)
 class RatRunAnalyser(QtCore.QObject):
     #            sample name 
     outString = '{:>25}; {:18.6f}; {:18.6f};  {:6.2f}; {:6.2f}; {:6.2f}; {:6.2f};  {:10.2f}; {:10.2f}; {:10.2f}; {:10.2f}; {};\n'

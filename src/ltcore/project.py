@@ -13,6 +13,7 @@ from ltcore.consts import videoFormats
 from ltcore.video import Video
 from ltcore.chamber import Chamber
 from ltcore.chambersmanager import ChambersManager
+from ltcore.trajectoryanalysis import TrajectoryAnalysis
 
 class Project(QtCore.QObject):
     '''
@@ -43,6 +44,7 @@ class Project(QtCore.QObject):
         self.projectFileName = QtCore.QString()
         self.videos = {}
         self.activeVideoName = QtCore.QString()
+        self.trajectoryAnalysis = TrajectoryAnalysis(self)
     
     def isEmpty(self):
         return self.projectFileName.isEmpty()
@@ -151,6 +153,16 @@ class Project(QtCore.QObject):
         
     def recalculateChambers(self):
         self.signalRecalculateChambers.emit()
+        
+    def createTrajectoryImages(self):
+        video = self.activeVideo()
+        if video is not None :
+            video.chambers.createTrajectoryImages() 
+            
+    def analyseProject(self):
+        for videoFileName, video in self.videos.items() :
+            for chamber in video.chambers :
+                self.trajectoryAnalysis.analyseChamber(chamber,video.frameRate,video.chambers.scale,videoFileName)
         
         
         
