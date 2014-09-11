@@ -59,6 +59,15 @@ class massCenterDetector():
         # Tresholding image
         tresholdVal = (maxVal - averageVal) * (chamber.threshold / 100) + averageVal 
         cv.Threshold(frame, frame, tresholdVal, 255, cv.CV_THRESH_TOZERO)
+        
+        # Adaptive threshold
+        '''
+        blocksize = int(chamber.threshold) // 2
+        if blocksize %2 == 0 :
+            blocksize +=1
+        cv.AdaptiveThreshold(frame, frame, 255, cv.CV_ADAPTIVE_THRESH_GAUSSIAN_C, 
+                             cv.CV_THRESH_BINARY,blocksize)
+        '''
         # Calculating mass center
         '''
         moments = cv.Moments(frame)
