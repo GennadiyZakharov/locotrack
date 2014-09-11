@@ -233,7 +233,7 @@ class ChambersWidget(QtGui.QWidget):
     def setRecordTrajectory(self, checked):
         print('set record trajectory',checked)
         if self.chambersManager is not None :
-            self.chambersManager.setRecordTrajectory(checked)
+            self.chambersManager.setRecordTrajectories(checked)
             
     def saveChambers(self):
         if self.chambersManager is not None :

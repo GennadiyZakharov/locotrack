@@ -143,15 +143,3 @@ class ChambersManager(QtCore.QObject):
         
     def setVideoLength(self, length):
         self.videoLength = length
-        
-    @QtCore.pyqtSlot(bool)
-    def setRecordTrajectory(self, checked):
-        '''
-        Enable/Disable trajectory saving
-        '''
-        if self.recordTrajectory == checked :
-            return
-        self.recordTrajectory = checked
-        if self.recordTrajectory :
-            self.setRecordTrajectories(True)
-        self.signalTrajectoryWriting.emit(self.recordTrajectory)

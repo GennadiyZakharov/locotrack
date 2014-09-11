@@ -147,7 +147,6 @@ class CvProcessor(QtCore.QObject):
         else:
             raise
         
-        chamber.oldLtObject = chamber.ltObject
         chamber.setLtObject(ltObject, self.frameNumber)
         # Reset area selection
         cv.ResetImageROI(frame)
