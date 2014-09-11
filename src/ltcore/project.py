@@ -35,6 +35,10 @@ class Project(QtCore.QObject):
     signalChamberDeleted = QtCore.pyqtSignal(Chamber) # Chamber removed from list 
     
     signalRecalculateChambers = QtCore.pyqtSignal()   # Need to recalculate object position
+    
+    signalActionStarted = QtCore.pyqtSignal(QtCore.QString, int)
+    signalActionProcesing = QtCore.pyqtSignal(int)
+    signalActionCompleted = QtCore.pyqtSignal() 
 
     def __init__(self, parent=None):
         '''
@@ -160,9 +164,25 @@ class Project(QtCore.QObject):
             video.chambers.createTrajectoryImages() 
             
     def analyseProject(self):
-        for videoFileName, video in self.videos.items() :
+        '''
+        tracksCount = sum([len(video.chambers) for video in self.videos.values()])
+        self.signalActionStarted.emit('',tracksCount)
+        print('Analysing traks count: ',tracksCount)
+        count = 0
+        for video in self.videos.values() :
             for chamber in video.chambers :
-                self.trajectoryAnalysis.analyseChamber(chamber,video.frameRate,video.chambers.scale,videoFileName)
+                count +=1
+                self.signalActionProcesing.emit(count)
+                trajectoryStats = self.trajectoryAnalysis.analyseChamber(chamber,video.chambers.scale,video.frameRate)
+                chamber.setTrajectoryStats(trajectoryStats)
+        self.signalActionCompleted.emit()
+        '''
+        chamberList = []
+        for video in self.videos.values() :
+            for chamber in video.chambers :
+                chamberList.append((chamber,video.chambers.scale,video.frameRate))
+                
+        self.trajectoryAnalysis.analyseChambers(chamberList)
         
         
         

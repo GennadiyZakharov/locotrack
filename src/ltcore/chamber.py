@@ -62,6 +62,7 @@ class Chamber(QtCore.QObject):
         self.showTrajectory = False
         # Creating matrix for center location
         self.initMatrices()
+        self.trajectoryStats = None
         
     def __hash__(self):
         '''
@@ -212,6 +213,10 @@ class Chamber(QtCore.QObject):
         '''
         self.trajectory = None
         self.recordTrajectory = False
+        self.signalGuiDataUpdated.emit()
+        
+    def setTrajectoryStats(self, trajectoryStats):
+        self.trajectoryStats = trajectoryStats
         self.signalGuiDataUpdated.emit()
     
     @classmethod

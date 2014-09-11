@@ -143,7 +143,7 @@ class LtMainWindow(QtGui.QMainWindow):
         chamberMenu = self.menuBar().addMenu("&Chamber")
         #addActions(chamberMenu, self.chambersWidget.actions)
         trajectoryMenu = self.menuBar().addMenu("&Trajectory")
-        addActions(trajectoryMenu, self.trajectoryWidget.actions)
+        #addActions(trajectoryMenu, self.trajectoryWidget.actions)
         
         helpMenu = self.menuBar().addMenu("&Help")
         helpAboutAction = createAction(self,"&About LocoTrack",'',

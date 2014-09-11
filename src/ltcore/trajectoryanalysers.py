@@ -6,6 +6,7 @@ Created on 10.10.2013
 from __future__ import division
 from math import sqrt
 from PyQt4 import QtCore, QtGui
+from ltcore.trajectorystats import TrajectoryStats,IntervalStats
 
 
 class RunRestAnalyser(QtCore.QObject):
@@ -63,8 +64,7 @@ class RunRestAnalyser(QtCore.QObject):
         self.resultFileRuns = None
 
     
-
-    def analyseChamber(self, chamber, scale, frameRate, aviName):
+    def analyseChamber(self, chamber, scale, frameRate):
         '''
         Analysing chamber using Run-Rest and frequency 
         Don-t use interval statistics -- output all intervals as is
@@ -73,26 +73,19 @@ class RunRestAnalyser(QtCore.QObject):
         def frameToTime(frame):
             return frame/frameRate
         
-        totalReport = []
-        meanX = chamber.width()/2
-        meanY = chamber.height()/2
+        trajectoryStats = TrajectoryStats()
+        trajectoryStats.setBounds(chamber.rect.size())
+        meanX, meanY = chamber.width()/2, chamber.height()/2
+        trajectoryStats.setCenter(meanX, meanY)
         trajectory = chamber.trajectory
         startFrame, endFrame = trajectory.bounds()
         # Total values
-        totalTime = frameToTime(endFrame - startFrame) # total time in seconds
-        totalLength = 0       # Summary trajectory length for all time
-        totalRunLength = 0    # Summary length of run intervals of trajectory
-        totalRunDuration = 0  # Summary duration of run intervals
-        totalRunCount = 0     # Count of activity periods
+        trajectoryStats.totalDuration = frameToTime(endFrame - startFrame) # total time in seconds
+        #trajectoryStats.intervalDuration = self.intervalDuration
         # Value to form run periods
         runLength = 0
         runDuration = 0
         lastState = 1  #1- rest, 2 - run
-        # Quadrant variables
-        quadrantTime =   [[0.0,0.0],
-                          [0.0,0.0]]  # Time spend in in each quadrant
-        quadrantLength = [[0.0,0.0],
-                          [0.0,0.0]]  # Length passed in in each quadrant
         
         ltObject1 = None
         frame1 = None
@@ -127,18 +120,20 @@ class RunRestAnalyser(QtCore.QObject):
             else :
                 yQuadrant=1
             # Updating data
-            totalLength += length
-            quadrantTime[xQuadrant][yQuadrant] +=time
-            quadrantLength[xQuadrant][yQuadrant] +=length
+            trajectoryStats.totalLength += length
+            trajectoryStats.quadrantTotalDuration[xQuadrant][yQuadrant] +=time
+            trajectoryStats.quadrantTotalLength[xQuadrant][yQuadrant] +=length
             if speed >= self.runRestSpeedThreshold :
                 # This is Activity
-                totalRunDuration+=time
-                totalRunLength += length
+                trajectoryStats.totalRunDuration+=time
+                trajectoryStats.runLength += length
+                trajectoryStats.quadrantRunDuration[xQuadrant][yQuadrant] +=time
+                trajectoryStats.quadrantRunLength[xQuadrant][yQuadrant] +=length
                 if lastState == 1 : # Starting new activity period
                     lastState = 2
                     runLength = length
                     runDuration = time
-                    totalRunCount +=1
+                    trajectoryStats.runCount +=1
                 else : # Previous quant was activity
                     runLength+=length
                     runDuration+=time
@@ -148,26 +143,22 @@ class RunRestAnalyser(QtCore.QObject):
                     # Reset run
                     lastState = 1
                     #
+                    '''
                     currentTime = frameToTime(frame2-startFrame)
                     interval = int(currentTime/self.intervalDuration)+1
-                    s = self.outStringRuns.format(chamber.sampleName, interval, runDuration, 
-                                                  runLength/runDuration, aviName)
-                    #self.resultFileRuns.write(s)
+                    intervalStats = IntervalStats()
+                    intervalStats.totalDuration = time
+                    intervalStats.runDuration = runDuration
+                    intervalStats.runLength = runLength
+                    trajectoryStats.intervals.append(intervalStats)
+                    '''
                             
             ltObject1 = ltObject2
             frame1 = frame2
             QtGui.QApplication.processEvents()
-        # Calculating quadrant activities
-        quadrantTime[0][0]= quadrantTime[0][0]/totalTime
-        quadrantTime[0][1]= quadrantTime[0][1]/totalTime
-        quadrantTime[1][0]= quadrantTime[1][0]/totalTime
-        quadrantTime[1][1]= quadrantTime[1][1]/totalTime
         # total output
-        return self.outString.format(chamber.sampleName, totalRunDuration / totalTime, # Sample name, Activity index
-                                totalLength / totalTime, totalRunLength/totalRunDuration, (totalRunCount/totalTime)*100,        # Total mean speed, Run mean speed, Run Frequency
-                                quadrantTime[0][0],quadrantTime[0][1],quadrantTime[1][0], quadrantTime[1][1], # Time % spend in quadrants
-                                quadrantLength[0][0], quadrantLength[0][1], quadrantLength[1][0], quadrantLength[1][1], # Lenth in quadrants      
-                                             aviName)
+        return trajectoryStats
+        
 class RatRunAnalyser(QtCore.QObject):
     #            sample name 
     outString = '{:>25}; {:18.6f}; {:18.6f};  {:6.2f}; {:6.2f}; {:6.2f}; {:6.2f};  {:10.2f}; {:10.2f}; {:10.2f}; {:10.2f}; {};\n'

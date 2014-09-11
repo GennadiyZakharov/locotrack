@@ -51,8 +51,14 @@ class ProjectWidget(QtGui.QWidget):
         self.actionRemoveVideo = createAction(self,"Remove video", "",
                                           "dialog-close", "")
         self.actionRemoveVideo.triggered.connect(self.removeVideo)
+        
+        
+        self.actionAnalyseProject = createAction(self, "&Analyse project", "",
+                                       "", "Analyse whole files in project and make statistics")
+        self.actionAnalyseProject.triggered.connect(self.analyseProject)
+        
         self.actions = (self.actionOpenProject,self.actionSaveProject,self.actionSaveProjectAs,self.actionCloseProject,None,
-                        self.actionAddVideo,self.actionRemoveVideo)
+                        self.actionAddVideo,self.actionRemoveVideo,None,self.actionAnalyseProject)
         
         
         self.videoList.setHeaderLabel('Video Files')
@@ -180,7 +186,8 @@ class ProjectWidget(QtGui.QWidget):
             return
         self.videoList.setCurrentItem(item)
         
-        
+    def analyseProject(self):
+        self.project.analyseProject()
     
         
         

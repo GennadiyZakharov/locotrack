@@ -35,22 +35,16 @@ class TrajectoryWidget(QtGui.QWidget):
         self.analysisProgressDialog = QtGui.QProgressDialog()
         self.analysisProgressDialog.setWindowTitle('Analysing files')
         #
-        
-        self.actionAnalyseFromFiles = createAction(self, "&Analyse from files...", "",
-                                       "document-open", "Open video file")
-        self.actionAnalyseFromFiles.triggered.connect(self.analyseFromFile)
-        self.actions = (self.actionAnalyseFromFiles,)
-        #
+                #
         self.trajectoryAnalysis.signalAnalysisStarted.connect(self.signalAnalysisStarted)             
         self.trajectoryAnalysis.signalNextFileAnalysing.connect(self.signalNextFileAnalysing)
-        self.trajectoryAnalysis.signalAnalysisFinished.connect(self.signalAnalysisFinished)
-        
+        self.trajectoryAnalysis.signalAnalysisFinished.connect(self.signalAnalysisFinished) 
         #
         layout = QtGui.QGridLayout()
         #
         
-        self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
-        layout.addWidget(self.analyseFromFileButton, 0, 0, 1, 2)
+        #self.analyseFromFileButton = ActionButton(self.actionAnalyseFromFiles)
+        #layout.addWidget(self.analyseFromFileButton, 0, 0, 1, 2)
         #
         defaultSettingsLabel = QtGui.QLabel('Default set for:')
         layout.addWidget(defaultSettingsLabel, 1, 0)
