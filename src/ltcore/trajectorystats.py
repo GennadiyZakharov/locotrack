@@ -8,6 +8,7 @@ from PyQt4 import QtCore
 
 class IntervalStats(object):
     def __init__(self):
+        self.center = (-1,-1)
         self.totalDuration = 0.0
         self.runDuration = 0.0
         self.RunCount = 0
@@ -51,3 +52,6 @@ class TrajectoryStats(object):
     def quandrantActivity(self):
         return [runDuration / totalDuration for (totalDuration,runDuration) 
                 in zip(self.quadrantTotalDuration,self.quadrantRunDuration)]
+        
+    def setCenter(self, x,y):
+        self.center = (x,y)

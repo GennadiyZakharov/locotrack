@@ -49,21 +49,6 @@ class RunRestAnalyser(QtCore.QObject):
     def setQuantDuration(self, value):
         self.quantDuration = value
     
-    @QtCore.pyqtSlot(QtCore.QString)
-    def prepareFiles(self, resultsFileName):
-        self.resultsFile = open(unicode(resultsFileName), 'w')
-        self.resultFileRuns = open(unicode(resultsFileName+'.run'), 'w')
-        captionString = '                  Sample ;   Activity; TotalSpeed;    RunSpeed;   Freq*100;Time:[0,0];[0,1]; [1,0];  [1,1];Length:[0,0];      [0,1];      [1,0];      [1,1]; FileName;\n'
-        self.resultsFile.write(captionString)
-        self.resultFileRuns.write('                  Sample ;   Int;       Run Duration;       Run Speed;       FileName;\n')
-      
-    def closeFiles(self):
-        self.resultsFile.close()
-        self.resultFileRuns.close()
-        self.resultsFile = None
-        self.resultFileRuns = None
-
-    
     def analyseChamber(self, chamber, scale, frameRate):
         '''
         Analysing chamber using Run-Rest and frequency 

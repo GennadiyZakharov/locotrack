@@ -72,9 +72,15 @@ class ErrorDetector(QtCore.QObject):
             return self.errorNoErrors
                 
         startFrame, endFrame = trajectory.bounds()
+        print('bounds', startFrame, endFrame)
         # Start frame always not none (trajectory stripped)
-        frame1 = startFrame 
-        ltObject1 = trajectory[startFrame]
+        
+        while True :
+            ltObject1 = trajectory[startFrame]
+            if ltObject1 is not None:
+                break
+            startFrame +=1
+        frame1=startFrame
         # Cycle by all frames
         for frame2 in xrange(startFrame + 1, endFrame):
             ltObject2 = trajectory[frame2]

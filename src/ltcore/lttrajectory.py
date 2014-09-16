@@ -134,7 +134,8 @@ class LtTrajectory(object):
             # Save data in trajectory
             x = float(values[1])
             y = float(values[2])
-            trajectory.cpX[frameNumber], trajectory.cpY[frameNumber] = x, y       
+            trajectory.cpX[frameNumber], trajectory.cpY[frameNumber] = x, y  
+        return trajectory     
     
     def saveToFile(self, trajectoryFile):
         '''

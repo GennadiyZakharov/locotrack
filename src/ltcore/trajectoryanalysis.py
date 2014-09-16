@@ -113,6 +113,7 @@ class TrajectoryAnalysis(QtCore.QObject):
         i = 0
         self.analyseFromFilesRunning = True
         for chamber,scale,frameRate in chamberList:
+            print('Analysing chamber',chamber,scale,frameRate)
             if not self.analyseFromFilesRunning : 
                 print('Analysis aborted')
                 break
@@ -123,6 +124,8 @@ class TrajectoryAnalysis(QtCore.QObject):
                 continue
             # speed info
             #spdName = name+'.spd' if self.writeSpeedInfo != 0 else None
+            self.signalNextFileAnalysing.emit('chamber ',i)
+            print('Analysing chamber ',i)
             errorStatus = self.errorDetector.checkForErrors(chamber.trajectory, scale, frameRate) 
             if errorStatus == self.errorDetector.errorTooMuchMissedIntervals :
                 print('Too much missed intervals; {};\n') 
@@ -146,55 +149,6 @@ class TrajectoryAnalysis(QtCore.QObject):
                 self.analyser.analyseChamber(chamber,scale,frameRate)
                 image = self.imageCreator(chamber)
                 #image.save(name + '.png')      
-        
-     
-    @QtCore.pyqtSlot(QtCore.QString, QtCore.QStringList)   
-    def analyseFromFiles(self, resultsFileName, inputFileNames):
-        '''
-        Analyse all files from iterator inputFileNames and put results into file resultsFileName
-        '''
-        self.analyser.prepareFiles(resultsFileName)
-        # Emit count of tracks to analyse
-        self.signalAnalysisStarted.emit(len(inputFileNames))
-        i = 0
-        self.analyseFromFilesRunning = True
-        for name in inputFileNames :
-            # Check for emergency abort
-            if not self.analyseFromFilesRunning : 
-                print('Analysis aborted')
-                break
-            baseName = os.path.basename(unicode(name))
-            pos = baseName.find('.ch')
-            aviName = baseName[:pos]
-            if pos < 0 : 
-                continue  
-            # Signal to update GUI
-            i += 1
-            self.signalNextFileAnalysing.emit(name, i)
-            QtGui.QApplication.processEvents()
-            chamber, scale, frameRate = Chamber.loadFromFile(unicode(name))
-            if chamber.trajectory is None : 
-                continue
-            trajectory = chamber.trajectory.clone()
-            # Ensure that start and end frame is not none
-            trajectory.strip()
-            # speed info
-            #spdName = name+'.spd' if self.writeSpeedInfo != 0 else None
-            errorStatus = self.errorDetector.checkForErrors(trajectory, scale, frameRate) 
-            if errorStatus == self.errorDetector.errorTooMuchMissedIntervals :
-                print('Too much missed intervals; {};\n'.format(aviName)) 
-            elif errorStatus == self.errorDetector.errorTooLongMissedInterval :
-                print('Too long missed interval; {};\n'.format(aviName))
-            else :
-                # Create image and analyse   
-                sizeX = chamber.width()
-                sizeY = chamber.height()
-                self.analyser.analyseChamber(trajectory, chamber.sampleName, sizeX, sizeY, scale, frameRate, aviName)
-                image = self.imageCreator(chamber, trajectory)
-                image.save(name + '.png')          
-                    
-        self.analyser.closeFiles()
-        self.signalAnalysisFinished.emit()  
     
     @QtCore.pyqtSlot()
     def abortAnalysis(self):
