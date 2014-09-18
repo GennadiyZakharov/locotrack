@@ -20,6 +20,8 @@ class TrajectoryStats(object):
     '''
     classdocs
     '''
+    formatString='{} {} {} {} {}'
+    
     def __init__(self):
         '''
         Constructor
@@ -61,10 +63,8 @@ class TrajectoryStats(object):
         self.center = (x,y)
         
     def totalInfo(self):
-        return ('Activity Index: {}\n'.format(self.activityIndex())+ 
-               'runFrequency: {}\n'.format(self.runFrequency())+
-               'quandrantActivity: {}\n'.format(self.quandrantActivity())+
-               'Mean speed: {}\n'.format(self.totalLength/self.totalDuration if self.totalDuration >0 else 'N/A')+
-               'Mean run speed: {}\n'.format(self.runLength/self.runDuration if self.runDuration >0 else 'N/A')) 
+        return self.formatString.format(self.activityIndex(),self.runFrequency(),self.quandrantActivity(),
+                                        self.totalLength/self.totalDuration if self.totalDuration >0 else 'N/A',
+                                        self.runLength/self.runDuration if self.runDuration >0 else 'N/A') 
                
     

@@ -135,8 +135,8 @@ class TrajectoryAnalysis(QtCore.QObject):
             else :
                 # Create image and analyse   
                 trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
-                print(trajectoryStats.totalInfo())
-                image = self.imageCreator(chamber)        
+                chamber.setTrajectoryStats(trajectoryStats)
+                chamber.setTrajectoryImage(self.imageCreator(chamber))        
                     
         self.signalAnalysisFinished.emit()  
         

@@ -183,6 +183,12 @@ class Project(QtCore.QObject):
                 chamberList.append((chamber,video.chambers.scale,video.frameRate))
                 
         self.trajectoryAnalysis.analyseChambers(chamberList)
+        projectStatsFile = open(unicode(self.projectFileName)+'.txt', 'w')
+        for video in self.videos.values() :
+            for chamber in video.chambers :
+                if chamber.trajectoryStats is not None:
+                    stats = chamber.trajectoryStats.totalInfo()
+                    projectStatsFile.write(stats+'\n')
         
         
         

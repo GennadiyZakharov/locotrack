@@ -63,6 +63,7 @@ class Chamber(QtCore.QObject):
         # Creating matrix for center location
         self.initMatrices()
         self.trajectoryStats = None
+        self.trajectoryImage = None
         
     def __hash__(self):
         '''
@@ -148,7 +149,7 @@ class Chamber(QtCore.QObject):
         self.frameNumber = frameNumber
         if self.recordTrajectory :
             self.trajectory[frameNumber] = ltObject
-    
+       
     '''
     Methods handling chamber moving and resizing
     '''   
@@ -218,6 +219,10 @@ class Chamber(QtCore.QObject):
     def setTrajectoryStats(self, trajectoryStats):
         self.trajectoryStats = trajectoryStats
         self.signalGuiDataUpdated.emit()
+        
+    def setTrajectoryImage(self, image):
+        self.trajectoryImage = image
+        self.signalGuiDataUpdated.emit()
     
     @classmethod
     @QtCore.pyqtSlot(QtCore.QString)
@@ -281,6 +286,8 @@ class Chamber(QtCore.QObject):
         else :
             trajectoryFile.write('No trajectory recorded' + "\n")
         trajectoryFile.close()
+        if self.trajectoryImage is not None:
+            self.trajectoryImage.save(fileName+'.png')
         
 '''
 Small test
