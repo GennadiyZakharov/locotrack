@@ -110,7 +110,7 @@ class RunRestAnalyser(QtCore.QObject):
             trajectoryStats.quadrantTotalLength[xQuadrant][yQuadrant] +=length
             if speed >= self.runRestSpeedThreshold :
                 # This is Activity
-                trajectoryStats.totalRunDuration+=time
+                trajectoryStats.totalDuration+=time
                 trajectoryStats.runLength += length
                 trajectoryStats.quadrantRunDuration[xQuadrant][yQuadrant] +=time
                 trajectoryStats.quadrantRunLength[xQuadrant][yQuadrant] +=length

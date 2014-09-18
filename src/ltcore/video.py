@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import division
 
 from glob import glob
+from math import isnan
 from PyQt4 import QtCore,QtGui
 import cv
 from ltcore.chambersmanager import ChambersManager
@@ -36,6 +37,11 @@ class Video(QtCore.QObject):
                                                      cv.CV_CAP_PROP_FRAME_COUNT))-1
         self.frameRate = cv.GetCaptureProperty(captureDevice,
                                                cv.CV_CAP_PROP_FPS)
+        # Workaround over openCV bug 
+        if isnan(self.frameRate) :
+            print('Buggy framerate')
+            self.frameRate = 15
+        print('Created video',videoLength, self.frameRate)
         # Cham
         self.chambers.setVideoLength(videoLength)
         
@@ -50,6 +56,7 @@ class Video(QtCore.QObject):
             QtGui.QApplication.processEvents()  
         if len(self.chambers) > 0 :
             self.chambers.setScale(scale)
+            
             
     def saveChambers(self):
         print('Saving chamber for ',self.videoFileName)

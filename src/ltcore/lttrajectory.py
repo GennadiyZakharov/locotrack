@@ -31,7 +31,7 @@ class LtTrajectory(object):
         self.cpY = np.empty(length)
         self.cpY.fill(-1.0)
         self.leftBorder = 0
-        self.rightBorder = length-1
+        self.rightBorder = length
     
     def setBounds(self, leftBorder, rightBorder):
         if rightBorder > self.length :
@@ -150,6 +150,21 @@ class LtTrajectory(object):
             
             fileString = self.formatString.format(i,self.cpX[i],self.cpY[i])
             trajectoryFile.write(fileString)
+    
+    def findBorders(self):
+        startFrame=0
+        while self.cpX[startFrame] < 0 :
+            startFrame +=1
+        endFrame = self.length
+        while self.cpY[endFrame-1] < 0 :
+            endFrame -=1
+        if endFrame > startFrame :
+            self.setBounds(startFrame, endFrame)
+            print('Borders',startFrame, endFrame)
+            return True
+        else:
+            return False
+        
     
     def clone(self):
         '''

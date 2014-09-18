@@ -113,7 +113,7 @@ class TrajectoryAnalysis(QtCore.QObject):
         i = 0
         self.analyseFromFilesRunning = True
         for chamber,scale,frameRate in chamberList:
-            print('Analysing chamber',chamber,scale,frameRate)
+            print('Analysing chamber',i,chamber,scale,frameRate)
             if not self.analyseFromFilesRunning : 
                 print('Analysis aborted')
                 break
@@ -125,7 +125,8 @@ class TrajectoryAnalysis(QtCore.QObject):
             # speed info
             #spdName = name+'.spd' if self.writeSpeedInfo != 0 else None
             self.signalNextFileAnalysing.emit('chamber ',i)
-            print('Analysing chamber ',i)
+            if not chamber.trajectory.findBorders():
+                continue
             errorStatus = self.errorDetector.checkForErrors(chamber.trajectory, scale, frameRate) 
             if errorStatus == self.errorDetector.errorTooMuchMissedIntervals :
                 print('Too much missed intervals; {};\n') 
@@ -133,7 +134,8 @@ class TrajectoryAnalysis(QtCore.QObject):
                 print('Too long missed interval; {};\n')
             else :
                 # Create image and analyse   
-                self.analyser.analyseChamber(chamber,scale,frameRate)
+                trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
+                print(trajectoryStats.totalInfo())
                 image = self.imageCreator(chamber)        
                     
         self.signalAnalysisFinished.emit()  

@@ -30,10 +30,10 @@ class TrajectoryStats(object):
         self.totalLength = 0.0
         self.runLength = 0.0
         self.runCount = 0
-        self.quadrantTotalDuration = [0,0,0,0]
-        self.quadrantTotalLength = [0,0,0,0]
-        self.quadrantRunDuration = [0,0,0,0]
-        self.quadrantRunLength = [0,0,0,0]
+        self.quadrantTotalDuration = [[0,0],[0,0]]
+        self.quadrantTotalLength = [[0,0],[0,0]]
+        self.quadrantRunDuration = [[0,0],[0,0]]
+        self.quadrantRunLength = [[0,0],[0,0]]
         self.intervals = []
         
         
@@ -50,8 +50,21 @@ class TrajectoryStats(object):
         return (self.runCount / self.totalDuration )*100
     
     def quandrantActivity(self):
-        return [runDuration / totalDuration for (totalDuration,runDuration) 
-                in zip(self.quadrantTotalDuration,self.quadrantRunDuration)]
+        quandantActivity=[[0,0],[0,0]]
+        for x in range(1):
+            for y in range(1):
+                print(x,y)
+                quandantActivity[x][y]=self.quadrantRunDuration[x][y]/self.quadrantTotalDuration[x][y]
+        return quandantActivity
         
     def setCenter(self, x,y):
         self.center = (x,y)
+        
+    def totalInfo(self):
+        return ('Activity Index: {}\n'.format(self.activityIndex())+ 
+               'runFrequency: {}\n'.format(self.runFrequency())+
+               'quandrantActivity: {}\n'.format(self.quandrantActivity())+
+               'Mean speed: {}\n'.format(self.totalLength/self.totalDuration if self.totalDuration >0 else 'N/A')+
+               'Mean run speed: {}\n'.format(self.runLength/self.runDuration if self.runDuration >0 else 'N/A')) 
+               
+    
