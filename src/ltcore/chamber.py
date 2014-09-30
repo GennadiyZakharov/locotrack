@@ -272,20 +272,20 @@ class Chamber(QtCore.QObject):
         '''
         fileName = unicode(fileNameTemplate).format(self.number)
         print('Save chamber for sample {} to file {}'.format(self.sampleName, fileName))
-        trajectoryFile = open(fileName, 'w')
-        trajectoryFile.write(self.fileCaption)
-        trajectoryFile.write('Position = {0} {1}\n'.format(self.left(), self.top()))
-        trajectoryFile.write('Size = {0} {1}\n'.format(self.width(), self.height()))
-        trajectoryFile.write('Scale (px/mm) = {0}\n'.format(scale)) 
-        trajectoryFile.write('FrameRate = {0}\n'.format(frameRate))
-        trajectoryFile.write('Sample name = {}\n'.format(self.sampleName))
-        trajectoryFile.write('Threshold level = {}\n'.format(self.threshold))
+        chamberFile = open(fileName, 'w')
+        chamberFile.write(self.fileCaption)
+        chamberFile.write('Position = {0} {1}\n'.format(self.left(), self.top()))
+        chamberFile.write('Size = {0} {1}\n'.format(self.width(), self.height()))
+        chamberFile.write('Scale (px/mm) = {0}\n'.format(scale)) 
+        chamberFile.write('FrameRate = {0}\n'.format(frameRate))
+        chamberFile.write('Sample name = {}\n'.format(self.sampleName))
+        chamberFile.write('Threshold level = {}\n'.format(self.threshold))
         if self.trajectory is not None :
-            trajectoryFile.write(self.trajectoryCaption)
-            self.trajectory.saveToFile(trajectoryFile)
+            chamberFile.write(self.trajectoryCaption)
+            self.trajectory.saveToFile(chamberFile)
         else :
-            trajectoryFile.write('No trajectory recorded' + "\n")
-        trajectoryFile.close()
+            chamberFile.write('No trajectory recorded' + "\n")
+        chamberFile.close()
         if self.trajectoryImage is not None:
             self.trajectoryImage.save(fileName+'.png')
         
