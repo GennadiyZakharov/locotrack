@@ -12,7 +12,7 @@ from time import time
 from random import randint
 
 from numpy import meshgrid, arange
-from PyQt4 import QtCore
+from PyQt4 import QtCore,QtGui
 from ltcore.lttrajectory import LtTrajectory
 
 class Chamber(QtCore.QObject):
@@ -260,6 +260,9 @@ class Chamber(QtCore.QObject):
             print("Error loading trajectory")
             raise
         trajectoryFile.close()
+        #Loading trajectory Image
+        if QtCore.QFileInfo(fileName+'.png').exists() :
+            chamber.trajectoryImage = QtGui.QImage(fileName+'.png')
         return chamber, scale, frameRate
     
     @QtCore.pyqtSlot(QtCore.QString, float, float)
