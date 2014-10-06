@@ -113,7 +113,7 @@ class TrajectoryAnalysis(QtCore.QObject):
         i = 0
         self.analyseFromFilesRunning = True
         for chamber,scale,frameRate in chamberList:
-            print('Analysing chamber',i,chamber,scale,frameRate)
+            print('Analysing chamber',i,scale,frameRate)
             if not self.analyseFromFilesRunning : 
                 print('Analysis aborted')
                 break
@@ -136,22 +136,11 @@ class TrajectoryAnalysis(QtCore.QObject):
                 # Create image and analyse   
                 trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
                 chamber.setTrajectoryStats(trajectoryStats)
-                chamber.setTrajectoryImage(self.imageCreator(chamber))        
+                chamber.setTrajectoryImage(self.imageCreator(chamber))
+                print(trajectoryStats.totalReport())        
                     
         self.signalAnalysisFinished.emit()  
-        
-    def analyseChamber(self, chamber,scale,frameRate):
-        errorStatus = self.errorDetector.checkForErrors(chamber.trajectory, scale, frameRate)
-        if errorStatus == self.errorDetector.errorTooMuchMissedIntervals :
-            print('Too much missed intervals; {};\n') 
-        elif errorStatus == self.errorDetector.errorTooLongMissedInterval :
-            print('Too long missed interval; {};\n')
-        else :
-                # Create image and analyse   
-                self.analyser.analyseChamber(chamber,scale,frameRate)
-                image = self.imageCreator(chamber)
-                #image.save(name + '.png')      
-    
+
     @QtCore.pyqtSlot()
     def abortAnalysis(self):
         self.analyseFromFilesRunning = False   
