@@ -26,9 +26,9 @@ class LtTrajectory(object):
         '''   
         self.length = length
         # Arrays to store central point
-        self.cpX = np.empty(length)
+        self.cpX = np.empty(length+1)
         self.cpX.fill(-1.0)
-        self.cpY = np.empty(length)
+        self.cpY = np.empty(length+1)
         self.cpY.fill(-1.0)
         self.leftBorder = 0
         self.rightBorder = length

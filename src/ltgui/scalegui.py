@@ -23,7 +23,7 @@ class ScaleGui(QtGui.QGraphicsObject):
         super(ScaleGui, self).__init__(parent)
         self.setFlags(QtGui.QGraphicsItem.ItemIsSelectable | 
         QtGui.QGraphicsItem.ItemIsMovable | QtGui.QGraphicsItem.ItemIsFocusable)
-        self.lengthInMM = 15
+        self.lengthInMM = 20
         self.updateRect(rect)
            
     def updateRect(self, rect):

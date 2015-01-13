@@ -130,7 +130,8 @@ class CvPlayer(QtCore.QObject):
                                                cv.CV_CAP_PROP_FPS)
         # Workaround over openCV bug 
         if isnan(self.frameRate) :
-            self.frameRate = 30
+            print('Buggy openCV framerate, using -1. Please fix framerate in lt files before analysis')
+            self.frameRate = -1
         self.seekInterval = self.videoFileLength // 50
         self.resetBorders()
         #TODO: do as message

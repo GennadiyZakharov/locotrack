@@ -39,8 +39,8 @@ class Video(QtCore.QObject):
                                                cv.CV_CAP_PROP_FPS)
         # Workaround over openCV bug 
         if isnan(self.frameRate) :
-            print('Buggy framerate')
-            self.frameRate = 15
+            print('Buggy framerate, using -1')
+            self.frameRate = -1
         print('Created video',videoLength, self.frameRate)
         # Cham
         self.chambers.setVideoLength(videoLength)
