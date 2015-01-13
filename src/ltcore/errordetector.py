@@ -34,7 +34,8 @@ class ErrorDetector(QtCore.QObject):
         self.maxMissedIntervalDuration = 2.0 # Seconds
         self.maxMissedIntervalCount = 5
         self.objectLengthThreshold = 1.0 # mm
-        self.errorSpeedThreshold = 50.0 # mm/s
+        self.errorSpeedThreshold = 100.0 # mm/s
+        self.quantDuration = 1.0      # Length of quant
 
     @QtCore.pyqtSlot(float)
     def setMaxMissedIntervalDuration(self, value):
@@ -72,15 +73,24 @@ class ErrorDetector(QtCore.QObject):
             return self.errorNoErrors
                 
         startFrame, endFrame = trajectory.bounds()
+        print('Analysing for errors')
         print('bounds', startFrame, endFrame)
-        # Start frame always not none (trajectory stripped)
         
+        #seeking for start and end frame#
         while True :
             ltObject1 = trajectory[startFrame]
             if ltObject1 is not None:
                 break
             startFrame +=1
+        while True :
+            ltObject2 = trajectory[endFrame]
+            if ltObject2 is not None:
+                break
+            endFrame -=1
+        
+        #Analysis
         frame1=startFrame
+        ltObject1 = trajectory[startFrame]
         # Cycle by all frames
         for frame2 in xrange(startFrame + 1, endFrame):
             ltObject2 = trajectory[frame2]
@@ -99,6 +109,8 @@ class ErrorDetector(QtCore.QObject):
             if (length > self.objectLengthThreshold) and ((length / time) > self.errorSpeedThreshold):  
                 # An error -- print error message
                 print("*** Speed too much at frame {}".format(frame2))
+                print('*** Movement length {:.3f} mm'.format(length))
+                print('*** Movement speed {:.3f} mm/s'.format(length/time))
                 trajectory[frame2]=None
                 error = incErrorFrame()
                 if error != self.errorNoErrors :

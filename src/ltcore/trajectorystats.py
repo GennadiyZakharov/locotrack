@@ -21,7 +21,8 @@ class TrajectoryStats(object):
     '''
     classdocs
     '''
-    formatString='{} {} {} {} {}'
+    # Activity  RinFreq, TotalSpeed, RunSpeed Quadrants
+    formatString='{:>8.3f} {:>8.3f} {} {} {}'
     reportString = \
     '''
     Total trajectory duration: {}
@@ -30,8 +31,8 @@ class TrajectoryStats(object):
     Run length {}
     Run frequency {} 
     Activity on quadrants:
-    {:8.3f} {:8.3f}
-    {:8.3f} {:8.3f}
+    {:>8.3f} {:>8.3f}
+    {:>8.3f} {:>8.3f}
     
     '''
     
@@ -69,16 +70,24 @@ class TrajectoryStats(object):
         quandantActivityArr=[[0,0],[0,0]]
         for x in range(2):
             for y in range(2):
-                quandantActivityArr[x][y]=self.quadrantRunDuration[x][y]/self.quadrantTotalDuration[x][y]
+                if self.quadrantTotalDuration[x][y] > 0 :
+                    quandantActivityArr[x][y]=self.quadrantRunDuration[x][y]/self.quadrantTotalDuration[x][y]
         return quandantActivityArr
         
     def setCenter(self, x,y):
         self.center = (x,y)
         
+    def totalSpeedTxt(self):
+        return '{:>8.3f}'.format(self.totalLength/self.totalDuration) if self.totalDuration >0 else '{:>8s}'.format('N/A')
+        
+    def runSpeedTxt(self):
+        return '{:>8.3f}'.format(self.runLength/self.runDuration) if self.runDuration >0 else '{:>8s}'.format('N/A')
+    
     def totalInfo(self):
-        return self.formatString.format(self.activityIndex(),self.runFrequency(),self.quandrantActivity(),
-                                        self.totalLength/self.totalDuration if self.totalDuration >0 else 'N/A',
-                                        self.runLength/self.runDuration if self.runDuration >0 else 'N/A') 
+        return self.formatString.format(self.activityIndex(),self.runFrequency(),
+                                        self.totalSpeedTxt(),
+                                        self.runSpeedTxt(),
+                                        self.quandrantActivity()) 
         
     def totalReport(self):
         qA = self.quandrantActivity()

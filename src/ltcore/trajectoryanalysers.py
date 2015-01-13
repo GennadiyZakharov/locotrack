@@ -143,6 +143,9 @@ class RunRestAnalyser(QtCore.QObject):
             QtGui.QApplication.processEvents()
         # total output
         return trajectoryStats
+
+
+#===========================================================================================================================
         
 class RatRunAnalyser(QtCore.QObject):
     #            sample name 

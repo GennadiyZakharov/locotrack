@@ -30,7 +30,7 @@ class TrajectoryAnalysis(QtCore.QObject):
         self.analysers = [RunRestAnalyser(self), 
                           RatRunAnalyser(self)]
         self.analyser = self.analysers[0]
-        self.analyseFromFilesRunning = False
+        self.analyseRunning = False
         self.imageLevels = 3
         self.imageCreators = [self.createImageLines, self.createImageDots]
         self.imageCreatorsCaptions = ['Lines','Dots']
@@ -111,10 +111,10 @@ class TrajectoryAnalysis(QtCore.QObject):
     def analyseChambers(self, chamberList):
         self.signalAnalysisStarted.emit(len(chamberList))
         i = 0
-        self.analyseFromFilesRunning = True
+        self.analyseRunning = True
         for chamber,scale,frameRate in chamberList:
-            print('Analysing chamber',i,scale,frameRate)
-            if not self.analyseFromFilesRunning : 
+            print('Analysing chamber #{}-{}, scale:{:.3f}, framerate:{:.1f}'.format(i+1,chamber.sampleName,scale,frameRate))
+            if not self.analyseRunning : 
                 print('Analysis aborted')
                 break
             # Signal to update GUI
@@ -122,28 +122,22 @@ class TrajectoryAnalysis(QtCore.QObject):
             QtGui.QApplication.processEvents()
             if chamber.trajectory is None : 
                 continue
-            # speed info
-            #spdName = name+'.spd' if self.writeSpeedInfo != 0 else None
-            self.signalNextFileAnalysing.emit('chamber ',i)
+            self.signalNextFileAnalysing.emit('Chamber ',i)
             if not chamber.trajectory.findBorders():
                 continue
             errorStatus = self.errorDetector.checkForErrors(chamber.trajectory, scale, frameRate) 
-            if errorStatus == self.errorDetector.errorTooMuchMissedIntervals :
-                print('Too much missed intervals; {};\n') 
-            elif errorStatus == self.errorDetector.errorTooLongMissedInterval :
-                print('Too long missed interval; {};\n')
-            else :
+            chamber.setTrajectoryErrorStatus(errorStatus)
                 # Create image and analyse   
-                trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
-                chamber.setTrajectoryStats(trajectoryStats)
-                chamber.setTrajectoryImage(self.imageCreator(chamber))
-                print(trajectoryStats.totalReport())        
+            trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
+            chamber.setTrajectoryStats(trajectoryStats)
+            chamber.setTrajectoryImage(self.imageCreator(chamber))
+            print(trajectoryStats.totalReport())        
                     
         self.signalAnalysisFinished.emit()  
 
     @QtCore.pyqtSlot()
     def abortAnalysis(self):
-        self.analyseFromFilesRunning = False   
+        self.analyseRunning = False   
         
 
 

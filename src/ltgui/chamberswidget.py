@@ -183,6 +183,9 @@ class ChambersWidget(QtGui.QWidget):
        
     def updateChamberGui(self):
         chamber = self.sender()
+        # TODO: why chamber not in chamberwidgets sending us a signal
+        if not chamber in self.chamberWidgets.keys() :
+            return
         sampleName, thresholdSpibBox = self.chamberWidgets[chamber]
         sampleName.setText(chamber.sampleName)
         thresholdSpibBox.setValue(chamber.threshold)

@@ -67,7 +67,7 @@ class ErrorDetectorWidget(QtGui.QWidget):
             self.errorTresholdSpinBox.setValue(4.0)
         elif index == 0 :
             # Imago
-            self.errorTresholdSpinBox.setValue(50)
+            self.errorTresholdSpinBox.setValue(100)
         elif index == 2 :
             # Rat
             self.errorTresholdSpinBox.setValue(500)

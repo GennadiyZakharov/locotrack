@@ -49,7 +49,7 @@ class CvProcessor(QtCore.QObject):
         self.showProcessedImage = True
         self.showContour = True
         self.ellipseCrop = True
-        self.analyseFromFilesRunning = False
+        self.analyseRunning = False
         # Reset Trajectory
         #self.recordTrajectory = False
         # Visual Parameters
@@ -237,7 +237,7 @@ class CvProcessor(QtCore.QObject):
             self.cvPlayer.captureClose()
             self.frame=None
             self.signalClearFrame.emit()
-            self.analyseFromFilesRunning = False
+            self.analyseRunning = False
         else:
             self.cvPlayer.captureFromFile(fileName)
             

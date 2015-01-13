@@ -64,6 +64,7 @@ class Chamber(QtCore.QObject):
         self.initMatrices()
         self.trajectoryStats = None
         self.trajectoryImage = None
+        self.trajectoryErrorStatus=0
         
     def __hash__(self):
         '''
@@ -84,6 +85,9 @@ class Chamber(QtCore.QObject):
         Return matrices for massCenterDetector
         '''
         return (self.Xmatrix, self.Ymatrix)
+    
+    def setTrajectoryErrorStatus(self, trajectoryErrorStatus):
+        self.trajectoryErrorStatus = trajectoryErrorStatus
     
     @QtCore.pyqtSlot(int)
     def setNumber(self, number):
@@ -252,7 +256,7 @@ class Chamber(QtCore.QObject):
         # TODO: Reading scale label and frame rate
         scale = float(stripeq(trajectoryFile.readline()))
         frameRate = float(stripeq(trajectoryFile.readline()))
-        chamber.sampleName = stripeq(unicode(trajectoryFile.readline()).strip())
+        chamber.sampleName = stripeq(unicode(trajectoryFile.readline())).strip()
         chamber.threshold = float(stripeq(trajectoryFile.readline()))
         if trajectoryFile.readline().strip() == cls.trajectoryCaption.strip() :
             chamber.trajectory = LtTrajectory.loadFromFile(trajectoryFile)

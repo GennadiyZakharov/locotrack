@@ -14,6 +14,7 @@ from ltcore.video import Video
 from ltcore.chamber import Chamber
 from ltcore.chambersmanager import ChambersManager
 from ltcore.trajectoryanalysis import TrajectoryAnalysis
+from ltcore.errordetector import ErrorDetector
 
 class Project(QtCore.QObject):
     '''
@@ -187,8 +188,15 @@ class Project(QtCore.QObject):
         for video in self.videos.values() :
             for chamber in video.chambers :
                 if chamber.trajectoryStats is not None:
+                    errorStatus = chamber.trajectoryErrorStatus
+                    if errorStatus == ErrorDetector.errorTooMuchMissedIntervals :
+                        err='MuchMissed\n' 
+                    elif errorStatus == ErrorDetector.errorTooLongMissedInterval :
+                        err='LongMissed\n'
+                    else :
+                        err='NoErr       '
                     stats = chamber.trajectoryStats.totalInfo()
-                    projectStatsFile.write(stats+'\n')
+                    projectStatsFile.write('{:>8s}'.format(chamber.sampleName)+' '+err+ ' ' +stats+'   '+video.videoFileName+'\n')
         
         
         
