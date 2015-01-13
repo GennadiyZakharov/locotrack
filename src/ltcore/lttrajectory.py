@@ -145,9 +145,7 @@ class LtTrajectory(object):
         trajectoryFile.write("{}\n".format(self.length))
         trajectoryFile.write("{} {}\n".format(self.leftBorder, self.rightBorder))
         trajectoryFile.write(self.captionString)
-        
         for i in xrange(self.leftBorder,self.rightBorder) :
-            
             fileString = self.formatString.format(i,self.cpX[i],self.cpY[i])
             trajectoryFile.write(fileString)
     
