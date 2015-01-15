@@ -190,13 +190,13 @@ class Project(QtCore.QObject):
                 if chamber.trajectoryStats is not None:
                     errorStatus = chamber.trajectoryErrorStatus
                     if errorStatus == ErrorDetector.errorTooMuchMissedIntervals :
-                        err='MuchMissed\n' 
+                        err='MuchMissed  ' 
                     elif errorStatus == ErrorDetector.errorTooLongMissedInterval :
-                        err='LongMissed\n'
+                        err='LongMissed  '
                     else :
                         err='NoErr       '
                     stats = chamber.trajectoryStats.totalInfo()
-                    projectStatsFile.write('{:>8s}'.format(chamber.sampleName)+' '+err+ ' ' +stats+'   '+video.videoFileName+'\n')
+                    projectStatsFile.write('{:>8s};'.format(chamber.sampleName)+' '+err+ '; ' +stats+'   '+video.videoFileName+'\n')
         
         
         

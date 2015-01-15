@@ -22,17 +22,17 @@ class TrajectoryStats(object):
     classdocs
     '''
     # Activity  RinFreq, TotalSpeed, RunSpeed Quadrants
-    formatString='{:>8.3f} {:>8.3f} {} {} {}'
+    formatString='{:>8.3f}; {:>8.3f}; {}; {}; {};'
     reportString = \
     '''
-    Total trajectory duration: {}
-    Total trajectory length: {}
-    Activity Index {}
-    Run length {}
-    Run frequency {} 
+    Total trajectory duration: {:>8.3f}
+    Total trajectory length: {:>8.3f}
+    Activity Index {:>8.3f}
+    Run length {:>8.3f}
+    Run frequency {:>8.3f} 
     Activity on quadrants:
-    {:>8.3f} {:>8.3f}
-    {:>8.3f} {:>8.3f}
+    {:>8.3f}; {:>8.3f};
+    {:>8.3f}; {:>8.3f};
     
     '''
     
