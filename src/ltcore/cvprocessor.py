@@ -5,7 +5,7 @@ Created on 18.03.2011
 
 from __future__ import division
 
-import cv
+import cv2
 import os
 from PyQt4 import QtCore
 from ltcore.cvplayer import CvPlayer
@@ -54,10 +54,11 @@ class CvProcessor(QtCore.QObject):
         #self.recordTrajectory = False
         # Visual Parameters
         self.scaleLabelPosition = (20, 20)
-        self.chamberColor = cv.CV_RGB(0, 255, 0)
-        self.chamberSelectedColor = cv.CV_RGB(255, 0, 0)
-        self.maxBrightColor = cv.CV_RGB(255, 255, 0)
-        self.font = cv.InitFont(3, 1, 1)
+        self.chamberColor = cv2.cv.CV_RGB(0, 255, 0)
+        #(redVal,greenVal,blueVal) Color.green()  #cv.CV_RGB(0, 255, 0)
+        self.chamberSelectedColor = cv2.cv.CV_RGB(255, 0, 0)
+        self.maxBrightColor = cv2.cv.CV_RGB(255, 255, 0)
+        #self.font = cv.InitFont(3, 1, 1)
         #
         self.maxBrightDetector = maxBrightDetector()
         self.massCenterDetector = massCenterDetector()
@@ -86,10 +87,12 @@ class CvProcessor(QtCore.QObject):
         if self.frame is None :
             return
         # Creating frame copy to draw and process it
-        frame = cv.CloneImage(self.frame)
+        frame = self.frame.copy()
         # Preprocessing -- negative, gray etc
-        grayFrame = self.preProcess(frame)       
+        # TODO:
+        grayFrame = frame #self.preProcess(frame)       
         # Processing all chambersGui
+        '''
         activeVideo = self.project.activeVideo()
             
         if activeVideo is not None: 
@@ -98,12 +101,15 @@ class CvProcessor(QtCore.QObject):
         # Converting processed image to 3-channel form to display
         # (cvLabel can draw only in RGB mode)
         if self.showProcessedImage :
-            frame = cv.CreateImage(cv.GetSize(grayFrame), cv.IPL_DEPTH_8U, 3)
-            cv.CvtColor(grayFrame, frame, cv.CV_GRAY2RGB);
+            frame = cv2.cvtColor(grayFrame, cv2.cv.CV_GRAY2RGB);
+            #frame = cv2.CreateImage(cv.GetSize(grayFrame), cv.IPL_DEPTH_8U, 3)
+            
         # Draw all chambers and object properties
         self.drawChambers(frame)
         # send processed frame to display
-        self.signalNextFrame.emit(frame) 
+        '''
+        self.signalNextFrame.emit(frame)
+         
         
     def preProcess(self, frame):
         '''
@@ -111,23 +117,25 @@ class CvProcessor(QtCore.QObject):
         '''
         # Inverting frame if needed
         if self.invertImage :
-            cv.Not(frame, frame)
+            frame = cv2.bitwise_not(frame)
         # Crop
         if self.ellipseCrop :
             activeVideo = self.project.activeVideo()
             
             if activeVideo is not None: 
                 for chamber in activeVideo.chambers :
-                    cv.SetImageROI(frame, chamber.getRect())
+                    x, y, width, height=chamber.getRect()
+                    chamberRect = frame[x:x+width,y:y+height]
                     center = (int(chamber.width() / 2), int(chamber.height() / 2))
                     th = int(max(center) / 2)
                     axes = (int(chamber.width() / 2 + th / 2), int(chamber.height() / 2 + th / 2))
-                    cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0, 0, 0), thickness=th)
-                    cv.ResetImageROI(frame)
+                    cv2.ellipse(chamberRect, center, axes, 0, 0, 360, cv2.cv.RGB(0, 0, 0), thickness=th)
+                    #cv.ResetImageROI(frame)
             
         # Discarding color information
-        grayImage = cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
-        cv.CvtColor(frame, grayImage, cv.CV_RGB2GRAY);
+        grayImage = cv2.cvtColor(frame, cv2.cv.CV_RGB2GRAY);
+        #cv.CreateImage(cv.GetSize(frame), cv.IPL_DEPTH_8U, 1)
+        #cv.CvtColor(frame, grayImage, cv.CV_RGB2GRAY);
         return grayImage
     
     def calculatePosition(self, frame):
@@ -139,17 +147,18 @@ class CvProcessor(QtCore.QObject):
         '''
         chamber.frameNumber = self.frameNumber
         # Set ROI according to chamber size
-        cv.SetImageROI(frame, chamber.getRect())       
+        x,y, width, height = chamber.getRect()
+        chamberROI = frame[x:x+width,y:y+height]  #cv.SetImageROI(frame, )       
         if self.objectDetectorIndex == 0 :
-            ltObject = self.maxBrightDetector.detectObject(frame)
+            ltObject = self.maxBrightDetector.detectObject(chamberROI)
         elif  self.objectDetectorIndex == 1 :
-            ltObject = self.massCenterDetector.detectObject(frame, chamber, self.ellipseCrop)
+            ltObject = self.massCenterDetector.detectObject(chamberROI, chamber, self.ellipseCrop)
         else:
             raise
         
         chamber.setLtObject(ltObject, self.frameNumber)
         # Reset area selection
-        cv.ResetImageROI(frame)
+        # cv.ResetImageROI(frame)
         
     def drawChambers(self, frame) :
         '''
@@ -161,7 +170,7 @@ class CvProcessor(QtCore.QObject):
             scale = self.project.activeVideo().chambers.scale
             if scale >= 0  :
                 # TODO: 15mm
-                cv.Line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + scale * 15), self.scaleLabelPosition[1]),
+                cv2.line(frame, self.scaleLabelPosition, (int(self.scaleLabelPosition[0] + scale * 15), self.scaleLabelPosition[1]),
                         self.chamberColor, 2)
         # Drawing chambersGui Numbers
         # TODO: move to gChamber
@@ -172,17 +181,19 @@ class CvProcessor(QtCore.QObject):
             if chamber.ltObject is None : # No object to draw
                 return
             # Draw object
-            cv.SetImageROI(frame, chamber.getRect())
+            #cv.SetImageROI(frame, chamber.getRect())
             color = self.chamberSelectedColor
             # Draw mass center
             point = tuple(int(coor) for coor in chamber.ltObject.center)
-            cv.Circle(frame, point, 2, color, cv.CV_FILLED)
+            cv2.circle(frame, point, 2, color, cv2.cv.CV_FILLED)
             # Draw contours
+            '''
+            
             if self.showContour and (chamber.ltObject is not None) and (chamber.ltObject.contour is not None) :
                 cv.DrawContours(frame, chamber.ltObject.contours, 200, 100, -1, 1)
             # Reset to full image
             cv.ResetImageROI(frame)
-    
+            '''
     @QtCore.pyqtSlot(bool)
     def setNegative(self, value):
         '''

@@ -12,7 +12,7 @@ Procedure must return ltObject or None if object was not found
 from __future__ import print_function
 from __future__ import division
 
-import cv
+import cv2
 from math import pi
 from numpy import asarray
 from ltcore.ltobject import LtObject
@@ -25,7 +25,7 @@ class maxBrightDetector(object):
     name = 'MaxBright'
     description = 'Detect only one whitest point of image'
     def detectObject(self, frame):
-        (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
+        (minVal, maxVal, minBrightPos, maxBrightPos) = cv2.minMaxLoc(frame)
         if minVal == maxVal :
             return None # There is no object -- all image has one color
         else:
@@ -51,14 +51,14 @@ class massCenterDetector():
             axes = (int(chamber.width() / 2 + th / 2), int(chamber.height() / 2 + th / 2))
             cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0, 0, 0), thickness=th)
         '''
-        (minVal, maxVal, minBrightPos, maxBrightPos) = cv.MinMaxLoc(frame)
-        averageVal = cv.Avg(frame)[0]
+        (minVal, maxVal, minBrightPos, maxBrightPos) = cv2.minMaxLoc(frame)
+        averageVal = cv2.mean(frame)
         if ellipseCrop :
             averageVal *= 4 / pi
         #size = 
         # Tresholding image
         tresholdVal = (maxVal - averageVal) * (chamber.threshold / 100) + averageVal 
-        cv.Threshold(frame, frame, tresholdVal, 255, cv.CV_THRESH_TOZERO)
+        frame=cv2.threshold(frame, tresholdVal, 255, cv2.cv.CV_THRESH_TOZERO)
         
         # Adaptive threshold
         '''
@@ -76,10 +76,11 @@ class massCenterDetector():
         HATE!!! 
         '''
         # Creating copy of a frame, including only one chamber
-        subFrame = cv.CreateImage((chamber.width(), chamber.height()), cv.IPL_DEPTH_8U, 1);
-        cv.Copy(frame, subFrame);        
+        #subFrame = cv.CreateImage((chamber.width(), chamber.height()), cv.IPL_DEPTH_8U, 1);
+        #cv.Copy(frame, subFrame);
+        subFrame = frame.copy()        
         # Converting frame to matrix
-        mat = asarray(subFrame[:, :])
+        mat = subFrame
         '''
         moments = cv.Moments(cv.fromarray(mat))
         Creating cv array from matrix  also broken -- it leads to memory leaks!

@@ -4,7 +4,7 @@ Created on 18.03.2011
 '''
 from __future__ import print_function
 from __future__ import division
-import cv
+import cv2
 from math import isnan
 from PyQt4 import QtCore
 
@@ -117,17 +117,15 @@ class CvPlayer(QtCore.QObject):
         Open video file for capturing
         '''
         self.captureClose()    
-        self.captureDevice = cv.CaptureFromFile(unicode(fileName)) # Try to open file
+        self.captureDevice = cv2.VideoCapture(unicode(fileName)) # Try to open file
         if self.captureDevice is None : # Error opening file
             #TODO: error report 
             print("Error opening vide file {}".format(fileName))
             return 
         self.videoFileName = fileName # Store file name
         # Get video parameters
-        self.videoFileLength = int(cv.GetCaptureProperty(self.captureDevice,
-                                                     cv.CV_CAP_PROP_FRAME_COUNT))-1
-        self.frameRate = cv.GetCaptureProperty(self.captureDevice,
-                                               cv.CV_CAP_PROP_FPS)
+        self.videoFileLength = int(self.captureDevice.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))-1
+        self.frameRate = self.captureDevice.get(cv2.cv.CV_CAP_PROP_FPS)
         # Workaround over openCV bug 
         if isnan(self.frameRate) :
             print('Buggy openCV framerate, using -1. Please fix framerate in lt files before analysis')
@@ -147,14 +145,13 @@ class CvPlayer(QtCore.QObject):
         Start capturing from video camera
         '''
         self.captureClose()
-        self.captureDevice = cv.CaptureFromCAM(camNumber)
+        self.captureDevice = cv2.VideoCapture(camNumber)
         #TODO: implement
         if self.captureDevice is None :
             #TODO: error report
             print("Error opening video cam number {}".format(camNumber))
             return
-        self.frameRate = cv.GetCaptureProperty(self.captureDevice,
-                                               cv.CV_CAP_PROP_FPS)
+        self.frameRate = self.captureDevice.get(cv2.cv.CV_CAP_PROP_FPS)
         self.videoSourceOpened.emit(-1, self.frameRate, 'Cam'+str(camNumber))
         self.timerEvent()
         
@@ -169,6 +166,7 @@ class CvPlayer(QtCore.QObject):
         self.stopPlayTimer()
         self.stopRunTimer()
         self.videoFileName = QtCore.QString() # No File opened
+        self.captureDevice.release()
         self.captureDevice = None   # No device for capturing
         self.videoFileLength = -1   # Length of video file
         self.frameRate = -1         # 
@@ -257,10 +255,10 @@ class CvPlayer(QtCore.QObject):
             position = desiredPosition
         if self.frameNumber < position < self.seekInterval+self.frameNumber:
             while self.frameNumber < position :
-                cv.QueryFrame(self.captureDevice)
-                self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))
+                self.captureDevice.read()
+                self.frameNumber = int(self.captureDevice.get(cv2.cv.CV_CAP_PROP_POS_FRAMES))
         else :      
-            cv.SetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES, position)
+            self.captureDevice.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, position)
         self.timerEvent()
     
     @QtCore.pyqtSlot()
@@ -319,9 +317,12 @@ class CvPlayer(QtCore.QObject):
             self.play(False)
             self.runTrough(False)
             self.videoSourceEnded.emit()
-        frame = cv.QueryFrame(self.captureDevice)
+        #cap.isOpened()
+        
+        ret, frame = self.captureDevice.read()
         if frame is not None : 
-            self.frameNumber = int(cv.GetCaptureProperty(self.captureDevice, cv.CV_CAP_PROP_POS_FRAMES))-1
+            self.frameNumber = int(self.captureDevice.get(cv2.cv.CV_CAP_PROP_POS_FRAMES))-1
+            cv2.imshow('frame',frame)
             self.nextFrame.emit(frame, self.frameNumber)
         else: # Input file ended
             self.play(False)
