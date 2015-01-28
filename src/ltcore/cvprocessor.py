@@ -76,6 +76,7 @@ class CvProcessor(QtCore.QObject):
         get frame from cvPlayer, save it and process
         '''
         self.frame = frame
+        #cv2.imshow('frame',frame)
         self.frameNumber = frameNumber
         self.processFrame() #
         
@@ -87,27 +88,29 @@ class CvProcessor(QtCore.QObject):
         if self.frame is None :
             return
         # Creating frame copy to draw and process it
-        frame = self.frame.copy()
+        #frame = self.frame.copy()
         # Preprocessing -- negative, gray etc
         # TODO:
-        grayFrame = frame #self.preProcess(frame)       
+        grayFrame = self.preProcess(self.frame)       
         # Processing all chambersGui
-        '''
-        activeVideo = self.project.activeVideo()
-            
+        
+        activeVideo = self.project.activeVideo()            
         if activeVideo is not None: 
             for chamber in self.project.activeVideo().chambers :
                 self.processChamber(grayFrame, chamber)
+        
         # Converting processed image to 3-channel form to display
         # (cvLabel can draw only in RGB mode)
+        
         if self.showProcessedImage :
             frame = cv2.cvtColor(grayFrame, cv2.cv.CV_GRAY2RGB);
             #frame = cv2.CreateImage(cv.GetSize(grayFrame), cv.IPL_DEPTH_8U, 3)
-            
+        else:
+            frame=self.frame
         # Draw all chambers and object properties
         self.drawChambers(frame)
         # send processed frame to display
-        '''
+        
         self.signalNextFrame.emit(frame)
          
         
@@ -124,8 +127,8 @@ class CvProcessor(QtCore.QObject):
             
             if activeVideo is not None: 
                 for chamber in activeVideo.chambers :
-                    x, y, width, height=chamber.getRect()
-                    chamberRect = frame[x:x+width,y:y+height]
+                    x, y, width,height =chamber.getRect()
+                    chamberRect = frame[y:y+height,x:x+width]
                     center = (int(chamber.width() / 2), int(chamber.height() / 2))
                     th = int(max(center) / 2)
                     axes = (int(chamber.width() / 2 + th / 2), int(chamber.height() / 2 + th / 2))
@@ -147,16 +150,19 @@ class CvProcessor(QtCore.QObject):
         '''
         chamber.frameNumber = self.frameNumber
         # Set ROI according to chamber size
-        x,y, width, height = chamber.getRect()
-        chamberROI = frame[x:x+width,y:y+height]  #cv.SetImageROI(frame, )       
+        x,y,width,height = chamber.getRect()
+        chamberROI = frame[y:y+height,x:x+width]  #cv.SetImageROI(frame, )       
         if self.objectDetectorIndex == 0 :
             ltObject = self.maxBrightDetector.detectObject(chamberROI)
         elif  self.objectDetectorIndex == 1 :
-            ltObject = self.massCenterDetector.detectObject(chamberROI, chamber, self.ellipseCrop)
+            ltObject,thrFrame = self.massCenterDetector.detectObject(chamberROI, chamber, self.ellipseCrop)
+            if self.showProcessedImage:
+                frame[y:y+height,x:x+width]=thrFrame
         else:
             raise
         
         chamber.setLtObject(ltObject, self.frameNumber)
+        
         # Reset area selection
         # cv.ResetImageROI(frame)
         
@@ -181,10 +187,11 @@ class CvProcessor(QtCore.QObject):
             if chamber.ltObject is None : # No object to draw
                 return
             # Draw object
-            #cv.SetImageROI(frame, chamber.getRect())
+            x,y,width,height = chamber.getRect()
             color = self.chamberSelectedColor
             # Draw mass center
-            point = tuple(int(coor) for coor in chamber.ltObject.center)
+            xx,yy = chamber.ltObject.center
+            point = (x+int(xx),y+int(yy))
             cv2.circle(frame, point, 2, color, cv2.cv.CV_FILLED)
             # Draw contours
             '''

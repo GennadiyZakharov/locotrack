@@ -9,7 +9,7 @@ from __future__ import division
 from glob import glob
 from math import isnan
 from PyQt4 import QtCore,QtGui
-import cv
+import cv2
 from ltcore.chambersmanager import ChambersManager
 from ltcore.chamber import Chamber
 
@@ -28,15 +28,13 @@ class Video(QtCore.QObject):
         self.chambers = ChambersManager(self)
         self.frameRate = -1
         # Stub to get video file length and framerate
-        captureDevice = cv.CaptureFromFile(unicode(self.videoFileName)) # Try to open file
+        captureDevice = cv2.VideoCapture(unicode(videoFileName)) # Try to open file
         if captureDevice is None : # Error opening file
             #TODO: error report 
             print("Error opening video file {}".format(self.videoFileName))
             raise
-        videoLength = int(cv.GetCaptureProperty(captureDevice,
-                                                     cv.CV_CAP_PROP_FRAME_COUNT))-1
-        self.frameRate = cv.GetCaptureProperty(captureDevice,
-                                               cv.CV_CAP_PROP_FPS)
+        videoLength = int(captureDevice.get(cv2.cv.CV_CAP_PROP_FRAME_COUNT))-1
+        self.frameRate = captureDevice.get(cv2.cv.CV_CAP_PROP_FPS)
         # Workaround over openCV bug 
         if isnan(self.frameRate) :
             print('Buggy framerate, using -1')

@@ -61,7 +61,6 @@ class Chamber(QtCore.QObject):
         # Do not show trajectory
         self.showTrajectory = False
         # Creating matrix for center location
-        self.initMatrices()
         self.trajectoryStats = None
         self.trajectoryImage = None
         self.trajectoryErrorStatus=0
@@ -71,20 +70,6 @@ class Chamber(QtCore.QObject):
         Return hash value to store chambers in dictionary or set
         '''
         return self._hashValue
-        
-    def initMatrices(self):
-        '''
-        Calculate matrices, which is used to calculate mass center of object using numPy
-        matrices recalculated when chamber resizes, so it is stored here
-        '''
-        x, y = arange(0, self.width(), 1), arange(0, self.height(), 1)
-        self.Xmatrix, self.Ymatrix = meshgrid(x, y)
-    
-    def matrices(self):
-        '''
-        Return matrices for massCenterDetector
-        '''
-        return (self.Xmatrix, self.Ymatrix)
     
     def setTrajectoryErrorStatus(self, trajectoryErrorStatus):
         self.trajectoryErrorStatus = trajectoryErrorStatus
@@ -182,7 +167,6 @@ class Chamber(QtCore.QObject):
         '''
         self.rect.setWidth(self.rect.width() + dirX) 
         self.rect.setHeight(self.rect.height() + dirY)
-        self.initMatrices() # Init matrix for new size
         self.signalPositionUpdated.emit()
         self.signalRecalculateChamber.emit()
         
@@ -193,7 +177,6 @@ class Chamber(QtCore.QObject):
         '''
         self.rect.setTopLeft(rect.topLeft())
         self.rect.setBottomRight(rect.bottomRight())
-        self.initMatrices()
         self.signalPositionUpdated.emit()
         self.signalRecalculateChamber.emit()
 

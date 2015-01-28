@@ -3,7 +3,7 @@ Created on 26.05.2012
 @author: gena
 '''
 from PyQt4 import QtCore, QtGui
-import cv
+import cv2
 from ltgui.chambergui import ChamberGui
 from ltgui.scalegui import ScaleGui
 
@@ -53,8 +53,11 @@ class CvGraphics(QtGui.QGraphicsView):
         '''
         if iplImage is None :
             return
-        width,height,nChannels= iplImage.shape
-        print('Frame recieved ',iplImage.shape, iplImage.dtype)
+        if len(iplImage.shape) == 3:
+            height,width,nChannels= iplImage.shape
+        else:
+            height,width= iplImage.shape
+            nChannels = 1
         # checking bit depths
         '''
         if nChannels != 3 :
@@ -66,7 +69,7 @@ class CvGraphics(QtGui.QGraphicsView):
             # Displaying color image
             #print(cstr)
             #QImage(self.cv_img.tostring(),self.cv_img.shape[0],self.cv_img.shape[1],QImage.Format_RGB888)
-            self.frame = QtGui.QImage(iplImage.tostring(), width, height, QtGui.QImage.Format_RGB888).rgbSwapped()        
+            self.frame = QtGui.QImage(cstr, width, height, QtGui.QImage.Format_RGB888).rgbSwapped()        
         elif nChannels == 1:
             # Displaying B&W image as 8bit indexed
             self.frame = QtGui.QImage(cstr, width, height, QtGui.QImage.Format_Indexed8)

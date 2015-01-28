@@ -322,7 +322,7 @@ class CvPlayer(QtCore.QObject):
         ret, frame = self.captureDevice.read()
         if frame is not None : 
             self.frameNumber = int(self.captureDevice.get(cv2.cv.CV_CAP_PROP_POS_FRAMES))-1
-            cv2.imshow('frame',frame)
+            #
             self.nextFrame.emit(frame, self.frameNumber)
         else: # Input file ended
             self.play(False)

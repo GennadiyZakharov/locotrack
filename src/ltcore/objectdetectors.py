@@ -14,6 +14,7 @@ from __future__ import division
 
 import cv2
 from math import pi
+import numpy as np
 from numpy import asarray
 from ltcore.ltobject import LtObject
 
@@ -52,14 +53,13 @@ class massCenterDetector():
             cv.Ellipse(frame, center, axes, 0, 0, 360, cv.RGB(0, 0, 0), thickness=th)
         '''
         (minVal, maxVal, minBrightPos, maxBrightPos) = cv2.minMaxLoc(frame)
-        averageVal = cv2.mean(frame)
+        averageVal = np.mean(frame)  #TODO: why fail?
         if ellipseCrop :
             averageVal *= 4 / pi
         #size = 
         # Tresholding image
         tresholdVal = (maxVal - averageVal) * (chamber.threshold / 100) + averageVal 
-        frame=cv2.threshold(frame, tresholdVal, 255, cv2.cv.CV_THRESH_TOZERO)
-        
+        avg, thrFrame=cv2.threshold(frame, tresholdVal, 255, cv2.cv.CV_THRESH_TOZERO)
         # Adaptive threshold
         '''
         blocksize = int(chamber.threshold) // 2
@@ -68,34 +68,13 @@ class massCenterDetector():
         cv.AdaptiveThreshold(frame, frame, 255, cv.CV_ADAPTIVE_THRESH_GAUSSIAN_C, 
                              cv.CV_THRESH_BINARY,blocksize)
         '''
-        # Calculating mass center
-        '''
-        moments = cv.Moments(frame)
-        The ability to calculate moments from frame 
-        was broken in OpenCV 2.4.0 and still not fixed! 
-        HATE!!! 
-        '''
-        # Creating copy of a frame, including only one chamber
-        #subFrame = cv.CreateImage((chamber.width(), chamber.height()), cv.IPL_DEPTH_8U, 1);
-        #cv.Copy(frame, subFrame);
-        subFrame = frame.copy()        
-        # Converting frame to matrix
-        mat = subFrame
-        '''
-        moments = cv.Moments(cv.fromarray(mat))
-        Creating cv array from matrix  also broken -- it leads to memory leaks!
-        HATE!!!
-        '''
-        # Calculating moments using matrix operations
-        # matrixX and matrixY depends only on chamber size
-        # so, it was calculated and stored in chamber 
-        m00 = mat.sum()
+        # Calculating mass center      
+        moments = cv2.moments(thrFrame)
+        m00 = moments['m00']
         if m00 != 0 :
-            m10 = (mat * chamber.matrices()[0]).sum()
-            m01 = (mat * chamber.matrices()[1]).sum()
-            #m20 = (mat * (matrices[0] ** 2) ).sum()
-            #m02 = (mat * (matrices[1] ** 2) ).sum()
+            m10=moments['m10']
+            m01=moments['m01']
             ltObject = LtObject((m10 / m00, m01 / m00))
-            return ltObject
+            return ltObject,thrFrame
         else :
-            return None
+            return None,thrFrame
