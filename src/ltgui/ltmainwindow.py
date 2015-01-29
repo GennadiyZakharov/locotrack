@@ -20,6 +20,7 @@ from ltgui.projectwidget import ProjectWidget
 from ltgui.videowidget import VideoWidget
 from ltgui.chamberswidget import ChambersWidget
 from ltgui.cvprocessorwidget import CvProcessorWidget
+from ltgui.preprocessorwidget import PreprocessorWidget
 from ltgui.trajectorywidget import TrajectoryWidget
 from ltgui.helpwidget import HelpWidget
 from ltgui.presetswidget import PresetsWidget
@@ -107,6 +108,17 @@ class LtMainWindow(QtGui.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvProcessorDockPanel)
         self.cvProcessorWidget = CvProcessorWidget(self.cvProcessor) 
         cvProcessorDockPanel.setWidget(self.cvProcessorWidget)
+        
+        # ---- Creating dock panel for image processing ---- 
+        cvPreProcessorDockPanel = QtGui.QDockWidget("Preprocessor", self) # Created and set caption
+        cvPreProcessorDockPanel.setObjectName("PreDockWidget")
+        cvPreProcessorDockPanel.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
+        cvPreProcessorDockPanel.setFeatures(QtGui.QDockWidget.DockWidgetMovable | QtGui.QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, cvPreProcessorDockPanel)
+        self.cvPreProcessorWidget = PreprocessorWidget(self.cvProcessor.preprocessor) 
+        cvPreProcessorDockPanel.setWidget(self.cvPreProcessorWidget)
+        
+        
         # ---- Creating dock panel for trajectory Widget
         cvTrajectoryDockPanel = QtGui.QDockWidget("Trajectory", self) # Created and set caption
         cvTrajectoryDockPanel.setObjectName("TrajectoryDockWidget")
@@ -154,8 +166,6 @@ class LtMainWindow(QtGui.QMainWindow):
         helpHelpAction.triggered.connect(self.helpHelp)
         addActions(helpMenu, (helpAboutAction, helpHelpAction))
         # ---- cvProcessorWidget ----
-        self.cvProcessorWidget.negativeChechBox.stateChanged.connect(
-                     self.cvProcessor.setNegative)
         self.cvProcessorWidget.showProcessedChechBox.stateChanged.connect(
                      self.cvProcessor.setShowProcessed)
         self.cvProcessorWidget.showContourChechBox.stateChanged.connect(

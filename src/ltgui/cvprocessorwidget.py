@@ -24,11 +24,6 @@ class CvProcessorWidget(QtGui.QWidget):
         layout.addWidget(showProcessedLabel, 0, 0)
         layout.addWidget(self.showProcessedChechBox, 0, 1)
         #
-        self.negativeChechBox = QtGui.QCheckBox()
-        negativeLabel = QtGui.QLabel("Negative")
-        layout.addWidget(negativeLabel)
-        layout.addWidget(self.negativeChechBox)
-        #
         self.showContourChechBox = QtGui.QCheckBox()
         showContoursLabel = QtGui.QLabel("Show Contour")
         layout.addWidget(showContoursLabel)
