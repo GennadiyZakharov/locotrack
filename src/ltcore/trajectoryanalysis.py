@@ -13,6 +13,10 @@ from PyQt4 import QtCore, QtGui
 from ltcore.chamber import Chamber  
 from ltcore.errordetector import ErrorDetector   
 from ltcore.trajectoryanalysers import RunRestAnalyser, RatRunAnalyser
+from ltcore.kmeans import KMeans
+
+from numpy import vstack,array
+from numpy.random import rand
 
 class TrajectoryAnalysis(QtCore.QObject):
 
@@ -26,6 +30,7 @@ class TrajectoryAnalysis(QtCore.QObject):
         Constructor
         '''
         super(TrajectoryAnalysis, self).__init__(parent)
+        
         self.errorDetector = ErrorDetector(self)
         self.analysers = [RunRestAnalyser(self), 
                           RatRunAnalyser(self)]
@@ -36,11 +41,15 @@ class TrajectoryAnalysis(QtCore.QObject):
         self.imageCreatorsCaptions = ['Lines','Dots']
         self.imageCreator = self.createImageDots
         self.setWriteSpeed(0)
-    
+        
+        data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
+        self.kMeans=KMeans(self)
+        self.kMeans.clusters(data,2)
+        
     @QtCore.pyqtSlot(int)
     def setWriteSpeed(self, checked):
         self.writeSpeedInfo = checked
-      
+        
     @QtCore.pyqtSlot(int)
     def setImageCreator(self, index):
         self.imageCreator = self.imageCreators[index]
@@ -131,7 +140,10 @@ class TrajectoryAnalysis(QtCore.QObject):
             trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
             chamber.setTrajectoryStats(trajectoryStats)
             chamber.setTrajectoryImage(self.imageCreator(chamber))
-            print(trajectoryStats.totalReport())        
+            print(trajectoryStats.totalReport())
+            print(trajectoryStats.hystogram)      
+                    
+        
                     
         self.signalAnalysisFinished.emit()  
 
@@ -139,6 +151,7 @@ class TrajectoryAnalysis(QtCore.QObject):
     def abortAnalysis(self):
         self.analyseRunning = False   
         
-
+    def hystogramCluster(self):
+        pass
 
 

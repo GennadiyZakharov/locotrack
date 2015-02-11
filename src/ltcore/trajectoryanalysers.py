@@ -7,6 +7,7 @@ from __future__ import division
 from math import sqrt
 from PyQt4 import QtCore, QtGui
 from ltcore.trajectorystats import TrajectoryStats,IntervalStats
+import numpy as np
 
 
 class RunRestAnalyser(QtCore.QObject):
@@ -58,8 +59,11 @@ class RunRestAnalyser(QtCore.QObject):
         def frameToTime(frame):
             return frame/frameRate
         
+        
+        
         trajectoryStats = TrajectoryStats()
         trajectoryStats.setBounds(chamber.rect.size())
+        hystogram = np.zeros(2)
         meanX, meanY = chamber.width()/2, chamber.height()/2
         trajectoryStats.setCenter(meanX, meanY)
         trajectory = chamber.trajectory
@@ -93,6 +97,14 @@ class RunRestAnalyser(QtCore.QObject):
             # If we are here -- we have all needed to calculate speed
             x1, y1 = ltObject1.center
             x2, y2 = ltObject2.center
+            
+            dx = x2 - meanX
+            dy = y2 - meanY
+            if (dx/meanX)**2 + (dy/meanY)**2 <=0.5 :
+                hystogram[0]+=1
+            else :
+                hystogram[1]+=1
+            
             length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / scale
             speed = length / time
             # Assign current point to quadrant
@@ -142,6 +154,9 @@ class RunRestAnalyser(QtCore.QObject):
             frame1 = frame2
             QtGui.QApplication.processEvents()
         # total output
+        
+        trajectoryStats.hystogram = hystogram / (endFrame - startFrame)
+        print(trajectoryStats.hystogram)
         return trajectoryStats
 
 

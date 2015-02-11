@@ -3,8 +3,10 @@ Created on 31 aug. 2014
 
 @author: gena
 '''
+
 from __future__ import division,print_function
 from PyQt4 import QtCore
+import numpy as np
 
 class IntervalStats(object):
     def __init__(self):
@@ -52,6 +54,7 @@ class TrajectoryStats(object):
         self.quadrantRunDuration = [[0,0],[0,0]]
         self.quadrantRunLength = [[0,0],[0,0]]
         self.intervals = []
+        self.hystogram = np.empty()
         
         
     def isEmpty(self):
