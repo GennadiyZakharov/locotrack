@@ -124,14 +124,12 @@ class LtTrajectory(object):
         trajectory.setBounds(leftBound,rightBound)
         # Reading trajectory
         trajectoryFile.readline()
-        for i in xrange(leftBound,rightBound) :
-            line = trajectoryFile.readline()
+        while True :
+            line = trajectoryFile.readline().strip()
+            if (line is None) or (line == ''):
+                break
             values = line.split()
             frameNumber = int(values[0])
-            if frameNumber != i :
-                raise Exception('Inconsistent numbers during trajectory loading.' + 
-                                'Frame {}, at line {}'.format(i, frameNumber))
-            # Save data in trajectory
             x = float(values[1])
             y = float(values[2])
             trajectory.cpX[frameNumber], trajectory.cpY[frameNumber] = x, y  
@@ -146,8 +144,10 @@ class LtTrajectory(object):
         trajectoryFile.write("{} {}\n".format(self.leftBorder, self.rightBorder))
         trajectoryFile.write(self.captionString)
         for i in xrange(self.leftBorder,self.rightBorder) :
-            fileString = self.formatString.format(i,self.cpX[i],self.cpY[i])
-            trajectoryFile.write(fileString)
+            x,y=self.cpX[i],self.cpY[i]
+            if x >=0 :
+                fileString = self.formatString.format(i,x,y)
+                trajectoryFile.write(fileString)
     
     def findBorders(self):
         startFrame=0
