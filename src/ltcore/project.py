@@ -64,9 +64,11 @@ class Project(QtCore.QObject):
         #videoFiles = self.projectFolder.entryList(['*.'+videoFormat for videoFormat in videoFormats], QtCore.QDir.Files | QtCore.QDir.NoSymLinks)
         if not videoFiles == []:
             self.projectFileName=projectFileName
-            for videoFile in videoFiles :
-                if os.path.exists(videoFile.strip()):
-                    self.addVideo(QtCore.QString(videoFile.strip()))
+            projectFileInfo=QtCore.QFileInfo(self.projectFileName)
+            QtCore.QDir.setCurrent(projectFileInfo.absolutePath())
+            for videoFileName in videoFiles :
+                if QtCore.QFileInfo(videoFileName.strip()).isFile():
+                    self.addVideo(QtCore.QString(videoFileName.strip()))
         self.signalProjectOpened.emit(QtCore.QFileInfo(self.projectFileName).baseName())
               
     def saveProject(self, projectFileName=QtCore.QString()):
@@ -74,10 +76,12 @@ class Project(QtCore.QObject):
             self.projectFileName = projectFileName
             self.signalProjectOpened.emit(QtCore.QFileInfo(self.projectFileName).baseName())
         print('Saving project {}'.format(self.projectFileName))
+        projectFileDir=QtCore.QFileInfo(self.projectFileName).absoluteDir()
         projectFile = open(unicode(self.projectFileName), 'w')
         projectFile.write(self.projectCaption)
         for videoFileName,video in self.videos.items() :
-            projectFile.write(unicode(videoFileName)+'\n')
+            videoFilePath=projectFileDir.relativeFilePath(videoFileName)
+            projectFile.write(unicode(videoFilePath)+'\n')
             video.saveChambers()
         projectFile.close()
             
