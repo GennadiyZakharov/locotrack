@@ -152,6 +152,8 @@ class LtTrajectory(object):
     def findBorders(self):
         startFrame=0
         while self.cpX[startFrame] < 0 :
+            if startFrame == len(self.cpX)-1:
+                return False
             startFrame +=1
         endFrame = self.length
         while self.cpY[endFrame-1] < 0 :

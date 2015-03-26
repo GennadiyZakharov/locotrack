@@ -54,7 +54,7 @@ class TrajectoryStats(object):
         self.quadrantRunDuration = [[0,0],[0,0]]
         self.quadrantRunLength = [[0,0],[0,0]]
         self.intervals = []
-        self.hystogram = np.empty()
+        self.hystogram = None
         
         
     def isEmpty(self):

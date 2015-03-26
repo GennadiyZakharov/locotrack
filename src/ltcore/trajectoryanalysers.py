@@ -8,6 +8,10 @@ from math import sqrt
 from PyQt4 import QtCore, QtGui
 from ltcore.trajectorystats import TrajectoryStats,IntervalStats
 import numpy as np
+from matplotlib.colors import LogNorm
+
+import matplotlib as mpl
+from numpy import uint32, float32
 
 
 class RunRestAnalyser(QtCore.QObject):
@@ -63,8 +67,13 @@ class RunRestAnalyser(QtCore.QObject):
         
         trajectoryStats = TrajectoryStats()
         trajectoryStats.setBounds(chamber.rect.size())
-        hystogram = np.zeros(2)
-        meanX, meanY = chamber.width()/2, chamber.height()/2
+        width,height = chamber.width(), chamber.height()
+        
+        hystogramLevel= 10
+        
+        hystogram = np.zeros((width//hystogramLevel,height//hystogramLevel),dtype=uint32)
+        
+        meanX, meanY = width, height
         trajectoryStats.setCenter(meanX, meanY)
         trajectory = chamber.trajectory
         startFrame, endFrame = trajectory.bounds()
@@ -75,6 +84,7 @@ class RunRestAnalyser(QtCore.QObject):
         runLength = 0
         runDuration = 0
         lastState = 1  #1- rest, 2 - run
+        
         
         ltObject1 = None
         frame1 = None
@@ -98,13 +108,16 @@ class RunRestAnalyser(QtCore.QObject):
             x1, y1 = ltObject1.center
             x2, y2 = ltObject2.center
             
+            #hystogram[int(x2)//hystogramLevel][int(y2)//hystogramLevel]+=1
+            
             dx = x2 - meanX
             dy = y2 - meanY
+            '''
             if (dx/meanX)**2 + (dy/meanY)**2 <=0.5 :
                 hystogram[0]+=1
             else :
                 hystogram[1]+=1
-            
+            '''
             length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / scale
             speed = length / time
             # Assign current point to quadrant
@@ -155,8 +168,36 @@ class RunRestAnalyser(QtCore.QObject):
             QtGui.QApplication.processEvents()
         # total output
         
-        trajectoryStats.hystogram = hystogram / (endFrame - startFrame)
-        print(trajectoryStats.hystogram)
+        
+        
+        
+        #trajectoryStats.hystogram = hystogram / (endFrame - startFrame)
+        #maxi =  np.max(hystogram)
+        #pic = hystogram * (255 / maxi)
+        #cv2.imshow('Histogram',pic)
+        #cv2.waitKey()
+        #mpl.pyplot.imshow(pic, cmap='gray', dpi=)
+        H,xedges,yedges,image=mpl.pyplot.hist2d(
+            np.array(filter(lambda x: x >= 0, trajectory.cpX)),
+            np.array(filter(lambda x: x >= 0, trajectory.cpY)),
+            bins=40, norm=LogNorm())
+        mpl.pyplot.colorbar()
+        mpl.pyplot.show()
+        mpl.pyplot.clf()
+        
+        dx=trajectory.cpX[startFrame+1:endFrame]-trajectory.cpX[startFrame:endFrame-1]
+        dy=trajectory.cpY[startFrame+1:endFrame]-trajectory.cpY[startFrame:endFrame-1]
+        
+        mpl.pyplot.hist2d(dx,dy,
+            bins=40,norm=LogNorm())
+        mpl.pyplot.colorbar()
+        mpl.pyplot.show()
+        mpl.pyplot.clf()
+        
+        print('Histogram:')
+        print(H)
+
+        #print(hystogram)
         return trajectoryStats
 
 
