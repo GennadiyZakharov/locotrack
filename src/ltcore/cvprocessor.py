@@ -87,48 +87,52 @@ class CvProcessor(QtCore.QObject):
     
     def calculatePosition(self, frame):
         # Processing all chambers 
-        activeVideo = self.project.activeVideo()            
+        activeVideo = self.project.activeVideo()    
+        chamberRects = []        
         if activeVideo is not None: 
             for chamber in self.project.activeVideo().chambers :
-                if self.ellipseCrop :
-                    x, y, width,height =chamber.getRect()
-                    chamberRect = frame[y:y+height,x:x+width]
-                    center = (int(chamber.width() / 2), int(chamber.height() / 2))
-                    th = int(max(center) / 2)
-                    axes = (int(chamber.width() / 2 + th / 2), int(chamber.height() / 2 + th / 2))
-                    cv2.ellipse(chamberRect, center, axes, 0, 0, 360, cv2.cv.RGB(0, 0, 0), thickness=th)
-                    
-                self.processChamber(frame, chamber)
-        
+                x, y, width,height =chamber.getRect()
+                chamberRects.append((frame[y:y+height,x:x+width], chamber))
+                
+            thrFrames = []
+            for chamberRect in chamberRects:
+                thrFrames.append(self.processChamber(chamberRect, chamber))
+                
+            if self.showProcessedImage :
+                for thrFrame in thrFrames:
+                    frame[y:y+height,x:x+width] = thrFrame
+                        
         # Converting processed image to 3-channel form to display
         # (cvLabel can draw only in RGB mode)
-        if self.showProcessedImage :
-            frame = cv2.cvtColor(frame, cv2.cv.CV_GRAY2RGB);
-        else:
-            frame=self.frame
+        
+        if self.showProcessedImage:
+            frame=cv2.cvtColor(frame,cv2.cv.CV_GRAY2RGB)
+        
         # Draw all chambers and object properties
         self.drawChambers(frame)
         # send processed frame to display
         self.signalNextFrame.emit(frame)
            
-    def processChamber(self, frame, chamber):
+    def processChamber(self, chamberRect, chamber):
         '''
         Detect object properties on frame inside chamber
         '''
         chamber.frameNumber = self.frameNumber
-        # Set ROI according to chamber size
-        x,y,width,height = chamber.getRect()
-        chamberROI = frame[y:y+height,x:x+width]  #cv.SetImageROI(frame, )    
-        if self.objectDetectorIndex == 0 :
-            ltObject = self.maxBrightDetector.detectObject(chamberROI)
-        elif  self.objectDetectorIndex == 1 :
-            ltObject,thrFrame = self.massCenterDetector.detectObject(chamberROI, chamber, self.ellipseCrop)
-            if self.showProcessedImage:
-                frame[y:y+height,x:x+width]=thrFrame
-        else:
-            raise
         
+        if self.ellipseCrop : 
+            center = (int(chamber.width() / 2), int(chamber.height() / 2))
+            th = int(max(center) / 2)
+            axes = (int(chamber.width() / 2 + th / 2), int(chamber.height() / 2 + th / 2))
+            cv2.ellipse(chamberRect, center, axes, 0, 0, 360, cv2.cv.RGB(0, 0, 0), thickness=th)    
+        
+        if self.objectDetectorIndex == 0 :
+            ltObject = self.maxBrightDetector.detectObject(chamberRect)
+            thrFrame = chamberRect
+        elif  self.objectDetectorIndex == 1 :
+            ltObject,thrFrame = self.massCenterDetector.detectObject(chamberRect, chamber, self.ellipseCrop)
+            
         chamber.setLtObject(ltObject, self.frameNumber)
+        return thrFrame
         
         # Reset area selection
         # cv.ResetImageROI(frame)
