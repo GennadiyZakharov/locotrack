@@ -9,6 +9,7 @@ from PyQt4 import QtCore, QtGui
 from ltcore.trajectorystats import TrajectoryStats,IntervalStats
 import numpy as np
 from matplotlib.colors import LogNorm
+import math
 
 import matplotlib as mpl
 from numpy import uint32, float32
@@ -182,7 +183,7 @@ class RunRestAnalyser(QtCore.QObject):
             np.array(filter(lambda x: x >= 0, trajectory.cpY)),
             bins=40, norm=LogNorm())
         mpl.pyplot.colorbar()
-        mpl.pyplot.show()
+        #mpl.pyplot.show()
         mpl.pyplot.clf()
         
         dx=trajectory.cpX[startFrame+1:endFrame]-trajectory.cpX[startFrame:endFrame-1]
@@ -191,9 +192,45 @@ class RunRestAnalyser(QtCore.QObject):
         mpl.pyplot.hist2d(dx,dy,
             bins=40,norm=LogNorm())
         mpl.pyplot.colorbar()
-        mpl.pyplot.show()
+        #mpl.pyplot.show()
         mpl.pyplot.clf()
         
+        sFrame=1
+        dx=trajectory.cpX[startFrame+1:endFrame:sFrame]-trajectory.cpX[startFrame:endFrame-1:sFrame]
+        dy=trajectory.cpY[startFrame+1:endFrame:sFrame]-trajectory.cpY[startFrame:endFrame-1:sFrame]
+        
+        for i in range(len(dx)-1) :
+            dx0=dx[i]
+            dy0=dy[i]
+            
+            r=np.hypot(dx0,dy0)
+            if r>0.00001 :
+                cosPhi=dx0/r
+                sinPhi=dy0/r
+            
+                rot=np.array([[ cosPhi,sinPhi],
+                         [ -sinPhi,cosPhi]]   )
+            
+                dx[i],dy[i] = np.dot(rot,np.array([dx[i+1],dy[i+1]]) )
+            else:
+                dx[i]=0;
+                dy[i]=0
+            
+        dx[len(dx)-1]=0
+        dy[len(dy)-1]=0
+            
+        print dx
+        print dy
+            
+        mpl.pyplot.hist2d(dx,dy,
+        bins=40,norm=LogNorm())
+        mpl.pyplot.colorbar()
+        mpl.pyplot.show()
+        mpl.pyplot.clf()
+            
+            
+            
+            
         print('Histogram:')
         print(H)
 

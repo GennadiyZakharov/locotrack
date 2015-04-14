@@ -7,6 +7,7 @@ from __future__ import division
 
 import cv2
 from PyQt4 import QtCore
+import Queue
 from ltcore.cvplayer import CvPlayer
 
 from ltcore.objectdetectors import maxBrightDetector, massCenterDetector
@@ -60,7 +61,10 @@ class CvProcessor(QtCore.QObject):
         self.maxBrightDetector = maxBrightDetector()
         self.massCenterDetector = massCenterDetector()
         self.objectDetectors = [self.maxBrightDetector, self.massCenterDetector]
-        self.objectDetectorIndex = 0   
+        self.objectDetectorIndex = 0 
+        
+        self.chambersQueue = Queue.Queue()  
+        self.thrFramesQueue = Queue.Queue()
 
     def videoSourceOpened(self, length, frameRate, fileName):
         '''
@@ -90,18 +94,40 @@ class CvProcessor(QtCore.QObject):
         activeVideo = self.project.activeVideo()    
         chamberRects = []        
         if activeVideo is not None: 
+            
             for chamber in self.project.activeVideo().chambers :
                 x, y, width,height =chamber.getRect()
-                chamberRects.append((frame[y:y+height,x:x+width], chamber))
+                #chamberRects.append((frame[y:y+height,x:x+width], chamber))
+                #self.chambersQueue.enqueue(  )
+                self.chambersQueue.put((frame[y:y+height,x:x+width], chamber))
                 
-            thrFrames = []
+            
+            while True :
+                if self.chambersQueue.empty() :
+                    break
+                chamberRect,chamber = self.chambersQueue.get()
+                thrFrame = self.processChamber(chamberRect, chamber)
+                self.thrFramesQueue.put((thrFrame, chamber))
+                
+                
+            '''
             for chamberRect in chamberRects:
                 thrFrames.append(self.processChamber(chamberRect, chamber))
+            '''
+            if self.showProcessedImage :
+                while True :
+                    if self.thrFramesQueue.empty() :
+                        break
+                    thrFrame, chamber  = self.thrFramesQueue.get()
+                    x, y, width,height =chamber.getRect()
+                    frame[y:y+height,x:x+width] = thrFrame
                 
+            '''
             if self.showProcessedImage :
                 for thrFrame in thrFrames:
+                
                     frame[y:y+height,x:x+width] = thrFrame
-                        
+            '''         
         # Converting processed image to 3-channel form to display
         # (cvLabel can draw only in RGB mode)
         
