@@ -15,6 +15,7 @@ from __future__ import division
 import cv2
 from math import pi
 import numpy as np
+import scipy
 from numpy import asarray
 from ltcore.ltobject import LtObject
 
@@ -74,7 +75,16 @@ class massCenterDetector():
         if m00 != 0 :
             m10=moments['m10']
             m01=moments['m01']
+            m10=moments['m10']
+            m01=moments['m01']
+            
             ltObject = LtObject((m10 / m00, m01 / m00))
+            direction = [[moments['mu20'],moments['mu11']],
+                         [moments['mu11'],moments['mu02']]]
+            direction = np.array(direction)
+            eVals,eVect = np.linalg.eig(direction)
+            directionVector = eVect[0] if eVals[0] >= eVals[1] else eVect[1]
+            ltObject.direction=directionVector
             return ltObject,thrFrame
         else :
             return None,thrFrame

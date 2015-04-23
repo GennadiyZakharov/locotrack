@@ -204,7 +204,7 @@ class RunRestAnalyser(QtCore.QObject):
             dy0=dy[i]
             
             r=np.hypot(dx0,dy0)
-            if r>0.00001 :
+            if r>0.1 :
                 cosPhi=dx0/r
                 sinPhi=dy0/r
             
@@ -222,8 +222,15 @@ class RunRestAnalyser(QtCore.QObject):
         print dx
         print dy
             
-        mpl.pyplot.hist2d(dx,dy,
-        bins=40,norm=LogNorm())
+        #mpl.pyplot.hist2d(dx,dy,bins=200,norm=LogNorm())
+        binwidth=0.2
+        minData=min(np.min(dx),np.min(dy))
+        maxData=max(np.max(dx),np.max(dy))
+        mpl.pyplot.hist2d(-dy,dx,bins=np.linspace(minData, maxData, int((maxData-minData)/binwidth) ),norm=LogNorm())
+        
+        mpl.pyplot.axes().set_aspect('equal', 'datalim')
+        mpl.pyplot.ylim([-10,10])
+        mpl.pyplot.xlim([-15,15])
         mpl.pyplot.colorbar()
         mpl.pyplot.show()
         mpl.pyplot.clf()
