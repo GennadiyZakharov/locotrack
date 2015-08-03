@@ -13,6 +13,7 @@ import math
 
 import matplotlib as mpl
 from numpy import uint32, float32
+from sklearn.decomposition import PCA
 
 
 class RunRestAnalyser(QtCore.QObject):
@@ -63,9 +64,6 @@ class RunRestAnalyser(QtCore.QObject):
         '''
         def frameToTime(frame):
             return frame/frameRate
-        
-        
-        
         trajectoryStats = TrajectoryStats()
         trajectoryStats.setBounds(chamber.rect.size())
         width,height = chamber.width(), chamber.height()
@@ -226,20 +224,19 @@ class RunRestAnalyser(QtCore.QObject):
         binwidth=0.2
         minData=min(np.min(dx),np.min(dy))
         maxData=max(np.max(dx),np.max(dy))
-        mpl.pyplot.hist2d(-dy,dx,bins=np.linspace(minData, maxData, int((maxData-minData)/binwidth) ),norm=LogNorm())
+        counts, xedges, yedges, Image = mpl.pyplot.hist2d(-dy,dx,bins=np.linspace(minData, maxData, int((maxData-minData)/binwidth) ),norm=LogNorm())
         
         mpl.pyplot.axes().set_aspect('equal', 'datalim')
         mpl.pyplot.ylim([-10,10])
         mpl.pyplot.xlim([-15,15])
         mpl.pyplot.colorbar()
-        mpl.pyplot.show()
+        #mpl.pyplot.show()
         mpl.pyplot.clf()
-            
-            
-            
-            
-        print('Histogram:')
-        print(H)
+        
+        #pca =PCA(n_components=10)
+        #pca.fit(hist)   
+        #print('Histogram:')
+        #print(H)
 
         #print(hystogram)
         return trajectoryStats
