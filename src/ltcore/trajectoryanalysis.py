@@ -137,11 +137,11 @@ class TrajectoryAnalysis(QtCore.QObject):
             errorStatus = self.errorDetector.checkForErrors(chamber.trajectory, scale, frameRate) 
             chamber.setTrajectoryErrorStatus(errorStatus)
                 # Create image and analyse   
-            trajectoryStats=self.analyser.analyseChamber(chamber,scale,frameRate)
+            trajectoryStats,trajectoryHist=self.analyser.analyseChamber(chamber,scale,frameRate)
             chamber.setTrajectoryStats(trajectoryStats)
             chamber.setTrajectoryImage(self.imageCreator(chamber))
             print(trajectoryStats.totalReport())
-            print(trajectoryStats.hystogram)      
+            #print(trajectoryStats.hystogram)      
                     
         
                     

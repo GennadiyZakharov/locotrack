@@ -167,23 +167,25 @@ class RunRestAnalyser(QtCore.QObject):
             QtGui.QApplication.processEvents()
         # total output
         
-        
-        
-        
-        #trajectoryStats.hystogram = hystogram / (endFrame - startFrame)
+        trajectoryStats.histogram = hystogram / (endFrame - startFrame)
         #maxi =  np.max(hystogram)
         #pic = hystogram * (255 / maxi)
         #cv2.imshow('Histogram',pic)
         #cv2.waitKey()
         #mpl.pyplot.imshow(pic, cmap='gray', dpi=)
+        
         H,xedges,yedges,image=mpl.pyplot.hist2d(
             np.array(filter(lambda x: x >= 0, trajectory.cpX)),
             np.array(filter(lambda x: x >= 0, trajectory.cpY)),
             bins=40, norm=LogNorm())
-        mpl.pyplot.colorbar()
-        #mpl.pyplot.show()
-        mpl.pyplot.clf()
+        #print image
+        print 'H:',H
         
+        
+        mpl.pyplot.colorbar()
+        mpl.pyplot.show()
+        mpl.pyplot.clf()
+        '''
         dx=trajectory.cpX[startFrame+1:endFrame]-trajectory.cpX[startFrame:endFrame-1]
         dy=trajectory.cpY[startFrame+1:endFrame]-trajectory.cpY[startFrame:endFrame-1]
         
@@ -233,13 +235,13 @@ class RunRestAnalyser(QtCore.QObject):
         #mpl.pyplot.show()
         mpl.pyplot.clf()
         
-        #pca =PCA(n_components=10)
+        pca =PCA(n_components=10)
         #pca.fit(hist)   
         #print('Histogram:')
         #print(H)
-
+        '''
         #print(hystogram)
-        return trajectoryStats
+        return trajectoryStats,H
 
 
 #===========================================================================================================================
