@@ -14,9 +14,16 @@ from ltcore.chamber import Chamber
 from ltcore.errordetector import ErrorDetector   
 from ltcore.trajectoryanalysers import RunRestAnalyser, RatRunAnalyser
 from ltcore.kmeans import KMeans
+from ltcore.sammonsmap import sammon
+
+import matplotlib as mpl
+
+import numpy as np
 
 from numpy import vstack,array
 from numpy.random import rand
+
+from sklearn.decomposition import PCA
 
 class TrajectoryAnalysis(QtCore.QObject):
 
@@ -121,6 +128,8 @@ class TrajectoryAnalysis(QtCore.QObject):
         self.signalAnalysisStarted.emit(len(chamberList))
         i = 0
         self.analyseRunning = True
+        histograms=[]
+        names=[]
         for chamber,scale,frameRate in chamberList:
             print('Analysing chamber #{}-{}, scale:{:.3f}, framerate:{:.1f}'.format(i+1,chamber.sampleName,scale,frameRate))
             if not self.analyseRunning : 
@@ -138,13 +147,46 @@ class TrajectoryAnalysis(QtCore.QObject):
             chamber.setTrajectoryErrorStatus(errorStatus)
                 # Create image and analyse   
             trajectoryStats,trajectoryHist=self.analyser.analyseChamber(chamber,scale,frameRate)
+            n,m = trajectoryHist.shape
+            names.append(chamber.sampleName)
+            histograms.append(trajectoryHist.reshape(n*m))
+            
             chamber.setTrajectoryStats(trajectoryStats)
             chamber.setTrajectoryImage(self.imageCreator(chamber))
             print(trajectoryStats.totalReport())
             #print(trajectoryStats.hystogram)      
-                    
+        '''
+        print("Starting PCA for histograms:",len(histograms)  )    
+        pca =PCA(n_components=10)
+        #print(hist[0])     
+            
+        transform=pca.fit_transform(np.array(histograms)).T
+        print(pca.explained_variance_ratio_)
+        '''
+        '''
+        [samm,E] = sammon(np.array(histograms),init ='pca')
         
-                    
+        transform=samm.T
+        print("Sammon E: ",E)
+        
+        x = transform[0]
+        y = transform[1]
+        
+        species = set(names) 
+        mpl.pyplot.clf() 
+        for name in species:
+            xx=[]
+            yy=[]
+            for i in range(len(names)):
+                if names[i]==name:
+                    xx.append(x[i])
+                    yy.append(y[i])
+            mpl.pyplot.plot(xx,yy,'o',label=name)
+            
+        mpl.pyplot.show()
+        mpl.pyplot.clf()
+        '''
+        
         self.signalAnalysisFinished.emit()  
 
     @QtCore.pyqtSlot()

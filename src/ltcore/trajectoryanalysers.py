@@ -13,7 +13,7 @@ import math
 
 import matplotlib as mpl
 from numpy import uint32, float32
-from sklearn.decomposition import PCA
+
 
 
 class RunRestAnalyser(QtCore.QObject):
@@ -64,27 +64,26 @@ class RunRestAnalyser(QtCore.QObject):
         '''
         def frameToTime(frame):
             return frame/frameRate
+        
         trajectoryStats = TrajectoryStats()
         trajectoryStats.setBounds(chamber.rect.size())
         width,height = chamber.width(), chamber.height()
         
-        hystogramLevel= 10
-        
-        hystogram = np.zeros((width//hystogramLevel,height//hystogramLevel),dtype=uint32)
-        
-        meanX, meanY = width, height
+        meanX, meanY = width/2, height/2
         trajectoryStats.setCenter(meanX, meanY)
+        
         trajectory = chamber.trajectory
         startFrame, endFrame = trajectory.bounds()
         # Total values
         trajectoryStats.totalDuration = frameToTime(endFrame - startFrame) # total time in seconds
         #trajectoryStats.intervalDuration = self.intervalDuration
         # Value to form run periods
+        runStartTime = 0
         runLength = 0
         runDuration = 0
         lastState = 1  #1- rest, 2 - run
         
-        
+        runs=[] # List to store all runs: duration,length
         ltObject1 = None
         frame1 = None
         for frame2 in xrange(startFrame, endFrame): # Cycle for all points
@@ -109,14 +108,6 @@ class RunRestAnalyser(QtCore.QObject):
             
             #hystogram[int(x2)//hystogramLevel][int(y2)//hystogramLevel]+=1
             
-            dx = x2 - meanX
-            dy = y2 - meanY
-            '''
-            if (dx/meanX)**2 + (dy/meanY)**2 <=0.5 :
-                hystogram[0]+=1
-            else :
-                hystogram[1]+=1
-            '''
             length = sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2) / scale
             speed = length / time
             # Assign current point to quadrant
@@ -140,9 +131,11 @@ class RunRestAnalyser(QtCore.QObject):
                 trajectoryStats.quadrantRunLength[xQuadrant][yQuadrant] +=length
                 if lastState == 1 : # Starting new activity period
                     lastState = 2
-                    runLength = length
+                    runStartTime = frameToTime(frame1)
+                    runLength = length  
                     runDuration = time
                     trajectoryStats.runCount +=1
+                    
                 else : # Previous quant was activity
                     runLength+=length
                     runDuration+=time
@@ -152,6 +145,10 @@ class RunRestAnalyser(QtCore.QObject):
                     # Reset run
                     lastState = 1
                     #
+                    # Recording information about previous run
+                    runs.append([runStartTime,runDuration,runLength])
+                    runStartTime = -1
+                    
                     '''
                     currentTime = frameToTime(frame2-startFrame)
                     interval = int(currentTime/self.intervalDuration)+1
@@ -167,23 +164,24 @@ class RunRestAnalyser(QtCore.QObject):
             QtGui.QApplication.processEvents()
         # total output
         
-        trajectoryStats.histogram = hystogram / (endFrame - startFrame)
-        #maxi =  np.max(hystogram)
-        #pic = hystogram * (255 / maxi)
-        #cv2.imshow('Histogram',pic)
-        #cv2.waitKey()
-        #mpl.pyplot.imshow(pic, cmap='gray', dpi=)
+        if runStartTime >=0 :
+            runs.append([runStartTime,runDuration,runLength])
+            
+        trajectoryStats.runs = np.array(runs) # Converting to numpy array to save memory
         
         H,xedges,yedges,image=mpl.pyplot.hist2d(
             np.array(filter(lambda x: x >= 0, trajectory.cpX)),
             np.array(filter(lambda x: x >= 0, trajectory.cpY)),
             bins=40, norm=LogNorm())
+        
+        intensity=H.sum()
+        H = H / intensity
         #print image
-        print 'H:',H
+        #print 'H:',H
         
         
         mpl.pyplot.colorbar()
-        mpl.pyplot.show()
+        #mpl.pyplot.show()
         mpl.pyplot.clf()
         '''
         dx=trajectory.cpX[startFrame+1:endFrame]-trajectory.cpX[startFrame:endFrame-1]

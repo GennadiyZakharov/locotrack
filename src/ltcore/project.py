@@ -15,6 +15,7 @@ from ltcore.chamber import Chamber
 from ltcore.chambersmanager import ChambersManager
 from ltcore.trajectoryanalysis import TrajectoryAnalysis
 from ltcore.errordetector import ErrorDetector
+from ltcore.trajectorystats import TrajectoryStats
 
 class Project(QtCore.QObject):
     '''
@@ -189,18 +190,25 @@ class Project(QtCore.QObject):
                 
         self.trajectoryAnalysis.analyseChambers(chamberList)
         projectStatsFile = open(unicode(self.projectFileName)+'.txt', 'w')
+        projectRunsFile = open(unicode(self.projectFileName)+'.runs.txt', 'w')
+        captionString = '{:>8s}; {:>12s}; '.format('Sample','Errors')
+        projectStatsFile.write(captionString+TrajectoryStats.captionString+'  FileName;\n')
+        projectRunsFile.write(captionString+TrajectoryStats.captionRunString+'  FileName;\n')
         for video in self.videos.values() :
             for chamber in video.chambers :
                 if chamber.trajectoryStats is not None:
                     errorStatus = chamber.trajectoryErrorStatus
                     if errorStatus == ErrorDetector.errorTooMuchMissedIntervals :
-                        err='MuchMissed  ' 
+                        err='MuchMissed' 
                     elif errorStatus == ErrorDetector.errorTooLongMissedInterval :
-                        err='LongMissed  '
+                        err='LongMissed'
                     else :
-                        err='NoErr       '
+                        err='NoErr'
                     stats = chamber.trajectoryStats.totalInfo()
-                    projectStatsFile.write('{:>8s};'.format(chamber.sampleName)+' '+err+ '; ' +stats+'   '+video.videoFileName+'\n')
+                    projectStatsFile.write('{:>8s}; {:>12s};'.format(chamber.sampleName,err)+' ' +stats+'   '+video.videoFileName+'\n')
+                    for run in chamber.trajectoryStats.runInfo() :
+                        if run is not None:
+                            projectRunsFile.write('{:>8s}; {:>12s};'.format(chamber.sampleName,err)+' ' +run+'   '+video.videoFileName+'\n')
         
         
         

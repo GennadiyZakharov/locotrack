@@ -24,7 +24,11 @@ class TrajectoryStats(object):
     classdocs
     '''
     # Activity  RinFreq, TotalSpeed, RunSpeed Quadrants
-    formatString='{:>8.3f}; {:>8.3f}; {}; {}; {};'
+    captionString = '{:>15s}; {:>15s}; {:>15s}; {:>15s}; {:>15s}; {:>15s}; {};'.format(
+        'TotalDuration','TotalLength','Activity','RunFreq','TotalSpd','RunSpd','QActvty')
+    formatString='{:>15.3f}; {:>15.3f}; {:>15.3f}; {:>15.3f}; {}; {}; {};'
+    captionRunString = '{:>15s}; {:>15s}; {:>15s}; {:>15s};'.format('RunStartTime','RunDuration','RunLength','RunSpd')
+    formatRunString='{:>15.3f}; {:>15.3f}; {:>15.3f}; {:>15.3f};'
     reportString = \
     '''
     Total trajectory duration: {:>8.3f}
@@ -55,6 +59,7 @@ class TrajectoryStats(object):
         self.quadrantRunLength = [[0,0],[0,0]]
         self.intervals = []
         self.histogram = None
+        self.runs=None
         
         
     def isEmpty(self):
@@ -81,16 +86,25 @@ class TrajectoryStats(object):
         self.center = (x,y)
         
     def totalSpeedTxt(self):
-        return '{:>8.3f}'.format(self.totalLength/self.totalDuration) if self.totalDuration >0 else '{:>8s}'.format('N/A')
+        return '{:>15.3f}'.format(self.totalLength/self.totalDuration) if self.totalDuration >0 else '{:>8s}'.format('N/A')
         
     def runSpeedTxt(self):
-        return '{:>8.3f}'.format(self.runLength/self.runDuration) if self.runDuration >0 else '{:>8s}'.format('N/A')
+        return '{:>15.3f}'.format(self.runLength/self.runDuration) if self.runDuration >0 else '{:>8s}'.format('N/A')
     
     def totalInfo(self):
-        return self.formatString.format(self.activityIndex(),self.runFrequency(),
+        return self.formatString.format(self.totalDuration,self.totalLength,
+                                        self.activityIndex(),self.runFrequency(),
                                         self.totalSpeedTxt(),
                                         self.runSpeedTxt(),
                                         self.quandrantActivity()) 
+       
+    def runInfo(self):
+        if self.runs is None:
+            yield None
+        for item in self.runs:
+            runStart,runDuration,runLength = item[0],item[1],item[2]
+            runSpd = runLength / runDuration
+            yield self.formatRunString.format(runStart,runDuration,runLength,runSpd)
         
     def totalReport(self):
         qA = self.quandrantActivity()
