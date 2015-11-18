@@ -23,7 +23,7 @@ import numpy as np
 from numpy import vstack,array
 from numpy.random import rand
 
-from sklearn.decomposition import PCA
+#from sklearn.decomposition import PCA
 
 class TrajectoryAnalysis(QtCore.QObject):
 

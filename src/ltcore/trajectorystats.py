@@ -89,7 +89,7 @@ class TrajectoryStats(object):
         return '{:>15.3f}'.format(self.totalLength/self.totalDuration) if self.totalDuration >0 else '{:>8s}'.format('N/A')
         
     def runSpeedTxt(self):
-        return '{:>15.3f}'.format(self.runLength/self.runDuration) if self.runDuration >0 else '{:>8s}'.format('N/A')
+        return ('{:>15.3f}'.format(self.runLength/self.runDuration)) if self.runDuration > 0 else '{:>8s}'.format('N/A')
     
     def totalInfo(self):
         return self.formatString.format(self.totalDuration,self.totalLength,
