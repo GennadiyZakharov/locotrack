@@ -136,7 +136,7 @@ class ProjectWidget(QtGui.QWidget):
     def videoAdded(self, videoFileName):
         videoItem = QtGui.QTreeWidgetItem()
         self.videoItems[videoFileName] = videoItem
-        caption = QtCore.QFileInfo(videoFileName).baseName()
+        caption = QtCore.QFileInfo(videoFileName).completeBaseName()
         videoItem.setText(0,caption)
         videoItem.videoFileName = videoFileName
         self.videoList.addTopLevelItem(videoItem)
