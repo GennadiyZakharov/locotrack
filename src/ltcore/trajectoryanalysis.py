@@ -50,8 +50,8 @@ class TrajectoryAnalysis(QtCore.QObject):
         self.setWriteSpeed(0)
         
         data = vstack((rand(150,2) + array([.5,.5]),rand(150,2)))
-        self.kMeans=KMeans(self)
-        self.kMeans.clusters(data,2)
+        #self.kMeans=KMeans(self)
+        #self.kMeans.clusters(data,2)
         
     @QtCore.pyqtSlot(int)
     def setWriteSpeed(self, checked):
