@@ -8,19 +8,77 @@ from __future__ import division
 import cv2
 from PyQt4 import QtCore
 import Queue
+import numpy as np
+from math import pi
+import multiprocessing.dummy as multiprocessing
+import time
+
+
 from ltcore.cvplayer import CvPlayer
 
 from ltcore.objectdetectors import maxBrightDetector, massCenterDetector
 from ltcore.project import Project
 from ltcore.preprocessor import Preprocessor
 
+from ltcore.ltobject import LtObject
+
+pool = multiprocessing.Pool(4)
+
+def processChamberAsync(ch):
+    frame, threshold = ch
+    h, w = frame.shape
+    #print('Frame', frame)
+    #print(w,h)
+    if True:
+        center = ( w/2, h/2 )
+        th = int(max(center) / 2)
+        axes = ( (w/2 + th/2), h/2 + th / 2)
+        #cv2.ellipse(frame, center, axes, 0, 0, 360, cv2.cv.RGB(0, 0, 0), thickness=th)
+
+    (minVal, maxVal, minBrightPos, maxBrightPos) = cv2.minMaxLoc(frame)
+    #print(minVal, maxVal, minBrightPos, maxBrightPos)
+    averageVal = np.mean(frame)  # TODO: why fail?
+    if True:
+        averageVal *= 4 / pi
+    # size =
+    # Tresholding image
+    tresholdVal = (maxVal - averageVal) * (threshold / 100) + averageVal
+    avg, thrFrame = cv2.threshold(frame, tresholdVal, 255, cv2.cv.CV_THRESH_TOZERO)
+    # Adaptive threshold
+    '''
+    blocksize = int(chamber.threshold) // 2
+    if blocksize %2 == 0 :
+        blocksize +=1
+    cv.AdaptiveThreshold(frame, frame, 255, cv.CV_ADAPTIVE_THRESH_GAUSSIAN_C,
+                         cv.CV_THRESH_BINARY,blocksize)
+    '''
+    # Calculating mass center
+    moments = cv2.moments(thrFrame)
+    m00 = moments['m00']
+    if m00 != 0:
+        m10 = moments['m10']
+        m01 = moments['m01']
+        m10 = moments['m10']
+        m01 = moments['m01']
+
+        ltObject = LtObject((m10 / m00, m01 / m00))
+        direction = [[moments['mu20'], moments['mu11']],
+                     [moments['mu11'], moments['mu02']]]
+        direction = np.array(direction)
+        eVals, eVect = np.linalg.eig(direction)
+        directionVector = eVect[0] if eVals[0] >= eVals[1] else eVect[1]
+        ltObject.direction = directionVector
+    else:
+        ltObject = None
+
+    return (thrFrame, ltObject)
 
 class CvProcessor(QtCore.QObject):
     '''
     This is main class for video processing
     it holds player and array of chambers
-    all data, stored in this class consist project  
-    
+    all data, stored in this class consist project
+
     Also this class process video and writes data to chamber
     '''
     signalNextFrame = QtCore.pyqtSignal(object)
@@ -63,8 +121,12 @@ class CvProcessor(QtCore.QObject):
         self.objectDetectors = [self.maxBrightDetector, self.massCenterDetector]
         self.objectDetectorIndex = 0 
         
-        self.chambersQueue = Queue.Queue()  
-        self.thrFramesQueue = Queue.Queue()
+        self.chambersQueue = []
+        self.thrFramesQueue = []
+        self.frameCounter=0
+        self.startTime = time.time()
+
+
 
     def videoSourceOpened(self, length, frameRate, fileName):
         '''
@@ -87,40 +149,52 @@ class CvProcessor(QtCore.QObject):
         '''
         if self.frame is None :
             return
-        self.preprocessor.processFrame(self.frame)         
-    
+        self.preprocessor.processFrame(self.frame)
+        self.frameCounter += 1
+        if self.frameCounter >= 20:
+            curTime = time.time()
+            spd = self.frameCounter / (curTime - self.startTime)
+            print('Speed = {:10.4} fps'.format(spd))
+            self.startTime = curTime
+            self.frameCounter = 0
+
+
+
+
     def calculatePosition(self, frame):
         # Processing all chambers 
         activeVideo = self.project.activeVideo()    
-        chamberRects = []        
+        chamberRects = []
+        chambersQueue = []
         if activeVideo is not None: 
             
             for chamber in self.project.activeVideo().chambers :
-                x, y, width,height =chamber.getRect()
+                x, y, width,height = chamber.getRect()
                 #chamberRects.append((frame[y:y+height,x:x+width], chamber))
                 #self.chambersQueue.enqueue(  )
-                self.chambersQueue.put((frame[y:y+height,x:x+width], chamber))
+                chambersQueue.append( (frame[y:y+height,x:x+width], chamber.threshold) )
                 
-            
+            '''
             while True :
                 if self.chambersQueue.empty() :
                     break
                 chamberRect,chamber = self.chambersQueue.get()
                 thrFrame = self.processChamber(chamberRect, chamber)
                 self.thrFramesQueue.put((thrFrame, chamber))
-                
-                
             '''
-            for chamberRect in chamberRects:
-                thrFrames.append(self.processChamber(chamberRect, chamber))
-            '''
-            if self.showProcessedImage :
-                while True :
-                    if self.thrFramesQueue.empty() :
-                        break
-                    thrFrame, chamber  = self.thrFramesQueue.get()
+
+            thrFramesQueue = pool.map(processChamberAsync, chambersQueue) # parallel execution
+            #thrFramesQueue = map(processChamberAsync, chambersQueue)     # sequential execution
+
+            i = 0
+            for chamber in self.project.activeVideo().chambers :
+                thrFrame, ltObject = thrFramesQueue[i]
+                #print('Object',ltObject.center if ltObject is not None else 'None')
+                chamber.setLtObject(ltObject,self.frameNumber)
+                if self.showProcessedImage :
                     x, y, width,height =chamber.getRect()
                     frame[y:y+height,x:x+width] = thrFrame
+                i+=1
                 
             '''
             if self.showProcessedImage :
@@ -217,7 +291,7 @@ class CvProcessor(QtCore.QObject):
     @QtCore.pyqtSlot(QtCore.QRect)
     def addChamber(self, rect):
         '''
-        Create chamber from rect 
+        Create chamber from rect
         '''
         self.project.activeVideo().chambers.createChamber(rect)
     
