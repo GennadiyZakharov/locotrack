@@ -16,10 +16,10 @@ Installation
 
 ###Linux
 
-Sicne python usually installe dby default in almost all linux distributions one only need to install following pakages:
+Since python usually installed by default in almost all linux distributions one only need to install following packages:
 numpy, scipy, PyQt4, matplotlib, opencv
-* For Ubuntu
-- `sudo apt install python-numpy python-scipy python-matplotlib python-opencv python-pyqt4`
+* For Ubuntu 14.04 and 16.04
+- `sudo apt install python-numpy python-scipy python-matplotlib python-opencv python-qt4`
 
  
 
