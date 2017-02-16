@@ -45,6 +45,7 @@ class CvProcessor(QtCore.QObject):
         #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
         self.preprocessor = Preprocessor(self)
         self.preprocessor.signalNextFrame.connect(self.calculatePosition)
+        self.preprocessor.player = self.cvPlayer
         
         self.frame = None
         # Parameters

@@ -40,7 +40,7 @@ class PreprocessorWidget(QtGui.QWidget):
         removeBarrelValLabel = QtGui.QLabel('Distortion coefficient')
         self.removeBarrelSpinbox.setMaximum(10)
         self.removeBarrelSpinbox.setValue(1)
-        #self.removeBarrelSpinbox.set
+
 
         layout.addWidget(removeBarrelValLabel)
         layout.addWidget(self.removeBarrelSpinbox)
@@ -54,8 +54,22 @@ class PreprocessorWidget(QtGui.QWidget):
 
         layout.addWidget(removeBarrelFocalLabel)
         layout.addWidget(self.removeBarrelFocal)  
-        self.removeBarrelFocal.valueChanged.connect(self.preprocessor.setRemoveBarrelFocal)  
-        
+        self.removeBarrelFocal.valueChanged.connect(self.preprocessor.setRemoveBarrelFocal)
+
+        accumulateBackgroundLabel = QtGui.QLabel('Background frames')
+        layout.addWidget(accumulateBackgroundLabel)
+
+        accumulateBackgroundSpinBox = QtGui.QSpinBox()
+        accumulateBackgroundSpinBox.setMaximum(1000)
+        accumulateBackgroundSpinBox.setMinimum(50)
+        accumulateBackgroundSpinBox.setValue(self.preprocessor.nBackgroundFrames)
+        layout.addWidget(accumulateBackgroundSpinBox)
+        accumulateBackgroundSpinBox.valueChanged.connect(self.preprocessor.setBackgroundFrames)
+
+        self.accumulateBackgroundButton = QtGui.QPushButton('Accumulate background')
+        layout.addWidget(self.accumulateBackgroundButton)
+        self.accumulateBackgroundButton.clicked.connect(preprocessor.collectBackground)
+
         # Layout
         self.setLayout(layout)
         

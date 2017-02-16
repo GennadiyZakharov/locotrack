@@ -7,6 +7,7 @@ from __future__ import division
 import cv2
 from math import isnan
 from PyQt4 import QtCore
+import random
 
 class CvPlayer(QtCore.QObject):
     '''
@@ -307,7 +308,37 @@ class CvPlayer(QtCore.QObject):
         if self.frameNumber > self.rightBorder :
             self.seek(self.rightBorder)
         self.rightBorderSetted.emit(self.rightBorder)
-        
+
+    def randomFrames(self, nFrames):
+        '''
+        REtunfs list of random choosed frames from image
+        :param nFrames:
+        :return:
+        '''
+
+        skipFrames = 10
+
+        if self.captureDevice is None:
+            return None
+        numbers = [int(random.random()*(self.videoFileLength-1)) for i in range(nFrames) ]
+        frames=[]
+        for frameNumber in numbers:
+            if 0 <= frameNumber < self.videoFileLength-1 :
+                self.captureDevice.set(cv2.cv.CV_CAP_PROP_POS_FRAMES, frameNumber)
+            '''
+            for i in range(skipFrames):
+                _, frame = self.captureDevice.read()
+            '''
+            _, frame = self.captureDevice.read()
+            if frame is None:
+                continue
+            #cv2.imwrite('Image {:5}.jpg'.format(frameNumber),frame)
+
+            frames.append(frame) #cv2.bitwise_not(cv2.cvtColor(frame, cv2.cv.CV_RGB2GRAY))
+            self.nextFrame.emit(frame,frameNumber)
+            QtCore.QCoreApplication.processEvents()
+        return frames
+
        
     def timerEvent(self, event=None) :
         '''
