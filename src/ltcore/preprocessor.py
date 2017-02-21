@@ -23,16 +23,30 @@ class Preprocessor(QtCore.QObject):
         # Video Player
         # Parameters
         self.frame=None
-        self.invertImage = False
+        self.invertImage = True
         self.analyseRunning = False
         self.removeBarrel = True
-        self.removeBarrelCoef = -1.0e-5
-        self.removeBarrelFocal = 10
+
+        # Parameners for distortion removing
+        self.removeBarrelCoef =  -1.0
+        self.removeBarrelFocal = 10.0
+        self.centerX = 640
+        self.centerY = 512
+        # Filling matrices
+        self.distCoeff = np.zeros((4, 1), np.float64)
+        self.distCoeff[0, 0] = self.removeBarrelCoef  * 1e-5
+        # assume unit matrix for camera
+        self.cam = np.eye(3, dtype=np.float32)
+        self.cam[0, 0] = float(self.removeBarrelFocal)  # define focal length x  fx
+        self.cam[1, 1] = self.cam[0, 0]  # define focal length y    fy
+        self.cam[0, 2] = self.centerX  # define center x
+        self.cam[1, 2] = self.centerY  # define center y
 
         self.background = None
         self.nBackgroundFrames=200
 
         self.player=None
+
 
     @QtCore.pyqtSlot()
     def collectBackground(self):
@@ -55,21 +69,8 @@ class Preprocessor(QtCore.QObject):
         self.doPreprocess()
 
     def removeBarrelDo(self, frame):
-        distCoeff = np.zeros((4, 1), np.float64)
-        distCoeff[0, 0] = self.removeBarrelCoef
-
-        # assume unit matrix for camera
-        cam = np.eye(3, dtype=np.float32)
-
-        height, width = frame.shape[0], frame.shape[1],
-
-        cam[0, 2] = width / 2.0  # define center x
-        cam[1, 2] = height / 2.0  # define center y
-        cam[0, 0] = float(self.removeBarrelFocal)  # define focal length x
-        cam[1, 1] = cam[0, 0]  # define focal length y
-
         # here the undistortion will be computed
-        return cv2.undistort(frame, cam, distCoeff)
+        return cv2.undistort(frame, self.cam, self.distCoeff)
 
     @QtCore.pyqtSlot(int)
     def setBackgroundFrames(self, value):
@@ -83,11 +84,26 @@ class Preprocessor(QtCore.QObject):
     @QtCore.pyqtSlot(float)
     def setRemoveBarrelCoef(self, value):
         self.removeBarrelCoef = value
+        self.distCoeff[0, 0] = self.removeBarrelCoef * 1e-5
         self.doPreprocess()
     
-    @QtCore.pyqtSlot(int)
+    @QtCore.pyqtSlot(float)
     def setRemoveBarrelFocal(self, value):
         self.removeBarrelFocal = value
+        self.cam[0, 0] = self.removeBarrelFocal  # define focal length x  fx
+        self.cam[1, 1] = self.cam[0, 0]  # define focal length y    fy
+        self.doPreprocess()
+
+    @QtCore.pyqtSlot(int)
+    def setCenterX(self, value):
+        self.centerX = value
+        self.cam[0, 2] = self.centerX
+        self.doPreprocess()
+
+    @QtCore.pyqtSlot(int)
+    def setCenterY(self, value):
+        self.centerY = value
+        self.cam[1, 2] = self.centerY
         self.doPreprocess()
 
     @QtCore.pyqtSlot(object)

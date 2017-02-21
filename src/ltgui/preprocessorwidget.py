@@ -19,10 +19,10 @@ class PreprocessorWidget(QtGui.QWidget):
         super(PreprocessorWidget, self).__init__(parent)
         self.preprocessor = preprocessor
         layout = QtGui.QGridLayout()
-        # 
-        
+
         #
         self.negativeChechBox = QtGui.QCheckBox()
+        self.negativeChechBox.setChecked(self.preprocessor.invertImage)
         negativeLabel = QtGui.QLabel("Negative image")
         layout.addWidget(negativeLabel,0,0)
         layout.addWidget(self.negativeChechBox,0,1)
@@ -38,27 +38,43 @@ class PreprocessorWidget(QtGui.QWidget):
         # 
         self.removeBarrelSpinbox = QtGui.QDoubleSpinBox()
         removeBarrelValLabel = QtGui.QLabel('Distortion coefficient')
-        self.removeBarrelSpinbox.setMaximum(10)
-        self.removeBarrelSpinbox.setValue(1)
-
-
+        self.removeBarrelSpinbox.setRange(-10,10)
+        self.removeBarrelSpinbox.setValue(self.preprocessor.removeBarrelCoef)
+        self.removeBarrelSpinbox.setSingleStep(0.2)
+        self.removeBarrelSpinbox.setSuffix('E-5')
         layout.addWidget(removeBarrelValLabel)
         layout.addWidget(self.removeBarrelSpinbox)
-        self.removeBarrelSpinbox.valueChanged.connect(self.setRemoveBarrelValue)    
+        self.removeBarrelSpinbox.valueChanged.connect(self.preprocessor.setRemoveBarrelCoef)
         
-        self.removeBarrelFocal = QtGui.QSpinBox()
+        self.removeBarrelFocal = QtGui.QDoubleSpinBox()
         removeBarrelFocalLabel = QtGui.QLabel('Focal length')
-        self.removeBarrelFocal.setMaximum(50)
-        self.removeBarrelFocal.setMinimum(2)
-        self.removeBarrelFocal.setValue(10)
-
+        self.removeBarrelFocal.setRange(2,50)
+        self.removeBarrelFocal.setValue(self.preprocessor.removeBarrelFocal)
+        self.removeBarrelFocal.setSingleStep(0.2)
         layout.addWidget(removeBarrelFocalLabel)
         layout.addWidget(self.removeBarrelFocal)  
         self.removeBarrelFocal.valueChanged.connect(self.preprocessor.setRemoveBarrelFocal)
 
+        self.centerXSpinBox = QtGui.QSpinBox()
+        centerXLabel = QtGui.QLabel('Camera position, X')
+        self.centerXSpinBox.setMaximum(1280)
+        self.centerXSpinBox.setSingleStep(10)
+        self.centerXSpinBox.setValue(self.preprocessor.centerX)
+        layout.addWidget(centerXLabel)
+        layout.addWidget(self.centerXSpinBox)
+        self.centerXSpinBox.valueChanged.connect(self.preprocessor.setCenterX)
+
+        self.centerYSpinBox = QtGui.QSpinBox()
+        centerYLabel = QtGui.QLabel('Camera position, Y')
+        self.centerYSpinBox.setMaximum(1024)
+        self.centerYSpinBox.setSingleStep(10)
+        self.centerYSpinBox.setValue(self.preprocessor.centerY)
+        layout.addWidget(centerYLabel)
+        layout.addWidget(self.centerYSpinBox)
+        self.centerYSpinBox.valueChanged.connect(self.preprocessor.setCenterY)
+
         accumulateBackgroundLabel = QtGui.QLabel('Background frames')
         layout.addWidget(accumulateBackgroundLabel)
-
         accumulateBackgroundSpinBox = QtGui.QSpinBox()
         accumulateBackgroundSpinBox.setMaximum(1000)
         accumulateBackgroundSpinBox.setMinimum(50)
@@ -83,11 +99,7 @@ class PreprocessorWidget(QtGui.QWidget):
         value = (state == QtCore.Qt.Checked)
         self.removeBarrelFocal.setEnabled(value)
         self.removeBarrelSpinbox.setEnabled(value)
-        self.preprocessor.setRemoveBarrel(value)    
-        
-    @QtCore.pyqtSlot(int)
-    def setRemoveBarrelValue(self, value):
-        self.preprocessor.setRemoveBarrelCoef(-value*1e-5)
+        self.preprocessor.setRemoveBarrel(value)
         
         
 
