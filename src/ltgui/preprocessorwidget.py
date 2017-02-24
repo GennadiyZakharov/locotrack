@@ -22,7 +22,6 @@ class PreprocessorWidget(QtGui.QWidget):
 
         #
         self.negativeChechBox = QtGui.QCheckBox()
-        self.negativeChechBox.setChecked(self.preprocessor.invertImage)
         negativeLabel = QtGui.QLabel("Negative image")
         layout.addWidget(negativeLabel,0,0)
         layout.addWidget(self.negativeChechBox,0,1)
@@ -33,23 +32,22 @@ class PreprocessorWidget(QtGui.QWidget):
         removeBarrelLabel = QtGui.QLabel("Remove barrel distortion")
         layout.addWidget(removeBarrelLabel)
         layout.addWidget(self.removeBarrelChechBox)
-        self.removeBarrelChechBox.setCheckState(QtCore.Qt.Checked)
+
         self.removeBarrelChechBox.stateChanged.connect(self.setRemoveBarrel)
         # 
         self.removeBarrelSpinbox = QtGui.QDoubleSpinBox()
         removeBarrelValLabel = QtGui.QLabel('Distortion coefficient')
         self.removeBarrelSpinbox.setRange(-10,10)
-        self.removeBarrelSpinbox.setValue(self.preprocessor.removeBarrelCoef)
+
         self.removeBarrelSpinbox.setSingleStep(0.2)
         self.removeBarrelSpinbox.setSuffix('E-5')
         layout.addWidget(removeBarrelValLabel)
         layout.addWidget(self.removeBarrelSpinbox)
         self.removeBarrelSpinbox.valueChanged.connect(self.preprocessor.setRemoveBarrelCoef)
-        
+
         self.removeBarrelFocal = QtGui.QDoubleSpinBox()
         removeBarrelFocalLabel = QtGui.QLabel('Focal length')
         self.removeBarrelFocal.setRange(2,50)
-        self.removeBarrelFocal.setValue(self.preprocessor.removeBarrelFocal)
         self.removeBarrelFocal.setSingleStep(0.2)
         layout.addWidget(removeBarrelFocalLabel)
         layout.addWidget(self.removeBarrelFocal)  
@@ -59,7 +57,6 @@ class PreprocessorWidget(QtGui.QWidget):
         centerXLabel = QtGui.QLabel('Camera position, X')
         self.centerXSpinBox.setMaximum(1280)
         self.centerXSpinBox.setSingleStep(10)
-        self.centerXSpinBox.setValue(self.preprocessor.centerX)
         layout.addWidget(centerXLabel)
         layout.addWidget(self.centerXSpinBox)
         self.centerXSpinBox.valueChanged.connect(self.preprocessor.setCenterX)
@@ -68,19 +65,17 @@ class PreprocessorWidget(QtGui.QWidget):
         centerYLabel = QtGui.QLabel('Camera position, Y')
         self.centerYSpinBox.setMaximum(1024)
         self.centerYSpinBox.setSingleStep(10)
-        self.centerYSpinBox.setValue(self.preprocessor.centerY)
         layout.addWidget(centerYLabel)
         layout.addWidget(self.centerYSpinBox)
         self.centerYSpinBox.valueChanged.connect(self.preprocessor.setCenterY)
 
         accumulateBackgroundLabel = QtGui.QLabel('Background frames')
         layout.addWidget(accumulateBackgroundLabel)
-        accumulateBackgroundSpinBox = QtGui.QSpinBox()
-        accumulateBackgroundSpinBox.setMaximum(1000)
-        accumulateBackgroundSpinBox.setMinimum(50)
-        accumulateBackgroundSpinBox.setValue(self.preprocessor.nBackgroundFrames)
-        layout.addWidget(accumulateBackgroundSpinBox)
-        accumulateBackgroundSpinBox.valueChanged.connect(self.preprocessor.setBackgroundFrames)
+        self.accumulateBackgroundSpinBox = QtGui.QSpinBox()
+        self.accumulateBackgroundSpinBox.setMaximum(1000)
+        self.accumulateBackgroundSpinBox.setMinimum(50)
+        layout.addWidget(self.accumulateBackgroundSpinBox)
+        self.accumulateBackgroundSpinBox.valueChanged.connect(self.preprocessor.setBackgroundFrames)
 
         self.accumulateBackgroundButton = QtGui.QPushButton('Accumulate background')
         layout.addWidget(self.accumulateBackgroundButton)
@@ -88,6 +83,7 @@ class PreprocessorWidget(QtGui.QWidget):
 
         # Layout
         self.setLayout(layout)
+        self.loadState()
         
     @QtCore.pyqtSlot(int)  
     def setInvertImage(self, state):
@@ -101,6 +97,15 @@ class PreprocessorWidget(QtGui.QWidget):
         self.removeBarrelSpinbox.setEnabled(value)
         self.preprocessor.setRemoveBarrel(value)
         
-        
+    def loadState(self):
+        self.negativeChechBox.setChecked(self.preprocessor.invertImage)
+        self.removeBarrelChechBox.setChecked(self.preprocessor.removeBarrel)
+        self.removeBarrelSpinbox.setValue(self.preprocessor.removeBarrelCoef)
+        self.removeBarrelFocal.setValue(self.preprocessor.removeBarrelFocal)
+        self.centerXSpinBox.setValue(self.preprocessor.centerX)
+        self.centerYSpinBox.setValue(self.preprocessor.centerY)
+        self.accumulateBackgroundSpinBox.setValue(self.preprocessor.nBackgroundFrames)
+
+
 
         
