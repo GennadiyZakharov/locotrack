@@ -81,6 +81,10 @@ class PreprocessorWidget(QtGui.QWidget):
         layout.addWidget(self.accumulateBackgroundButton)
         self.accumulateBackgroundButton.clicked.connect(preprocessor.collectBackground)
 
+        self.calibrateImageButton = QtGui.QPushButton('Calibrate from image')
+        layout.addWidget(self.calibrateImageButton)
+        self.calibrateImageButton.clicked.connect(self.calibrateImage)
+
         # Layout
         self.setLayout(layout)
         self.loadState()
@@ -106,6 +110,12 @@ class PreprocessorWidget(QtGui.QWidget):
         self.centerYSpinBox.setValue(self.preprocessor.centerY)
         self.accumulateBackgroundSpinBox.setValue(self.preprocessor.nBackgroundFrames)
 
-
+    def calibrateImage(self):
+        calibrationImageName = QtGui.QFileDialog.getOpenFileName(self,
+                                                        "Choose calibration image file",
+                                                        '.',
+                                                        "Image file ({})".format("*.*"))
+        if not calibrationImageName.isEmpty():
+            self.preprocessor.calibrateFromImage(calibrationImageName)
 
         
