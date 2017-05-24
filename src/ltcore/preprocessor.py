@@ -66,11 +66,12 @@ class Preprocessor(QtCore.QObject):
     def calibrateFromImage(self, calibrationImageNames):
         # termination criteria
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-        nborders = 4
 
+        # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+        nborders = 8
         objp = np.zeros((nborders * nborders, 3), np.float32)
         objp[:, :2] = np.mgrid[0:nborders, 0:nborders].T.reshape(-1, 2)
+
         # Arrays to store object points and image points from all the images.
         objpoints = []  # 3d point in real world space
         imgpoints = []  # 2d points in image plane.
@@ -82,39 +83,39 @@ class Preprocessor(QtCore.QObject):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         cv2.imshow('img', gray)
         # Find the chess board corners
-        for i in range(3,8)[::-1]:
-            for j in range(3,8)[::-1]:
+        for i in range(3,nborders)[::-1]:
+            for j in range(3,nborders)[::-1]:
                 ret, corners = cv2.findChessboardCorners(gray, (i, j) )
-                print(i, j, ret, corners)
                 if ret:
                     break
             else:
                 continue  # executed if the loop ended normally (no break)
             break  # executed if 'continue' was skipped (break)
 
-        print(i,j, ret, corners)
         # If found, add object points, image points (after refining them)
         if ret:
-            #objpoints.append(objp)
-            #cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-            #imgpoints.append(corners)
             # Draw and display the corners
-            cv2.drawChessboardCorners(img, (nborders, nborders), corners, ret)
+            winSize = (11, 11)
+            cv2.drawChessboardCorners(img, (i, j), corners, ret)
             cv2.imshow('img', img)
+
+            #objpoints.append(objp)
+
+            #cv2.cornerSubPix(gray, corners, winSize, (-1, -1), criteria)
+            #imgpoints.append(corners)
+
+
             # Calibration
-            ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+            #ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
             # refine the camera matrix
-            h, w = img.shape[:2]
-            optimalMat, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1,(w,h))
+            #h, w = img.shape[:2]
+            #optimalMat, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1,(w,h))
             # undistort
-            dst = cv2.undistort(img, mtx, dist, None, optimalMat)
-            cv2.imshow('undistort', dst)
-            cv2.waitKey(500)
+            #dst = cv2.undistort(img, mtx, dist, None, optimalMat)
+            #cv2.imshow('undistort', dst)
+            #cv2.waitKey(500)
         else:
             print('Not found corners')
-
-
-
 
     @QtCore.pyqtSlot(bool)
     def setInvertImage(self, value):
