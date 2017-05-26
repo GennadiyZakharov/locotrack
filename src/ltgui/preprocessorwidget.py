@@ -111,11 +111,11 @@ class PreprocessorWidget(QtGui.QWidget):
         self.accumulateBackgroundSpinBox.setValue(self.preprocessor.nBackgroundFrames)
 
     def calibrateImage(self):
-        calibrationImageName = QtGui.QFileDialog.getOpenFileName(self,
+        calibrationImageNames = QtGui.QFileDialog.getOpenFileNames(self,
                                                         "Choose calibration image file",
                                                         '.',
                                                         "Image file ({})".format("*.*"))
-        if not calibrationImageName.isEmpty():
-            self.preprocessor.calibrateFromImage(calibrationImageName)
+        if not calibrationImageNames.isEmpty():
+            self.preprocessor.calibrateFromImage(calibrationImageNames)
 
         
