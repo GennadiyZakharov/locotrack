@@ -45,6 +45,7 @@ class CvProcessor(QtCore.QObject):
         #self.chambers.signalRecalculateChambers.connect(self.chambersDataUpdated)
         self.preprocessor = Preprocessor(self)
         self.preprocessor.signalNextFrame.connect(self.calculatePosition)
+        self.preprocessor.signalCalibrationChanged.connect(self.calibrationChanged)
         self.preprocessor.player = self.cvPlayer
         
         self.frame = None
@@ -249,6 +250,6 @@ class CvProcessor(QtCore.QObject):
             self.analyseRunning = False
         else:
             self.cvPlayer.captureFromFile(fileName)
-            
-                 
-        
+
+    def calibrationChanged(self, calibration):
+        pass
