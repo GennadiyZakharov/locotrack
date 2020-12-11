@@ -6,33 +6,34 @@ locotrack is a simple program to analyse locomotion behaviour of animals.
 It can detect objects on video records, record trajectory for each object 
 and calculate some motion statistics
 
-Locotrack 
+Locotrack Installation
+======================
 
-Installation
-============
+The current version is rather outdated, so installing all dependencies could be painful.
+Currently, I'm working on transferring application to new versions of QT and OpenCV
 
 ## Installing python and nesessary packages
 
+### For Linux
 
-###Linux
-
-Since python usually installed by default in almost all linux distributions one only need to install following packages:
-numpy, scipy, PyQt4, matplotlib, opencv
-* For Ubuntu 14.04 and 16.04
-- `sudo apt install python-numpy python-scipy python-matplotlib python-opencv python-qt4`
+Both for Windows and linux I suggest using Anaconda distribution
+ * Install CONDA installer for python 2.7 (32bit) from here: https://www.continuum.io/downloads#windows
+ * Ensure that conda  is in your system path
+ * Create environment for python2 and install all required packages
+   - `conda create --name py2 python=2.7`
+   - `conda activate py2`
+   - `conda install numpy scipy matplotlib`
+   - `conda install -c terradue pyqt4`
+   - `conda install -c menpo opencv`
+ * Install GTK library for OpenCV: sudo apt install libgtk2.0-dev
 
  
-
-###Windows
-
-For Windows I suggest using Anaconda distribution
- * Install Anaconda distribution for python 2.7 (32bit) from here: https://www.continuum.io/downloads#windows
- * Ensure that python is in your system path
- * Download Windows PyQt4 PyQt4‑4.11.4‑cp27‑cp27m‑win32.whl from here: http://www.lfd.uci.edu//~gohlke/pythonlibs/#pyqt4 
- * Download Windows opencv package opencv_python-2.4.13.2-cp27-cp27m-win32.whl from here: http://www.lfd.uci.edu/\~gohlke/pythonlibs/#opencv
+ * Download Windows PyQt4 PyQt4‑4.11.4‑cp27‑cp27m‑win_amd64.whl from here: http://www.lfd.uci.edu//~gohlke/pythonlibs/#pyqt4 
+ * Download Windows OpenCV 2 package  from here: https://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv
  * Install PyQt4 and OpenCV via pip 
   - `pip install opencv_python-2.4.13.2-cp27-cp27m-win32.whl`
   - `pip install PyQt4‑4.11.4‑cp27‑cp27m‑win32.whl`
+
 ##Installing Locotrack
 
 * download or clone from git latest locotrack code
